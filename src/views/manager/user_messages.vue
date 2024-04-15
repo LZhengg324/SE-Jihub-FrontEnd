@@ -283,10 +283,6 @@ export default {
                 message: "您没有权限"
               });
             } else {
-              //filter
-              // this.filteredUserMessages = response.data.users.filter(user => {
-              //   return  user.status !== this.filterStatus;
-              // })
               this.userMessages = response.data.users
 
             }
@@ -379,6 +375,12 @@ export default {
                 type: 'info',
                 message: "用户" + this.userStatusDialogMessage.name + "的状态已为" + showStatus
               });
+            } else if (response.data.errcode === 3) {
+              console.log(response.data)
+              this.$message({
+                type: 'info',
+                message: "用户" + this.userStatusDialogMessage.name + "不能设置为小管理员"
+              })
             } else {
               if (this.selectedStatus === 'A') {
                 this.$message({
