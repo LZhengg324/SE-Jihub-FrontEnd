@@ -438,7 +438,7 @@ if (user === undefined) { // 用户未登录
   user = JSON.parse(user)
   proj = undefined;
   if (user !== undefined) {
-    if (user.status !== 'C') { // 普通用户
+    if (user.status !== 'C' && user.status !== 'D') { // 普通用户
       proj = Cookies.get("proj");
       console.log(proj)
       if (proj !== undefined) {
