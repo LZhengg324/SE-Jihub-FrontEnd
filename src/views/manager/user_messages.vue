@@ -2,18 +2,47 @@
   <v-container>
     <v-card>
       <v-card-title>
-        <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            label="搜索"
-            single-line
-            hide-details
-        ></v-text-field>
+        <v-container fluid>
+          <v-row>
+            <v-col cols="4">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                  <v-select
+                      v-model="filterStatus"
+                      :items="filterStatusList"
+                      item-value="value"
+                      item-text="label"
+                      label="状态"
+                      single-line
+                      hide-details
+                      v-on="on"
+                  ></v-select>
+                </template>
+                <span>过滤显示状态</span>
+              </v-tooltip>
+            </v-col>
+              <v-col cols="8">
+              <v-text-field
+                  v-model="search"
+                  append-icon="mdi-magnify"
+                  label="搜索"
+                  single-line
+                  hide-details
+                  title="状态"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-container>
+
       </v-card-title>
+
+
       <v-data-table
           :headers="headers"
-          :items="userMessages"
+          :items="filteredUserMessages"
           :search="search"
+
+
       >
         <template #item.status="{item}">
           <v-chip :color="getColor(item.status)" dark @click="openChangeUserStatusDialog(item)">
@@ -115,6 +144,7 @@ export default {
     return {
       msg: null,
       search: '',
+      filterStatus: 'ALL',
       headers: [
         {
           text: '用户名',
@@ -185,7 +215,30 @@ export default {
           label: '禁用',
           value: 'B'
         },
+        {
+          label: '小管理员',
+          value: 'D'
+        },
       ],
+      filterStatusList: [
+        {
+          label: '全部',
+          value: 'ALL',
+        },
+        {
+          label: '正常',
+          value: 'A'
+        },
+        {
+          label: '禁用',
+          value: 'B'
+        },
+        {
+          label: '小管理员',
+          value: 'D'
+        },
+      ],
+
       // 用户个人信息dialog相关信息
       showUserProfile: false,
       userProfileDialogMessage: '',
@@ -195,6 +248,23 @@ export default {
   },
   created() {
     this.showUserMessages()
+  },
+  computed: {
+    filteredUserMessages() {
+      // 先根据搜索关键词过滤
+      let filtered = this.userMessages.filter(message => {
+        return message.name.toLowerCase().includes(this.search.toLowerCase());
+      });
+
+      // 再根据状态过滤
+      if (this.filterStatus !== 'ALL') {
+        filtered = filtered.filter(message => {
+          return message.status === this.filterStatus;
+        });
+      }
+
+      return filtered;
+    }
   },
   // TODO：传给后端管理员id，如果报错，不显示信息而显示弹窗
   methods: {
@@ -213,7 +283,12 @@ export default {
                 message: "您没有权限"
               });
             } else {
+              //filter
+              // this.filteredUserMessages = response.data.users.filter(user => {
+              //   return  user.status !== this.filterStatus;
+              // })
               this.userMessages = response.data.users
+
             }
           })
           .catch((err) => {
@@ -295,8 +370,10 @@ export default {
               let showStatus;
               if (this.selectedStatus === 'A') {
                 showStatus = "正常"
-              } else {
+              } else if (this.selectedStatus === 'B'){
                 showStatus = "禁用"
+              } else if (this.selectedStatus === 'D'){
+                showStatus = "小管理员"
               }
               this.$message({
                 type: 'info',
@@ -308,12 +385,18 @@ export default {
                   type: 'success',
                   message: "成功将用户" + this.userStatusDialogMessage.name + "的状态恢复为正常"
                 });
-              } else {
+              } else if (this.selectedStatus === 'B'){
                 this.$message({
                   type: 'success',
                   message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为禁用"
                 });
-              }
+              } else if (this.selectedStatus === 'D'){
+              this.$message({
+                type: 'success',
+                message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为小管理员"
+              });
+
+            }
             }
             this.userStatusDialogMessage = ''
             this.selectedStatus = ''
@@ -376,6 +459,8 @@ export default {
         return "green";
       } else if (status === "B") {
         return "red";
+      } else if (status === "D") {
+        return "orange";
       }
     },
     transform(status) {
@@ -383,6 +468,8 @@ export default {
         return "正常";
       } else if (status === "B") {
         return "禁用";
+      } else if (status === "D") {
+        return "小管理员";
       }
     },
   },
