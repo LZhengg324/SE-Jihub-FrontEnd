@@ -3,6 +3,8 @@
 import axios from "axios";
 import topicSetting from "@/utils/topic-setting";
 
+import Cookies from "js-cookie";
+
 export default {
   name: "pr_view",
   data() {
@@ -27,6 +29,8 @@ export default {
         }
       ],
       prsBusy: true,
+      atAudit:false,
+
     }
   }, methods: {
       updatePR() {
@@ -60,6 +64,19 @@ export default {
               this.prsBusy = false
           })
       },
+    handleClose(done) {
+      this.$confirm('确认关闭？')
+          .then(() => {
+            done();
+          })
+          .catch(() => {
+          });
+    },
+    changeToAuditView(PrToAudit){
+      Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
+      Cookies.set("PrToAudit", JSON.stringify(PrToAudit));
+      this.$router.push({ name: 'audit' });
+    },
     getTopicColor: topicSetting.getColor
   }, inject: {
         user: {default: null},
@@ -72,7 +89,7 @@ export default {
 </script>
 
 <template>
-<div>
+<div >
 <!--  <p>This is pr view</p>-->
 
   <v-skeleton-loader v-if="this.prsBusy" type="button, table" />
@@ -85,6 +102,20 @@ export default {
           <td>{{pr.author}}</td>
           <td>{{pr.title}}</td>
           <td>从分支“{{pr.fromBranchName}}”合并到“{{pr.toBranchName}}”</td>
+          <td>
+            <v-form class="justify-center">
+              <v-row>
+                <v-col>
+                  <v-btn :color="getTopicColor(user.topic)"
+                         class="white--text"
+                         block
+                         @click="changeToAuditView(pr)">
+                    Pr审核
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-form>
+          </td>
         </tr>
         </tbody>
       </v-simple-table>
@@ -103,10 +134,40 @@ export default {
       <v-icon>mdi-github</v-icon>在GitHub浏览
     </v-btn>
   </v-card-actions>
+
+  <!--<el-dialog-->
+  <!--    title="审核代码"-->
+  <!--    :visible.sync="atAudit"-->
+  <!--    width="100%"-->
+  <!--    height="100%"-->
+  <!--    :before-close="handleClose"-->
+  <!--class="fullHeight">-->
+
+    <!--<iframe src="/diff2html_ui.html"-->
+    <!--        class="justify-center"-->
+    <!--        width="100%"-->
+    <!--        height="100%"-->
+    <!--&gt;</iframe>-->
+    <!--<div id="diff2htmlElement"></div>-->
+
+
+  <!--  <span slot="footer" class="dialog-footer">-->
+  <!--  <el-button @click="atAudit = false">取 消</el-button>-->
+  <!--  <el-button type="primary" @click="createNewBranch">确 定</el-button>-->
+  <!--  </span>-->
+  <!--</el-dialog>-->
+
 </div>
 </template>
 
 
 <style scoped>
+
+.fullHeight /deep/ .el-dialog__body {
+  height: 90vh;
+  overflow: auto;
+}
+
+
 
 </style>

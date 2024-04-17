@@ -27,6 +27,8 @@ export default defineConfig({
         // target: 'http://114.116.219.29:8000',
         // target:  'http://104.208.78.33:8000/',
         target: 'http://127.0.0.1:8000/',
+        // target: 'http://122.9.40.159:888/',
+
         changeOrigin: true,
         rewrite: path => path
       },
