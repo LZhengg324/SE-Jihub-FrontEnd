@@ -47,31 +47,36 @@ export default {
         { text: '最近一次登录ip', value: 'ip' }
       ],
       loginMessages: [
-        // {
-        //   name: 'Frozen Yogurt',
-        //   email: '123@qq.com',
-        //   loginTime: '2023.1.1'
-        // },
-        // {
-        //   name: 'aaaa',
-        //   email: '1920@qq.com',
-        //   loginTime: '2023.1.2'
-        // },
-        // {
-        //   name: 'hfsak',
-        //   email: '4239@qq.com',
-        //   loginTime: '2023.1.3'
-        // },
-        // {
-        //   name: 'Frozen Yogurt',
-        //   email: '123@qq.com',
-        //   loginTime: '2023.1.1'
-        // },
-        // {
-        //   name: 'Frozen Yogurt',
-        //   email: '123@qq.com',
-        //   loginTime: '2023.1.1'
-        // },
+        {
+          name: 'Frozen Yogurt',
+          email: '123@qq.com',
+          loginTime: '2023.1.1',
+          ip: '192.168.1.1'
+        },
+        {
+          name: 'aaaa',
+          email: '1920@qq.com',
+          loginTime: '2023.1.2',
+          ip: '192.168.1.1'
+        },
+        {
+          name: 'hfsak',
+          email: '4239@qq.com',
+          loginTime: '2023.1.3',
+          ip: '192.168.1.1'
+        },
+        {
+          name: 'Frozen Yogurt',
+          email: '123@qq.com',
+          loginTime: '2023.1.1',
+          ip: '192.168.1.1'
+        },
+        {
+          name: 'Frozen Yogurt',
+          email: '123@qq.com',
+          loginTime: '2023.1.1',
+          ip: '192.168.1.1'
+        },
       ],
     }
   },
