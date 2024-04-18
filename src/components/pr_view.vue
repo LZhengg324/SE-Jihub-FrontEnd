@@ -4,6 +4,7 @@ import axios from "axios";
 import topicSetting from "@/utils/topic-setting";
 
 import Cookies from "js-cookie";
+import {getDiffString} from "@/api/user";
 
 export default {
   name: "pr_view",
@@ -73,9 +74,25 @@ export default {
           });
     },
     changeToAuditView(PrToAudit){
+      getDiffString({
+        user_id: this.user.id,
+        remote_path: this.selectedRepo.user+'/'+this.selectedRepo.repo,
+        project_id: this.proj.id,
+        source_branch: PrToAudit.toBranchName
+      }).then(
+          res =>{
+            console.log(res);
+            this.$message({
+              type: 'success',
+              message: '正在进入！'
+            });
+            Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
+            this.$router.push({ name: 'audit' });
+          }
+      )
       Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
       Cookies.set("PrToAudit", JSON.stringify(PrToAudit));
-      this.$router.push({ name: 'audit' });
+
     },
     getTopicColor: topicSetting.getColor
   }, inject: {

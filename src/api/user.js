@@ -199,5 +199,9 @@ export const completeCreateNewPR = (data) =>{
 }
 
 export const completeCreateNewBranch = (data) =>{
-  return request.post("/api/plan/createPullRequest",data)
+  return request.post("/api/develop/createBranch",data)
+}
+
+export const getDiffString =(data) =>{
+  return request.post("/api/develop/getDiff", data)
 }
