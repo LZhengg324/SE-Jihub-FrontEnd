@@ -69,8 +69,12 @@ export default {
           return;
         }
       }
+      console.log("cbycby " + this.proj.id + "cbycbycby")
       completeCreateNewBranch({
-        branchName: this.newBranchForm.branchName
+        name: this.newBranchForm.branchName,
+        project_id:this.proj.id,
+        remote_path:this.selectedRepo.user+'/'+this.selectedRepo.repo,
+        user_id: this.user.id
       }).then(
           res => {
             this.$message({
