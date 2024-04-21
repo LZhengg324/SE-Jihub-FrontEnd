@@ -127,6 +127,11 @@ const router = new VueRouter({
       name: 'database',
       component: () => import('../views/dev/Database.vue')
     },
+    {
+      path: '/audit',
+      name: 'audit',
+      component: ()=>import('../components/audit_view.vue')
+    }
   ]
 })
 

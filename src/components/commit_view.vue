@@ -1,79 +1,145 @@
 <script>
 import axios from "axios";
 import topicSetting from "@/utils/topic-setting";
+import {completeCreateNewPR, completeTask, watchMyTask} from "@/api/user";
+import Cookies from "js-cookie";
 
 export default {
   name: "commit_view",
   methods: {
-      updateCommitHistory() {
-          this.commitHistoryBusy = true
-          axios.post('/api/develop/getCommitHistory', {
-            userId: this.user.id,
-            projectId: this.proj.id,
-            repoId: this.selectedRepo.id,
-            branchName: this.selectedBranch.name
-          }).then((res) => {
-              if (res.data.errcode === 0) {
+    updateCommitHistory() {
+      this.commitHistoryBusy = true
+      axios.post('/api/develop/getCommitHistory', {
+        userId: this.user.id,
+        projectId: this.proj.id,
+        repoId: this.selectedRepo.id,
+        branchName: this.selectedBranch.name
+      }).then((res) => {
+        if (res.data.errcode === 0) {
 
-                  let today = new Date()
+          let today = new Date()
 
-                  // get past 10 days
-                  let statsPerDay = {}
-                  for (let i = 0; i < 10; i++) {
-                      let str = (today.getMonth() + 1) + '.' + today.getDate()
-                      statsPerDay[str] = 0
-                      today.setDate(today.getDate() - 1)
-                  }
+          // get past 10 days
+          let statsPerDay = {}
+          for (let i = 0; i < 10; i++) {
+            let str = (today.getMonth() + 1) + '.' + today.getDate()
+            statsPerDay[str] = 0
+            today.setDate(today.getDate() - 1)
+          }
 
-                  this.commitHistory = res.data.data.map((cur, index) => {
-                      let time = new Date(cur.commitTime)
-                      let str = (time.getMonth() + 1) + '.' + time.getDate()
-                      if (str in statsPerDay)
-                          statsPerDay[str] += 1
-                      return {
-                          id: index,
-                          committer: cur.author,
-                          committerEmail: cur.authorEmail,
-                          hash: cur.commithash,
-                          message: cur.commitMessage,
-                          time: cur.commitTime
-                      }
-                  })
-                  this.commitHistoryBusy = false
-
-                  this.statsPerDay = {
-                      label: Object.keys(statsPerDay).reverse(),
-                      value: Object.values(statsPerDay).reverse()
-                  }
-              } else {
-                  console.log(res)
-                  alert('/api/develop/getCommitHistory error with not 0 err code (' + res.data.errcode + ') ' + res.data.message)
-                  this.commitHistoryBusy = false
-              }
-          }).catch((err) => {
-              alert('/api/develop/getBindRepos error' + err)
-              this.commitHistoryBusy = false
+          this.commitHistory = res.data.data.map((cur, index) => {
+            let time = new Date(cur.commitTime)
+            let str = (time.getMonth() + 1) + '.' + time.getDate()
+            if (str in statsPerDay)
+              statsPerDay[str] += 1
+            return {
+              id: index,
+              committer: cur.author,
+              committerEmail: cur.authorEmail,
+              hash: cur.commithash,
+              message: cur.commitMessage,
+              time: cur.commitTime
+            }
           })
-      },
-      getTopicColor: topicSetting.getColor,
-      getDarkColor: topicSetting.getDarkColor
+          this.commitHistoryBusy = false
+
+          this.statsPerDay = {
+            label: Object.keys(statsPerDay).reverse(),
+            value: Object.values(statsPerDay).reverse()
+          }
+        } else {
+          console.log(res)
+          alert('/api/develop/getCommitHistory error with not 0 err code (' + res.data.errcode + ') ' + res.data.message)
+          this.commitHistoryBusy = false
+        }
+      }).catch((err) => {
+        alert('/api/develop/getBindRepos error' + err)
+        this.commitHistoryBusy = false
+      })
+    },
+    getTopicColor: topicSetting.getColor,
+    getDarkColor: topicSetting.getDarkColor,
+    createNewPullRequest () {
+      completeCreateNewPR({
+        title:this.newPRForm.title,
+        description: this.newPRForm.msg,
+        creator_id: JSON.parse(Cookies.get("user")).id,
+        project_id: JSON.parse(Cookies.get("proj")).projectId,
+        source_branch: this.selectedBranch.name,
+        taskList: this.newPRForm.taskList
+      }).then(
+          res => {
+            this.$message({
+              type: 'success',
+              message: '提交成功!'
+            });
+          }
+      );
+      this.createNewPR = false;
+    },
+    handleClose(done) {
+      this.$confirm('确认关闭？')
+          .then(() => {
+            done();
+          })
+          .catch(() => {
+          });
+    },
+    getTaskNameList() {
+      console.log("get name list!");
+      for (let i = 0; i < this.tasks.length; i++) {
+        this.taskNames.push(this.tasks[i].taskName);
+      }
+      console.log(this.taskNames);
+    },
+    checkMyTask() {
+      //checkMyTask
+      console.log(this.checkMyFlag);
+      // console.log("cby checkMyTask  " + user.id + "  " + proj.projectId);
+      this.checkMyFlag = true;
+
+      watchMyTask({
+        userId: JSON.parse(Cookies.get("user")).id,
+        projectId: JSON.parse(Cookies.get("proj")).projectId
+      }).then(
+          res => {
+            console.log(res);
+            this.tasks = res['data']['data'];
+            console.log("tasks:   " + this.tasks);
+            this.getTaskNameList();
+          }
+      );
+
+    },
+
+
   },
   data() {
+
     return {
       commitHistoryBusy: true,
       commitHistory: [
-        {
-
-        }
+        {}
       ],
-      statsPerDay: {}
+      statsPerDay: {},
+      createNewPR: false,
+      newPRForm: {
+        title:'',
+        msg: '',
+        taskList: [],
+      },
+      checkMyFlag: false,
+      tasks: [],
+      taskNames: [],
+
     }
   }, watch: {
     selectedBranch() {
-        this.updateCommitHistory()
+      this.updateCommitHistory()
     }
   }, created() {
-        this.updateCommitHistory()
+    this.updateCommitHistory();
+    this.checkMyTask();
   }, inject: {
     user: {default: null},
     proj: {default: null},
@@ -84,62 +150,136 @@ export default {
 </script>
 
 <template>
-<div>
-<v-card-title>分支<span class="need-mono"> “{{ selectedBranch.name }}” </span>上的提交记录</v-card-title>
+  <div>
+    <v-card-title>
+      分支
+      <span class="need-mono">
+        “{{ selectedBranch.name }}”
+      </span>上的提交记录
+    </v-card-title>
 
-  <p v-if="!commitHistoryBusy">分支<span class="need-mono"> “{{selectedBranch.name}}” </span>中有 {{ commitHistory.length }} 条提交记录。最新的提交记录：</p>
-  <p v-else>正在与服务器同步分支{{selectedBranch.name}}上的最新提交记录...</p>
-  <div v-if="!commitHistoryBusy">
+    <p v-if="!commitHistoryBusy">分支<span class="need-mono"> “{{ selectedBranch.name }}” </span>中有
+      {{ commitHistory.length }} 条提交记录。最新的提交记录：</p>
+    <p v-else>正在与服务器同步分支{{ selectedBranch.name }}上的最新提交记录...</p>
+    <div v-if="!commitHistoryBusy">
       <v-simple-table dense>
-          <thead>
-          <tr>
-              <th class="committer">committer</th>
-              <th class="message">message</th>
-              <th class="hash">hash</th>
-              <th class="time">time</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="commit in commitHistory.slice(0, 5)" :key="commit.id">
-              <td class="need-mono">{{commit.committer}}</td>
-              <td>{{commit.message}}</td>
-              <td class="need-mono">
-                  <v-tooltip bottom>
-                      <template v-slot:activator="{on, attrs}">
-                          <span v-bind="attrs" v-on="on">{{commit.hash.slice(0,6)}}</span>
-                      </template>
-                      <span>{{commit.hash}}</span>
-                  </v-tooltip>
-              </td>
-              <td>{{new Date(commit.time).toLocaleString()}}</td>
-          </tr>
-          </tbody>
+        <thead>
+        <tr>
+          <th class="committer">committer</th>
+          <th class="message">message</th>
+          <th class="hash">hash</th>
+          <th class="time">time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="commit in commitHistory.slice(0, 5)" :key="commit.id">
+          <td class="need-mono">{{ commit.committer }}</td>
+          <td>{{ commit.message }}</td>
+          <td class="need-mono">
+            <v-tooltip bottom>
+              <template v-slot:activator="{on, attrs}">
+                <span v-bind="attrs" v-on="on">{{ commit.hash.slice(0, 6) }}</span>
+              </template>
+              <span>{{ commit.hash }}</span>
+            </v-tooltip>
+          </td>
+          <td>{{ new Date(commit.time).toLocaleString() }}</td>
+        </tr>
+        </tbody>
       </v-simple-table>
+      <br>
+      <v-divider></v-divider>
+      <br>
+      <v-form>
+        <v-row>
+          <v-col cols="12" class="mb-3">
+            <v-btn :color="getTopicColor(user.topic)"
+                   class="white--text"
+                   block
+                   @click="createNewPR = true">
+              创建PullRequest
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-form>
       <br>
       <v-divider></v-divider>
       <br>
       <v-card-title>过去10天的提交记录数量</v-card-title>
       <v-sparkline
-              :labels="statsPerDay.label"
-              :value="statsPerDay.value"
-              :color="getDarkColor(user.topic)"
-              auto-line-width
-              smooth
-              padding="20"
-              stroke-linecap="round"
-              show-labels
-              auto-draw
+          :labels="statsPerDay.label"
+          :value="statsPerDay.value"
+          :color="getDarkColor(user.topic)"
+          auto-line-width
+          smooth
+          padding="20"
+          stroke-linecap="round"
+          show-labels
+          auto-draw
       ></v-sparkline>
-      <br> <v-divider></v-divider> <br>
+      <br>
+      <v-divider></v-divider>
+      <br>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn width="10rem" :color="getTopicColor(user.topic)" link :href="'https://github.com/' + selectedRepo.user + '/' + selectedRepo.repo + '/tree/' + selectedBranch.name" target="_blank"><v-icon>mdi-github</v-icon>在GitHub查看</v-btn>
-        <v-btn width="10rem" :color="getTopicColor(user.topic)" link :to="'/dev/' + proj.id + '/' + selectedRepo.id + '/' + selectedBranch.name + '/'" target="_blank"><v-icon>mdi-send</v-icon>浏览详情</v-btn>
+        <v-btn width="10rem" :color="getTopicColor(user.topic)" link
+               :href="'https://github.com/' + selectedRepo.user + '/' + selectedRepo.repo + '/tree/' + selectedBranch.name"
+               target="_blank">
+          <v-icon>mdi-github</v-icon>
+          在GitHub查看
+        </v-btn>
+        <v-btn width="10rem" :color="getTopicColor(user.topic)" link
+               :to="'/dev/' + proj.id + '/' + selectedRepo.id + '/' + selectedBranch.name + '/'" target="_blank">
+          <v-icon>mdi-send</v-icon>
+          浏览详情
+        </v-btn>
       </v-card-actions>
-  </div>
-  <v-skeleton-loader v-else type="table" class="mx-auto" />
+    </div>
+    <v-skeleton-loader v-else type="table" class="mx-auto"/>
 
-</div>
+
+    <el-dialog
+        title="创建PullRequest"
+        :visible.sync="createNewPR"
+        width="50%"
+        :before-close="handleClose">
+      <el-form label-position="labelPosition"
+               label-iwdth="80px"
+               :model="newPRForm"
+               ref="newPRForm">
+        <el-form-item label="PR title">
+          <el-input  v-model="newPRForm.title"></el-input>
+        </el-form-item>
+        <el-form-item label="PR message">
+          <el-input type="textarea" v-model="newPRForm.msg"></el-input>
+        </el-form-item>
+        <p style="top:5%">对应任务</p>
+        <v-select
+            multiple
+            v-model="newPRForm.taskList"
+            :items="taskNames"
+        >
+          <template v-slot:item="{ item }">
+            <div style="position: relative;background-color: aliceblue;">
+              <v-avatar size="25">
+                <v-icon class="mr-2" :color="getTopicColor(user.topic)">
+                  mdi-bullseye-arrow
+                </v-icon>
+              </v-avatar>
+              <span style="position:absolute;left: 120%;">
+              {{ item }}
+            </span>
+            </div>
+          </template>
+        </v-select>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="createNewPR = false">取 消</el-button>
+    <el-button  type="primary" @click="createNewPullRequest">确 定</el-button>
+    </span>
+    </el-dialog>
+
+  </div>
 </template>
 
 

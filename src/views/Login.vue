@@ -35,7 +35,7 @@
                 </v-col>
               </v-row>
             </v-form>
-            <v-form v-if= "flag" @submit.prevent="login">
+                  <v-form v-if= "flag" @submit.prevent="login">
                     <v-row>
                       <v-col cols="12" class="mb-3">
                         <v-text-field label="用户名或邮箱" v-model="loginData.userNameOrEmail" outlined dense></v-text-field>
@@ -176,6 +176,7 @@ export default {
       // })
       let secretPassword = this.loginData.noEncrypt ? this.loginData.password : sha256(this.loginData.password)
       console.log(secretPassword)
+      // console.log("cbycbycbycby")
       axios.post("/api/login", {
         userNameOrEmail: this.loginData.userNameOrEmail,
         password: secretPassword,

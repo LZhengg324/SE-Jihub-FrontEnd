@@ -193,3 +193,15 @@ export const userReleaseDocLock = (data) => {
 export const isDocLocked = (data) => {
   return request.post("/api/doc/isDocLocked", data);
 }
+
+export const completeCreateNewPR = (data) =>{
+  return request.post("/api/plan/createPullRequest",data)
+}
+
+export const completeCreateNewBranch = (data) =>{
+  return request.post("/api/develop/createBranch",data)
+}
+
+export const getDiffString =(data) =>{
+  return request.post("/api/develop/getDiff", data)
+}
