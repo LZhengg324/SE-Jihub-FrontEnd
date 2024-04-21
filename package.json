@@ -39,5 +39,22 @@
     "terser": "^5.14.2",
     "vite": "^3.0.2",
     "vue-cli-plugin-vuetify": "~2.5.8"
+    },
+  "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "@babel/runtime": "^7.24.4",
+    "@kangc/v-md-editor": "^1.1.0",
+    "@vue/runtime-dom": "^3.4.21",
+    "axios": "^1.6.7",
+    "element-ui": "^2.15.14",
+    "identicon.js": "^2.3.3",
+    "js-cookie": "^3.0.5",
+    "js-sha256": "^0.11.0",
+    "mavon-editor": "^2.10.4",
+    "sass": "^1.71.1",
+    "vue": "^2.7.16",
+    "vue-axios": "^3.5.2",
+    "vue-router": "^3.6.5",
+    "vuetify": "^2.7.2"
   }
 }
