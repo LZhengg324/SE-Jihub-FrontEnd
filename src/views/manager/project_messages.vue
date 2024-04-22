@@ -14,6 +14,7 @@
           :headers="headers"
           :items="projectMessages"
           :search="search"
+
       >
         <template #item.access="{item}">
           <v-chip :color="getColor(item.access)" dark @click="openChangeProjectAccessDialog(item)">
@@ -21,6 +22,10 @@
 <!--            <v-text v-if="item.access==='A'"> 正常 </v-text>-->
 <!--            <v-text v-if="item.access==='B'"> 禁用 </v-text>-->
           </v-chip>
+        </template>
+
+        <template #item.name="{item}">
+          <v-btn text style="font-family: 'Arial',serif;" @click="openProjectMemberDialog(item)">{{item.name}} </v-btn>
         </template>
 
 <!--        <template #item.progress="{item}">-->
@@ -39,9 +44,17 @@
             <span>以项目负责人身份进入用户端的项目界面</span>
           </v-tooltip>
         </template>
-<!--        <template #item.projectDetail="{item}">-->
-<!--          <v-btn class="ml-1" small outlined @click="gotoProjectDetailPage(item)">项目详细信息</v-btn>-->
-<!--        </template>-->
+        <template v-if="this.user.status === 'C'" #item.showAssistants="{item}" >
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn icon color="orange" v-bind="attrs" v-on="on" class="ml-1" rounded small @click="openChangeProjectAssistantDialog(item)">
+                <v-icon>mdi-account-tie</v-icon>
+              </v-btn>
+            </template>
+            <span>设置项目小管理员</span>
+          </v-tooltip>
+        </template>
+
         <template #item.createTime="{item}">
           {{ pro(item.createTime) }}
         </template>
@@ -63,6 +76,83 @@
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="closeChangeProjectAccessDialog">取消</v-btn>
               <v-btn color="blue" text @click="changeAccess">确认修改</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-container>
+      </template>
+    </v-dialog>
+    <v-dialog v-model="showChangeProjectAssistant" width="300">
+      <template>
+        <v-container class="pa-0">
+          <v-card>
+            <v-card-title class="headline font-weight text-left"> 设置项目小管理员 </v-card-title>
+            <v-card-text> 项目名:{{ changeProjectAssistantMessage.name }} / 创建人:{{ changeProjectAssistantMessage.leader }}</v-card-text>
+            <v-divider></v-divider>
+            <v-card-text>
+              <v-checkbox v-model="i.checked" v-for="i in assistantList"  :label="i.name + ' (' + i.email + ')'" :value="i.label"></v-checkbox>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="red" text @click="closeChangeProjectAssistantDialog">取消</v-btn>
+              <v-btn color="blue" text @click="changeProjectAssistant">确认修改</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-container>
+      </template>
+    </v-dialog>
+    <v-dialog v-model="showProjectMemberDialog" width="800">
+      <template>
+        <v-container class="pa-0">
+          <v-card>
+            <v-card-title class="headline font-weight text-left"> 查看项目人员 </v-card-title>
+            <v-card-text> 项目名:{{ showMemberProjectMessage.name }} / 创建人:{{ showMemberProjectMessage.leader }}</v-card-text>
+            <v-divider></v-divider>
+            <v-card-text>
+              <v-text-field
+                  v-model="memberSearch"
+                  append-icon="mdi-magnify"
+                  label="搜索"
+                  single-line
+                  hide-details
+              ></v-text-field>
+              <v-divider></v-divider>
+              <v-data-table
+                :headers="memberHeaders"
+                :items="projectMember"
+                :search="memberSearch"
+              >
+                <template #item.changeAccess="{item}">
+                  <v-chip :color="getColor(item.peopleAccess)" dark @click="openChangeMemberAccessDialog(item)">
+                    {{ transform(item.peopleAccess) }}
+                  </v-chip>
+                </template>
+              </v-data-table>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue" text @click="closeProjectMemberDialog">关闭</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-container>
+      </template>
+    </v-dialog>
+    <v-dialog v-model="showChangeMemberAccessDialog" width="400">
+      <template>
+        <v-container class="pa-0">
+          <v-card>
+            <v-card-title class="headline font-weight text-left">
+              修改用户 {{changeMemberAccessMessage.peopleName}} 对 {{showMemberProjectMessage.name}} 的提交权限
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-card-text>
+              <v-radio-group v-model="selectedAccess">
+                <v-radio v-for="i in accessList" :key="i.value" :label="i.label" :value="i.value"></v-radio>
+              </v-radio-group>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="red" text @click="closeChangeMemberAccessDialog">取消</v-btn>
+              <v-btn color="blue" text @click="changeMemberAccess">确认修改</v-btn>
             </v-card-actions>
           </v-card>
         </v-container>
@@ -105,8 +195,13 @@ export default {
         {
           text: '',
           sortable: false,
-          value: 'projectDetail'
+          value: 'showAssistants',
         },
+        {
+          text: '',
+          sortable: false,
+          value: 'projectDetail'
+        }
       ],
       projectMessages: [
         // {
@@ -156,6 +251,45 @@ export default {
           value: 'B'
         },
       ],
+      //设置项目小管理员
+      showChangeProjectAssistant: false,
+      changeProjectAssistantMessage: '',
+      selectedAssistant:[],
+      assistantList:[
+        // {
+        //   name: 'Cheryl',
+        //   email: 'jchye22@gmail.com',
+        // },
+        // {
+        //   name: 'User',
+        //   email: "hhhh"
+        // }
+      ],
+
+
+      //查看项目人员
+      memberHeaders: [
+        {
+          text: '用户名',
+          align: 'start',
+          value: 'peopleName',
+        },
+        { text: '邮箱', value: 'peopleEmail' },
+        { text: '活跃度', value: 'peopleActive' },
+        {
+          text: '状态',
+          sortable: false,
+          value: 'changeAccess'
+        },
+      ],
+      memberSearch:'',
+      projectMember:[],
+      showProjectMemberDialog: false,
+      showMemberProjectMessage:'',
+
+      //修改项目人员提交权限
+      showChangeMemberAccessDialog:false,
+      changeMemberAccessMessage:'',
     }
   },
   created() {
@@ -316,6 +450,280 @@ export default {
         return "禁用";
       }
     },
+
+    // 打开设置项目小管理员窗口，并显示当前管理员
+    openChangeProjectAssistantDialog(item) {
+      //
+      console.log(item)
+      this.changeProjectAssistantMessage = item
+      this.showAllAssistant()
+      this.showProjectSelectedAssistant(item);
+      this.showChangeProjectAssistant = true
+
+    },
+
+    // 关闭设置项目小管理员窗口
+    closeChangeProjectAssistantDialog() {
+      this.showChangeProjectAssistant = false
+      this.selectedAssistant = []
+      this.changeProjectAssistantMessage = ''
+    },
+
+    showAllAssistant() {
+      console.log(this.user.id)
+      // axios.get("api/management/showAssistants", {managerId: this.user.id})
+      //     .then((response) => {
+      //       console.log(response)
+      //       if (response.data.errcode === 1) {
+      //         window.alert("您没有权限")
+      //       } else {
+      //         this.assistantList = response.data;
+      //       }
+      //     })
+      //     .catch((err) => {
+      //       console.error(err);
+      //       this.assistantList = null
+      //     })
+      this.assistantList = [
+        {
+          name: 'Cheryl',
+          email: 'jchye22@gmail.com',
+          id: '1',
+        },
+        {
+          name: 'User',
+          email: "hhhh",
+          id: '2',
+        }
+      ]
+    },
+
+    showProjectSelectedAssistant(item) {
+      console.log(item)
+      // axios.get("api/management/getProjectAssistants", {managerId: this.user.id , projectId: item.projectId})
+      //     .then((response) => {
+      //       console.log(response)
+      //       if (response.data.errcode === 1) {
+      //         window.alert("您没有权限")
+      //       } else {
+      //         this.selectedAssistant = response.data
+      //this.assistantList.forEach(assistant => {
+      //  assistant.checked = this.selectedAssistant.find(a => a.name === assistant.name);
+      //  console.log(assistant)
+      //});
+      //       }
+      //     })
+      //     .catch((err) => {
+      //       console.error(err);
+      //       this.selectedAdmin = null
+      //     })
+
+      //测试用
+      // this.selectedAssistant = [
+      //   {
+      //     name: 'Cheryl',
+      //     email: 'jchye22@gmail.com'
+      //   }
+      // ]
+
+      this.assistantList.forEach(assistant => {
+        assistant.checked = this.selectedAssistant.find(a => a.id === assistant.id);
+        console.log(assistant)
+      });
+    },
+
+    changeProjectAssistant() {
+      // console.log(this.selectedAdmin)
+      // let projectId = this.changeProjectAssistantMessage.projectId
+      // let managerId = this.user.id
+      // axios.post("/api/management/setAssistantAccess", {
+      //   managerId: managerId,
+      //   projectId: projectId,
+      //   assistantsId: this.selectedAdmin
+      // })
+      //     .then((response) => {
+      //       this.showChangeProjectAssistant = false
+      //       console.log(response.data)
+      //       if (response.data.errcode === 1) {
+      //         this.$message({
+      //           type: 'error',
+      //           message: "您没有权限"
+      //         });
+      //       } else {
+      //         this.$message({
+      //           type: "success",
+      //           message: "成功设置小管理员"
+      //         })
+      //         this.showProjectMessages()
+      //       }
+      //       this.changeProjectAssistantMessage = ''
+      //       this.selectedAdmin = ''
+      //     })
+      //     .catch((err) => {
+      //       this.showChangeProjectAssistant = false
+      //       this.changeProjectAssistantMessage = ''
+      //       this.selectedAdmin = ''
+      //       console.error(err);
+      //     })
+      if (this.assistantList.every(i=>!i.checked)) {
+        console.log("error")
+        this.$message({
+          type: 'warning',
+          message: "请选择至少一名小管理员！"
+        })
+      } else {
+        this.selectedAssistant = this.assistantList.filter(i => i.checked)
+        console.log(this.selectedAssistant)
+        let projectId = this.changeProjectAssistantMessage.projectId
+        let managerId = this.user.id
+        console.log(projectId +": set success")
+        this.$message({
+          type: "success",
+          message: "成功设置小管理员"
+
+        })
+        this.showChangeProjectAssistant = false
+        this.selectedAssistant = []
+        this.changeProjectAssistantMessage = ''
+      }
+    },
+
+
+    //获取项目人员信息
+    showAllProjectMembers(item) {
+      let projectId = item.projectId
+      let managerId = this.user.id
+      // axios.get("/api/management/getProjectUsers", {projectId: projectId, managerId: managerId})
+      //     .then((response) => {
+      //       console.log(response.data)
+      //       if (response.data.errcode === 1) {
+      //         this.$message({
+      //           type: 'error',
+      //           message: "您没有该权限"
+      //         });
+      //       } else {
+      //         console.log("load member details success")
+      //         this.projectMember = response.data
+      //       }
+      //     })
+      //     .catch((err) => {
+      //       console.error(err);
+      //       this.userMessages = null
+      //     })
+      // }
+      //测试用
+      this.projectMember = [
+        {
+          peopleId:'2',
+          peopleName: 'cheryl',
+          peopleEmail: 'jchye22@gmail.com',
+          peopleActive: '80',
+          peopleAccess: 'A'
+        },
+        {
+          peopleId:'1',
+          peopleName: 'user',
+          peopleEmail: 'jchye22@gmail.com',
+          peopleActive: '80',
+          peopleAccess: 'A'
+        },
+      ]
+      //测试用
+    },
+
+
+    //打开显示项目人员页面
+    openProjectMemberDialog(item) {
+      console.log(item)
+      this.showMemberProjectMessage = item
+      this.showAllProjectMembers(item)
+      this.showProjectMemberDialog = true
+
+    },
+
+    //关闭显示项目人员页面
+    closeProjectMemberDialog() {
+      this.showProjectMemberDialog = false
+      console.log("close project member dialog")
+      this.projectMember = []
+      this.memberSearch = ''
+      this.showMemberProjectMessage = ''
+      this.selectedAccess = ''
+    },
+
+    //打开修改项目人员提交权限页面
+    openChangeMemberAccessDialog(item) {
+      console.log(item)
+      this.changeMemberAccessMessage = item
+      this.selectedAccess = item.peopleAccess
+      this.showChangeMemberAccessDialog = true
+    },
+
+    //打开修改项目人员提交权限页面
+    closeChangeMemberAccessDialog() {
+      this.showChangeMemberAccessDialog = false
+      this.selectedAccess = ''
+      this.changeMemberAccessMessage = ''
+    },
+
+    changeMemberAccess() {
+      console.log(this.selectedAccess)
+      let projectId = this.showMemberProjectMessage.projectId
+      let managerId = this.user.id
+      // axios.post("api/management/changeUserUploadAccess", {
+      //   managerId: managerId,
+      //   projectId: projectId,
+      //   userId: changeMemberAccessMessage.peopleId,
+      //   status: this.selectedAccess
+      // })
+      //     .then((response) => {
+      //       this.showChangeMemberAccessDialog = false
+      //       console.log(response.data)
+      //       if (response.data.errcode === 1) {
+      //         this.$message({
+      //           type: 'error',
+      //           message: "您没有权限"
+      //         });
+      //       } else if (response.data.errcode === 2) {
+      //         let showAccess;
+      //         if (this.selectedAccess === 'A') {
+      //           showAccess = "正常"
+      //         } else {
+      //           showAccess = "禁用"
+      //         }
+      //         this.$message({
+      //           type: 'success',
+      //           message: "用户" + this.changeMemberAccessMessage.peopleName + "的状态已为" + showAccess
+      //         });
+      //       } else {
+      //         if (this.selectedAccess === 'A') {
+      //           this.$message({
+      //             type: 'success',
+      //             message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态恢复为正常"
+      //           });
+      //         } else {
+      //           this.$message({
+      //             type: 'success',
+      //             message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为禁用"
+      //           });
+      //         }
+      //         this.showAllProjectMembers(this.showProjectMemberMessage)
+      //       }
+      //       this.selectedAccess = ''
+      //       this.changeMemberAccessMessage = ''
+      //     })
+
+//test
+      this.showChangeMemberAccessDialog = false
+      this.changeMemberAccessMessage.peopleAccess = this.selectedAccess
+      this.$message({
+        type: 'success',
+        message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为" + this.selectedAccess
+      });
+      this.selectedAccess = ''
+      this.changeMemberAccessMessage = ''
+
+    }
   },
 }
 </script>
