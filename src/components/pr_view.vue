@@ -78,7 +78,8 @@ export default {
         user_id: this.user.id,
         remote_path: this.selectedRepo.user+'/'+this.selectedRepo.repo,
         project_id: this.proj.id,
-        source_branch: PrToAudit.toBranchName
+        source_branch: PrToAudit.fromBranchName,
+        ghpr_id:PrToAudit.id,
       }).then(
           res =>{
             console.log(res);

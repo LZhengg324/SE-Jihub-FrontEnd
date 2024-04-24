@@ -205,3 +205,7 @@ export const completeCreateNewBranch = (data) =>{
 export const getDiffString =(data) =>{
   return request.post("/api/develop/getDiff", data)
 }
+
+export const createRepo =(data)=>{
+  return request.post("/api/develop/CreateRepo",data)
+}
