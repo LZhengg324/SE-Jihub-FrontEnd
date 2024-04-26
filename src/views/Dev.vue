@@ -42,6 +42,7 @@ export default {
             bindRepos: computed(() => this.bindRepos),
             bindReposBusy: computed (() => this.bindReposBusy),
             updateBindRepos: this.updateBindRepos,
+
         }
     },
     methods: {

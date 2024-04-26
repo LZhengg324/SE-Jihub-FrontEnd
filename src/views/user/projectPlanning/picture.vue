@@ -13,7 +13,8 @@
       进度显示图
     </div>
     <div style="position: absolute; width: 80%; height: 5%; left: 10%; top: 95%">
-      协作关系图
+      <h1>协作关系图</h1>
+
     </div>
     <div
         ref="chartC1"
@@ -33,6 +34,7 @@
 import * as echarts from "echarts";
 import topicSetting from "@/utils/topic-setting";
 import {showPersonList, showTaskList} from "@/api/user";
+
 export default {
 
   data() {
@@ -45,7 +47,7 @@ export default {
         resWorkloads: [],
 
       },
-      allPeople:[],
+      allPeople: [],
       tasks: [],
       webkitDep: {
         type: "force",
@@ -395,70 +397,98 @@ export default {
       });
       myChart.showLoading();
       //绘制协作图
-      showTaskList({userId: this.user.id, projectId: this.selectedProj.projectId}).then(
+      showPersonList({projectId: this.selectedProj.projectId, userId: this.user.id}).then(
           res => {
-            myChart.hideLoading();
-            this.tasks = res['data']['data'];
-            for (let i = 0; i < this.tasks.length; i++) {
-              this.webkitDep.categories.push(this.tasks[i].taskName);
-              this.webkitDep.nodes.push({
-                name: this.tasks[i].taskName,
-                value: 10,
-                category: i,
-                symbolSize: 80,
-              });
-              const targetIndex = this.webkitDep.nodes.length - 1;
-              for (let j = 0; j < this.tasks[i].subTaskList.length; j++) {
-                this.webkitDep.nodes.push({
-                  name: this.tasks[i].subTaskList[j].subTaskName,
-                  value: 1,
-                  category: i,
-                  symbolSize: 50,
-                });
-                this.webkitDep.links.push({
-                  source: targetIndex + j + 1,
-                  target: targetIndex
-                });
-              }
-            }
+            this.allPeople = res['data']['data'];
+            showTaskList({userId: this.user.id, projectId: this.selectedProj.projectId}).then(
+                res => {
+                  myChart.hideLoading();
+                  this.tasks = res['data']['data'];
+                  this.webkitDep.categories.push('people');
+                  var names=[];
+                  for (let i = 0; i < this.allPeople.length; i++) {
+                    names.push(this.allPeople[i].peopleName);
+                    this.webkitDep.nodes.push({
+                      name: this.allPeople[i].peopleName,
+                      value: 1,
+                      category: 0,
+                      symbolSize: 70,
+                    })
+                  }
 
-            console.log(this.webkitDep);
 
-            var option;
-            option = {
-              legend: {
-                data: this.webkitDep.categories,
-                show:true,
-              },
-              series: [
-                {
+                  for (let i = 0; i < this.tasks.length; i++) {
+                    this.webkitDep.categories.push(this.tasks[i].taskName);
+                    this.webkitDep.nodes.push({
+                      name: this.tasks[i].taskName,
+                      value: 10,
+                      category: i+1,
+                      symbolSize: 100,
+                    });
+                    const targetIndex = this.webkitDep.nodes.length - 1;
+                    for (let j = 0; j < this.tasks[i].subTaskList.length; j++) {
+                      this.webkitDep.nodes.push({
+                        name: this.tasks[i].subTaskList[j].subTaskName,
+                        value: 1,
+                        category: i+1,
+                        symbolSize: 50,
+                      });
+                      this.webkitDep.links.push({
+                        source: targetIndex + j + 1,
+                        target: targetIndex
+                      });
+                      var target_p_id = 0;
+                      for (let k = 0; k < this.allPeople.length; k++) {
+                        if(this.allPeople[k].peopleId === this.tasks[i].subTaskList[j].managerId){
+                          var target_p_name = this.allPeople[k].peopleName;
+                          target_p_id = names.indexOf(target_p_name);
+                          break;
+                        }
+                      }
+                      this.webkitDep.links.push({
+                        source: targetIndex + j + 1,
+                        target: target_p_id
+                      });
+                    }
+                  }
 
-                  type: 'graph',
-                  layout: 'force',
-                  animation: false,
-                  label: {
+                  console.log(this.webkitDep);
 
-                    show: true,
-                  },
-                  draggable: true,
-                  data: this.webkitDep.nodes.map(function (node, idx) {
-                    node.id = idx;
-                    return node;
-                  }),
-                  categories: this.webkitDep.categories,
-                  force: {
-                    edgeLength: 200,
-                    repulsion: 1000,
-                    gravity: 0.2
-                  },
-                  edges: this.webkitDep.links
+                  var option;
+                  option = {
+                    legend: {
+                      data: this.webkitDep.categories,
+                      show: true,
+                    },
+                    series: [
+                      {
+                        type: 'graph',
+                        layout: 'force',
+                        animation: false,
+                        label: {
+                          show: true,
+                        },
+                        draggable: true,
+                        data: this.webkitDep.nodes.map(function (node, idx) {
+                          node.id = idx;
+                          return node;
+                        }),
+                        categories: this.webkitDep.categories,
+                        force: {
+                          edgeLength: 200,
+                          repulsion: 1000,
+                          gravity: 0.2
+                        },
+                        edges: this.webkitDep.links
+                      }
+                    ]
+                  };
+                  myChart.setOption(option);
+                  if (option && typeof option === 'object') {
+                    myChart.setOption(option);
+                  }
                 }
-              ]
-            };
-            myChart.setOption(option);
-            if (option && typeof option === 'object') {
-              myChart.setOption(option);
-            }
+            );
           }
       );
 

@@ -9,13 +9,15 @@
       ></iframe>
     </div>
     <div style="height: 80vh; flex: 3">
-      <el-form  :model="form" ref="form">
-        <el-form-item label="审核意见：">
+      <h1>审核意见</h1>
+      <el-form :model="form" ref="form">
+        <el-form-item >
           <el-input v-model="form.comment" type="textarea"></el-input>
         </el-form-item>
       </el-form>
       <el-button @click="turnBack">取 消</el-button>
-      <el-button type="primary" @click="createNewComment">确 定</el-button>
+      <el-button type="primary" @click="createNewComment()">不通过</el-button>
+      <el-button type="primary" @click="approvePr()">通过</el-button>
     </div>
   </div>
 
@@ -24,24 +26,30 @@
 
 <script>
 import Cookies from "js-cookie";
+import {approvePullRequest, closePullRequest} from "@/api/user";
 
 export default {
   name: "audit_view",
   data() {
     return {
-      selectedRepo: {},
-      pr: {},
-      repo: '',
-      fromBranch: '',
-      toBranch: 'main',
-      form:{
-        name:"",
-        comment:'',
+      form: {
+        name: "",
+        comment: '',
       },
-
+      PrToAudit: {},
+      selectedRepo:{},
     }
   },
+  inject: {
+    user: {default: null},
+    proj: {default: null},
+
+  },
   mounted() {
+  },
+  created() {
+    this.PrToAudit = JSON.parse(Cookies.get("PrToAudit"));
+    this.selectedRepo = JSON.parse(Cookies.get("selectedRepo"));
   },
   methods: {
     sendDataToIframe() {
@@ -50,12 +58,29 @@ export default {
           diffString);
       Cookies.delete('diffString');
     },
-    turnBack(){
+    turnBack() {
       this.$router.back();
     },
-    createNewComment(){
+    createNewComment() {
+      closePullRequest({
+        ghpr_id: this.PrToAudit.id,
+      }).then((res) => {
+        alert('您拒绝了一个PullRequest并提出修改意见！');
+      }).catch((err) => {
+        alert('哦不，好像失败了！');
+      })
+    },
+    approvePr() {
+      approvePullRequest({
+        ghpr_id: this.PrToAudit.id,
+        repo_id: this.selectedRepo.id,
+      }).then((res) => {
+        alert('您同意了一个PullRequest');
+      }).catch((err) => {
+        alert('哦不，好像失败了！');
+      })
+    },
 
-    }
   }
 }
 </script>

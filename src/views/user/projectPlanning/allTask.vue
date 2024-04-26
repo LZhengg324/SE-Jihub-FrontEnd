@@ -1260,8 +1260,6 @@ export default {
       }
     },
     getName(id) {
-      console.log(this.personIdList);
-      console.log(this.personNameList);
       return this.personNameList[this.personIdList.indexOf(id)];
     },
     getTopicColor: topicSetting.getColor,

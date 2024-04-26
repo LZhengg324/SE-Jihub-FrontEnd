@@ -12,7 +12,7 @@ export default {
       git_url: '',
       seperate: true,
       bindingInProgress: false,
-      createRepoInProgress:false,
+      createRepoInProgress: false,
     }
   },
   inject: {
@@ -42,18 +42,19 @@ export default {
     createRepo() {
       this.createRepoInProgress = true;
       createRepo({
-        name:this.gh_reponame,
-        user_id:this.user.id,
-        project_id:this.proj.id
-      }).then()
-          .then((res) => {
-            this.createRepoInProgress = false;
-            this.updateBindRepos()
-          })
-          .catch((err) => {
-            alert('哦不，好像绑定失败了！');
-            this.createRepoInProgress = false;
-          })
+        name: this.gh_reponame,
+        user_id: this.user.id,
+        project_id: this.proj.id,
+        remote_path: 'CBY11/' + this.gh_reponame +'_' + this.proj.id,
+      }).then((res) => {
+        this.createRepoInProgress = false;
+        this.gh_username = 'CBY11';
+        this.gh_reponame = this.gh_reponame + '_' + this.proj.id;
+        this.bindSplit();
+      }).catch((err) => {
+        alert('哦不，好像绑定失败了！');
+        this.createRepoInProgress = false;
+      })
     },
     bindWhole() {
       this.bindingInProgress = true
@@ -129,7 +130,7 @@ export default {
         </v-form>
       </v-container>
     </v-card>
-    <v-divider ></v-divider>
+    <v-divider></v-divider>
     <v-card>
       <v-card-title>请提供GitHub代码存储库的用户/组织名和代码存储库名</v-card-title>
       <v-container fluid>

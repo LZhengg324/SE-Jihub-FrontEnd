@@ -88,12 +88,13 @@ export default {
               message: '正在进入！'
             });
             Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
+            Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
+            Cookies.set("PrToAudit", JSON.stringify(PrToAudit));
+            Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
+
             this.$router.push({ name: 'audit' });
           }
       )
-      Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
-      Cookies.set("PrToAudit", JSON.stringify(PrToAudit));
-
     },
     getTopicColor: topicSetting.getColor
   }, inject: {
@@ -102,6 +103,10 @@ export default {
         selectedRepo: {default: null}
   }, created() {
       this.updatePR()
+  }, provide(){
+    return {
+      selectedRepo: this.selectedRepo,
+    }
   }
 }
 </script>
