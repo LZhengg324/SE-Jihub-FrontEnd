@@ -42,8 +42,8 @@
 
       <v-col cols="8">
           <!-- 聊天内容区域 -->
-        <v-card class=chatroom_ ref="chatroom">
-          <v-card-title>
+        <v-card class="chatroom_">
+          <v-card-title v-if="this.chatRooms.length !== 0">
             {{ this.chatRooms[this.selectedRoom].title }}
           </v-card-title>
         <div class="messages">
@@ -51,12 +51,13 @@
           <v-card-text>
             <v-list dense>
 <!--              <v-list-item v-for="message in chatRooms[selectedRoom].history" :key="message.id">-->
-                <v-list-item v-for="message in messages" :key="message.id">
-
+                <v-list-item v-for="message in messages" :key="message.id" >
+                  <v-list-item-avatar size="30px">
+                    <v-img :src="getIdenticon(message.from, 50, 'user')"></v-img>
+                  </v-list-item-avatar>
                 <v-list-item-content>
-                  <v-list-item-title>
+                  <v-list-item-title >
                     {{ message.from }}
-<!--                    <span class="grey&#45;&#45;text">- {{ message.time }}</span>-->
                   </v-list-item-title>
                   <v-list-item-subtitle>
                     {{ message.content }}
@@ -74,11 +75,25 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-dialog v-model="createNewChatSheet" width="350" height="20vh" scrollable>
+
+    <!--创建聊天室 -->
+    <v-dialog v-model="createNewChatSheet" width="390" height="20vh" scrollable>
       <v-card >
         <v-card-title>
           选择成员
         </v-card-title>
+        <v-card-subtitle v-if="selectedMembers.length > 1">
+          <v-row>
+            <v-col cols="6">
+              <v-text-field label="聊天室名称" v-model="createRoomName"></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field label="聊天室简介" v-model="createRoomDesc"></v-text-field>
+            </v-col>
+          </v-row>
+
+        </v-card-subtitle>
+
         <v-card-text>
           <span v-if="selectedMembers.length !== 0">已选择的成员：</span>
           <v-spacer></v-spacer>
@@ -96,7 +111,7 @@
           <span v-if="deselectedMembers.length !== 0">成员：</span>
           <span v-else>大家都在聊天室里了哦</span>
 
-          <v-list>
+          <v-list max-height="80%" scrollable>
             <template v-for="item in deselectedMembers">
               <v-list-item>
                 <v-chip @click="() => {
@@ -109,12 +124,12 @@
               </v-list-item>
             </template>
           </v-list>
-
         </v-card-text>
+
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn v-if="selectedMembers.length === 1" plain :color="getDarkColor(user.topic)" @click="createChatRoom">创建私聊！</v-btn>
-          <v-btn v-else plain :color="getDarkColor(user.topic)" @click="createChatRoom">创建群聊！</v-btn>
+          <v-btn v-if="selectedMembers.length === 1 " :color="getRadialGradient(user.topic)" block ripple @click="createChatRoom">创建私聊！</v-btn>
+          <v-btn v-else-if="selectedMembers.length > 1 " :color="getRadialGradient(user.topic)" block ripple @click="createChatRoom">创建群聊！</v-btn>
 
         </v-card-actions>
 
@@ -164,6 +179,8 @@ export default {
       projectMembers:[],
       selectedMembers:[],
       deselectedMembers:[],
+      createRoomName:'',
+      createRoomDesc:'',
 
       chatRooms:[],
       search_Chatroom:'',
@@ -183,21 +200,21 @@ export default {
         }
       })
 
-      this.chatRooms = []
-      axios.post('/api/chat/getRoomList', {
+
+      axios.post('/api/chat/discussions', {
         projectId: this.proj.projectId,
         currentUserId: this.user.id
       }).then((res) => {
         console.log(res.data)
             if (res.data.errcode === 0) {
-              this.chatRooms = res.data.data.rooms.map((item, index) => {
+              this.chatRooms = res.data.data.discussions.map((item, index) => {
                 return {
                   id: item.roomId,
                   title: item.roomName,
                   desc: item.outline,
                   users: item.users,
-                  history: [],
-                  unread: 1,
+                  history: tempHistory[item.id] || [],
+                  unread: 0,
                 }
               })
 
@@ -281,6 +298,19 @@ export default {
           this.updateChatRooms()
         })
       } else {
+        if (this.createRoomName === '') {
+          this.$message({
+            type: 'warning',
+            message: '请输入聊天室名称'
+          })
+          return
+        } else if (this.createRoomDesc === '') {
+          this.$message({
+            type: 'warning',
+            message: '请输入聊天室简介'
+          })
+          return
+        }
         let users = this.selectedMembers.map((item, index) => {
           return item.peopleId
         })
@@ -288,15 +318,16 @@ export default {
           currentUserId: this.user.id,
           projectId: this.proj.projectId,
           users: users,
-          roomName: '群聊',
-          outline: '未设定群简介'
+          roomName: this.createRoomName,
+          outline: this.createRoomDesc
         }).finally(() => {
           this.updateChatRooms()
         })
       }
-
       this.selectedMembers = []
       this.deselectedMembers = []
+      this.createRoomName=''
+      this.createRoomDesc=''
       this.createNewChatSheet = false
     },
 
@@ -379,11 +410,14 @@ export default {
 
     selectToRoom(room) {
       this.getChatHistory(room)
-      this.scrollToTop()
+      //this.scrollToTop()
       this.scrollToBottom()
     },
 
     sendMessage() {
+      if (this.messageInput.length === 0) {
+        return;
+      }
       if ((this.messageInput || '').length > 80) {
         this.$message({
           type: 'error',
@@ -403,30 +437,25 @@ export default {
       // this.messages.push({user:this.user.name, content:this.messageInput})
 
       this.messageInput = ''
+      //this.scrollToTop()
       this.scrollToBottom()
     },
 
 
-    // sendMessage() {
-    //   if (!this.messageInput.trim()) return;
-    //   this.messages.push({ user: 'Me', content: this.messageInput });
-    //   this.messageInput = '';
-    //   this.scrollToBottom();
-    // },
-    scrollToTop() {
-      this.$refs.chatroom.scrollTop = 0
-    },
     scrollToBottom() {
       this.$nextTick(() => {
-        //let chatroom = this.$refs.chatroom
-        let chatroom = document.getElementsByClassName("messages")[0]
-        chatroom.scrollTop = chatroom.scrollHeight;
-        console.log("scrolling")
+        setTimeout(() => {
+          let chatroom = document.getElementsByClassName("messages")[0]
+          chatroom.scrollTop = chatroom.scrollHeight;
+          console.log("scrolling")
+        }, 50); // 延迟时间
       })
-      //this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
     },
 
     getDarkColor: topicSetting.getDarkColor,
+    getTopicColor: topicSetting.getColor,
+    getLinearGradient: topicSetting.getLinearGradient,
+    getRadialGradient: topicSetting.getRadialGradient
   }
 };
 </script>
@@ -439,18 +468,18 @@ export default {
 }
 
 .messages {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chatroom_box {
   height:80vh;
   flex: 1;
   overflow-y: auto;
 }
 
-.message .user {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.message .content {
-  word-wrap: break-word;
+.background {
+  --color-background: pink;
 }
 
 .input {
