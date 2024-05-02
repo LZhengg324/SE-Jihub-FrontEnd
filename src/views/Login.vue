@@ -95,7 +95,8 @@ export default {
       loginData: {
         userNameOrEmail: '',
         password: '',
-        noEncrypt: false
+        noEncrypt: false,
+        ip: ''
       },
       registerData: {
         username: '',
@@ -178,7 +179,8 @@ export default {
       // console.log("cbycbycbycby")
       axios.post("/api/login", {
         userNameOrEmail: this.loginData.userNameOrEmail,
-        password: secretPassword
+        password: secretPassword,
+        ip: this.loginData.ip
       })
           .then((response) => {
             console.log(response.data)
@@ -282,6 +284,9 @@ export default {
         .catch((err) => {
           console.error(err);
         })
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(json => this.loginData.ip = json.ip);
   }
 }
 </script>
