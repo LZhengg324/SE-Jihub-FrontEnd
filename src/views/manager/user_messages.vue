@@ -46,7 +46,8 @@
       >
         <template #item.status="{item}">
           <v-chip :color="getColor(item.status)" dark @click="openChangeUserStatusDialog(item)">
-            {{ transform(item.status) }}
+            {{
+              transform(item.status) }}
 <!--            <v-text v-if="item.status==='A'"> 正常 </v-text>-->
 <!--            <v-text v-if="item.status==='B'"> 禁用 </v-text>-->
           </v-chip>
@@ -135,6 +136,8 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import util from "@/views/util";
+
+let user = Cookies.get("user")
 export default {
   inject: {
     user: { default: null },
@@ -177,27 +180,27 @@ export default {
         },
       ],
       userMessages: [
-        // {
-        //   name: 'user1',
-        //   id: '1',
-        //   email: '123@qq.com',
-        //   registerTime: '2023.1.1',
-        //   status: 'A',
-        // },
-        // {
-        //   name: 'faskfl',
-        //   id: '2',
-        //   email: 'gers@qq.com',
-        //   registerTime: '2023.2.1',
-        //   status: 'B',
-        // },
-        // {
-        //   name: 'saga',
-        //   id: '3',
-        //   email: '53@qq.com',
-        //   registerTime: '2023.3.1',
-        //   status: 'A',
-        // },
+         {
+           name: 'user1',
+           id: '1',
+           email: '123@qq.com',
+           registerTime: '2023.1.1',
+           status: 'A',
+         },
+         {
+           name: 'faskfl',
+           id: '2',
+           email: 'gers@qq.com',
+           registerTime: '2023.2.1',
+           status: 'B',
+         },
+         {
+           name: 'saga',
+           id: '3',
+           email: '53@qq.com',
+           registerTime: '2023.3.1',
+           status: 'A',
+         },
       ],
       // 重置用户密码dialog相关信息
       showResetPassword: false,
@@ -311,33 +314,41 @@ export default {
     },
     // 关闭重置用户密码窗口
     closeResetPasswordDialog() {
-      this.showResetPassword = false
-      console.log("close reset password dialog")
-      this.userResetPasswordDialogMessage = ''
+      if (user.status === 'C') {
+        this.showResetPassword = false
+        console.log("close reset password dialog")
+        this.userResetPasswordDialogMessage = ''
+      } else {
+        this.$message.error("您不是超级管理员，没有权限")
+      }
     },
     // 重置用户密码
     resetPassword() {
-      let userId = this.userResetPasswordDialogMessage.id
-      axios.post("/api/management/resetUserPassword", {managerId: this.user.id, userId: userId})
-          .then((response) => {
-            console.log(response.data)
-            if (response.data.errcode === 1) {
-              this.$message({
-                type: 'error',
-                message: "您没有该权限"
-              });
-            } else {
-              this.$message({
-                type: 'success',
-                message: "成功将用户" + response.data.name + "的密码修改为" + response.data.resetPassword
-              });
-            }
-          })
-          .catch((err) => {
-            console.error(err);
-          })
-      this.showResetPassword = false
-      this.userResetPasswordDialogMessage = ''
+      if (user.status === 'C') {
+        let userId = this.userResetPasswordDialogMessage.id
+        axios.post("/api/management/resetUserPassword", {managerId: this.user.id, userId: userId})
+            .then((response) => {
+              console.log(response.data)
+              if (response.data.errcode === 1) {
+                this.$message({
+                  type: 'error',
+                  message: "您没有该权限"
+                });
+              } else {
+                this.$message({
+                  type: 'success',
+                  message: "成功将用户" + response.data.name + "的密码修改为" + response.data.resetPassword
+                });
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+            })
+        this.showResetPassword = false
+        this.userResetPasswordDialogMessage = ''
+      } else {
+        this.$message.error("你不是超级管理员，没有权限")
+      }
     },
     // 打开修改用户状态窗口，并显示当前状态
     openChangeUserStatusDialog(item) {
@@ -356,10 +367,14 @@ export default {
     },
     // 关闭修改用户状态窗口
     closeChangeUserStatusDialog() {
-      this.showChangeUserStatus = false
-      console.log("close change user status dialog")
-      this.userStatusDialogMessage = ''
-      this.selectedStatus = ''
+      if (user.status === 'C') {
+        this.showChangeUserStatus = false
+        console.log("close change user status dialog")
+        this.userStatusDialogMessage = ''
+        this.selectedStatus = ''
+      } else {
+        this.$message.error("你不是超级管理员，没有权限")
+      }
     },
     // 修改用户状态
     changeStatus() {
@@ -430,14 +445,22 @@ export default {
     },
     // 打开用户个人信息窗口
     openUserProfileDialog(item) {
-      console.log(item)
-      this.userProfileDialogMessage = item
-      this.showUserProfile = true
+      if (user.status === 'C') {
+        console.log(item)
+        this.userProfileDialogMessage = item
+        this.showUserProfile = true
+      } else {
+        this.$message.error("你不是超级管理员，没有权限")
+      }
     },
     // 关闭用户个人信息窗口
-    closeUserProfileDialog(item) {
-      this.showUserProfile = false
-      this.userProfileDialogMessage = ''
+    closeUserProfileDialog() {
+      if (user.status === 'C') {
+        this.showUserProfile = false
+        this.userProfileDialogMessage = ''
+      } else {
+        this.$message.error("你不是超级管理员，没有权限")
+      }
     },
     // 保存用户个人信息的修改
     saveProfile() { // TODO

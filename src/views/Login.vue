@@ -35,7 +35,7 @@
                 </v-col>
               </v-row>
             </v-form>
-            <v-form v-if= "flag" @submit.prevent="login">
+                  <v-form v-if= "flag" @submit.prevent="login">
                     <v-row>
                       <v-col cols="12" class="mb-3">
                         <v-text-field label="用户名或邮箱" v-model="loginData.userNameOrEmail" outlined dense></v-text-field>
@@ -95,7 +95,8 @@ export default {
       loginData: {
         userNameOrEmail: '',
         password: '',
-        noEncrypt: false
+        noEncrypt: false,
+        ip: ''
       },
       registerData: {
         username: '',
@@ -175,9 +176,11 @@ export default {
       // })
       let secretPassword = this.loginData.noEncrypt ? this.loginData.password : sha256(this.loginData.password)
       console.log(secretPassword)
+      // console.log("cbycbycbycby")
       axios.post("/api/login", {
         userNameOrEmail: this.loginData.userNameOrEmail,
-        password: secretPassword
+        password: secretPassword,
+        ip: this.loginData.ip
       })
           .then((response) => {
             console.log(response.data)
@@ -281,6 +284,9 @@ export default {
         .catch((err) => {
           console.error(err);
         })
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(json => this.loginData.ip = json.ip);
   }
 }
 </script>

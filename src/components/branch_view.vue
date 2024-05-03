@@ -2,6 +2,8 @@
 import {computed} from "vue";
 import commit_view from "@/components/commit_view.vue";
 import axios from "axios";
+import topicSetting from "@/utils/topic-setting";
+import {completeCreateNewBranch} from "@/api/user";
 
 export default {
   name: "branchView",
@@ -48,7 +50,43 @@ export default {
         return a.lastCommit.commitDate > b.lastCommit.commitDate ? -1 : 1
       })
       console.log(this.branches)
-    }
+    },
+    handleClose(done) {
+      this.$confirm('确认关闭？')
+          .then(() => {
+            done();
+          })
+          .catch(() => {
+          });
+    },
+    createNewBranch(){
+      for(let i=0;i<this.branches.length;i++){
+        if(this.branches[i].name === this.newBranchForm.branchName){
+          this.$message({
+            type: "error",
+            message: '已存在同名Branch'
+          })
+          return;
+        }
+      }
+      console.log("cbycby " + this.proj.id + "cbycbycby")
+      completeCreateNewBranch({
+        name: this.newBranchForm.branchName,
+        project_id:this.proj.id,
+        remote_path:this.selectedRepo.user+'/'+this.selectedRepo.repo,
+        user_id: this.user.id
+      }).then(
+          res => {
+            this.$message({
+              type: 'success',
+              message: '提交成功!'
+            });
+          }
+      )
+
+      this.creatingNewBranch = false;
+    },
+    getTopicColor: topicSetting.getColor,
   },
   data() {
     return {
@@ -58,7 +96,12 @@ export default {
           name: 'master',
           lastCommit: {}
       }],
-      branchBusy: true
+      branchBusy: true,
+      creatingNewBranch:false,
+      newBranchForm:{
+        branchName:"",
+
+      }
     }
   }, inject: {
     user: {default: null},
@@ -79,7 +122,21 @@ export default {
 <!--  <p>I am branch view, I am aware that my proj = {{ proj }}, and that my selected repo = {{ selectedRepo }}</p>-->
 <v-row>
   <v-col cols="3">
-    <v-card-title>分支</v-card-title>
+    <v-card-title>
+      <v-form>
+        <v-row class="justify-center">分支列表</v-row>
+        <v-row class="justify-center">
+          <v-col  class="mb-3">
+            <v-btn :color="getTopicColor(user.topic)"
+                   class="white--text"
+                   block
+                   @click="creatingNewBranch = true">
+              创建新的分支
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-form>
+    </v-card-title>
     <div v-if="branchBusy">
         <v-card-title><v-progress-circular indeterminate></v-progress-circular>正在与服务器同步分支</v-card-title>
     </div>
@@ -107,6 +164,25 @@ export default {
     <v-skeleton-loader v-else type="text@3, table"></v-skeleton-loader>
   </v-col>
 </v-row>
+
+  <el-dialog
+      title="创建新的分支"
+      :visible.sync="creatingNewBranch"
+      width="50%"
+      :before-close="handleClose">
+    <el-form label-position="labelPosition"
+             label-iwdth="80px"
+             :model="newBranchForm"
+             ref="newBranchForm">
+      <el-form-item label="Branch name">
+        <el-input type="textarea" v-model="newBranchForm.branchName" ></el-input>
+      </el-form-item>
+    </el-form>
+    <span slot="footer" class="dialog-footer">
+    <el-button @click="creatingNewBranch = false">取 消</el-button>
+    <el-button type="primary" @click="createNewBranch">确 定</el-button>
+    </span>
+  </el-dialog>
 </div>
 </template>
 

@@ -48,7 +48,6 @@
       </template>
       <template v-slot:expanded-item="{ headers, item }">
         {{ item.outline}}
-      </td>
     </template>
       <template v-slot:no-data>
         <div></div>
@@ -488,8 +487,8 @@ import topicSetting from "@/utils/topic-setting";
 import Cookies from "js-cookie"
 
   export default {
-    inject: {'user': {defualt: null},
-               'selectedProj': {defualt: null},
+    inject: {'user': {default: null},
+               'selectedProj': {default: null},
          },
     data() {
       return {
@@ -508,7 +507,6 @@ import Cookies from "js-cookie"
       dialog3: false,
       value: '',
       tab: '',
-      search: '',
       searchNot: '',
       isCollectArr: [],
       item: [],

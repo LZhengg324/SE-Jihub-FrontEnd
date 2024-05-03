@@ -22,7 +22,9 @@ export default {
       downloading: false,
       downloadProgressBannerContent: 'Downloading...',
       uploading: false,
-      uploadProgressBannerContent: 'Uploading...'
+      uploadProgressBannerContent: 'Uploading...',
+
+      removing: false
     }
   },
   methods: {
@@ -62,6 +64,24 @@ export default {
           this.uploadDialog = false
           this.uploading = false
         })
+    },
+    removeFile(entry, name) {
+      axios.post("/api/file/removefile", {
+        userid: this.user.userid,
+        projectId: this.proj.projectId,
+        fileName: name
+      }).then((res) => {
+        if (res.data.code === 0) {
+          this.entries.remove(entry);
+          this.updateDatabase();
+        } else if (res.data.code === 1) {
+          this.$message.error('您不是项目负责人或项目管理员，删除失败')
+        } else {
+          this.$message.error('删除失败')
+        }
+      }).finally(() => {
+        this.removing = false;
+      })
     },
     downloadProgressChanged(progressiveEvent) {
       this.downloadProgressBannerContent = `Downloading... ${Math.round(progressiveEvent.loaded / progressiveEvent.total * 100)}%`
@@ -233,8 +253,14 @@ export default {
               </v-card-text>
               <v-card-actions>
                 <v-btn plain @click="() => initUploadDialog(entry, name)">上传新版本</v-btn>
-                <v-spacer></v-spacer>
                 <v-btn plain @click="() => download(entry.files[entry.files.length - 1])">下载最新版本</v-btn>
+                <v-btn color="error" @click="() => this.removing = true">删除文件</v-btn>
+                  <v-dialog v-if="this.removing" v-model="removing" max-width="400">
+                    <v-card title="删除文件" text="您要删除该文件吗？">
+                      <v-btn @click="this.removing = false">取消</v-btn>
+                      <v-btn @click=this.removeFile(entry,name)>确定</v-btn>
+                    </v-card>
+                  </v-dialog>
                 <v-btn plain @click="entry.expand = !entry.expand">{{ entry.expand ? '收回' : '展开' }}</v-btn>
               </v-card-actions>
 
