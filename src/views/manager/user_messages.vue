@@ -216,7 +216,7 @@ export default {
           value: 'B'
         },
         {
-          label: '小管理员',
+          label: '项目管理员',
           value: 'D'
         },
       ],
@@ -234,7 +234,7 @@ export default {
           value: 'B'
         },
         {
-          label: '小管理员',
+          label: '项目管理员',
           value: 'D'
         },
       ],
@@ -282,6 +282,9 @@ export default {
                 type: 'error',
                 message: "您没有权限"
               });
+            } else if (this.user.status === 'D') {
+              //过滤掉小管理员
+              this.userMessages = response.data.users.filter(user => user.status !== 'D')
             } else {
               this.userMessages = response.data.users
 
@@ -294,6 +297,13 @@ export default {
     },
     // 打开重置用户密码窗口
     openResetPasswordDialog(item) {
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
+      }
       this.userResetPasswordDialogMessage = item
       console.log("open reset password dialog")
       console.log(this.userResetPasswordDialogMessage)
@@ -332,6 +342,13 @@ export default {
     // 打开修改用户状态窗口，并显示当前状态
     openChangeUserStatusDialog(item) {
       console.log(item)
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
+      }
       console.log("open change user status dialog")
       this.userStatusDialogMessage = item
       this.selectedStatus = item.status
@@ -379,7 +396,7 @@ export default {
               console.log(response.data)
               this.$message({
                 type: 'info',
-                message: "用户" + this.userStatusDialogMessage.name + "不能设置为小管理员"
+                message: "用户" + this.userStatusDialogMessage.name + "不能设置为项目管理员"
               })
             } else {
               if (this.selectedStatus === 'A') {
@@ -395,7 +412,7 @@ export default {
               } else if (this.selectedStatus === 'D'){
               this.$message({
                 type: 'success',
-                message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为小管理员"
+                message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为项目管理员"
               });
 
             }
@@ -428,6 +445,13 @@ export default {
     },
     // 跳转到用户端页面
     gotoUserPage(item) {
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
+      }
       console.log("232534")
       Cookies.set('manager', Cookies.get('user'))
       console.log(Cookies.get('manager'))

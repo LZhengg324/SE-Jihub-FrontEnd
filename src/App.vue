@@ -158,12 +158,12 @@
       app
       clipped
       permanent
-      v-if="((user && proj && showLabel()) || (user && user.status === 'C')) && this.scrollUp"
+      v-if="((user && proj && showLabel()) || (user && user.status === 'C') || (user && user.status === 'D'))  && this.scrollUp"
     >
       <!-- <div style="background-color: aqua;width: 100%;">
 
       </div> -->
-      <v-list v-if="user.status !== 'C'">
+      <v-list v-if="user.status !== 'C' & user.status !== 'D'">
         <v-list-item :style="getLinearGradient(user.topic)" two-line class="px-2">
           <v-list-item-avatar size="40" color="indigo" >
 <!--            <span class="white&#45;&#45;text text-h5">{{ this.proj.projectName[0] }}</span>-->
@@ -192,7 +192,7 @@
             </v-list-item-avatar>
           </v-list-item>
       </v-list>
-      <v-list subheader v-if="user.status !== 'C'">
+      <v-list subheader v-if="user.status !== 'C' & user.status !== 'D'">
       <v-subheader inset>规划</v-subheader>
       <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/allTask'">
         <v-list-item-avatar>
@@ -291,7 +291,7 @@
       </v-list-item>
     </v-list>
 
-      <v-list subheader v-if="user.status === 'C'">
+      <v-list subheader v-if="user.status === 'C' || user.status === 'D'" >
         <v-list-item link to="/manager/home">
           <v-list-item-icon><v-icon>mdi-home-outline</v-icon></v-list-item-icon>
           <v-list-item-title>主页</v-list-item-title>
@@ -766,7 +766,7 @@ export default {
       }
     },
     showLabel() {
-      if (this.user === null || this.user === undefined || this.user.status === 'C') {
+      if (this.user === null || this.user === undefined || this.user.status === 'C' || this.user.status === 'D') {
         return false;
       }
       console.log("showLabel");

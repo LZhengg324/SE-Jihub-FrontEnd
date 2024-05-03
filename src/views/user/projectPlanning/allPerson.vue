@@ -97,16 +97,16 @@
         </v-list-item-content>
       </v-list-item>
   </template>
-  <template v-slot:[`item.remove`] ="{item}">
-     <v-btn v-if="item.peopleJob != 'C'" depressed @click="handleDelete(item)">
+  <template v-slot:[`item.remove`] ="{item}" >
+     <v-btn v-if="item.peopleJob !== 'C'" depressed @click="handleDelete(item)" >
       移除用户
     </v-btn>
   </template>
-  <template v-slot:[`item.change`] ="{item}">
-     <v-btn v-if="item.peopleJob != 'C'" depressed @click="handleChange(item)">
-      更改角色 
-    </v-btn>
-  </template>
+<!--  <template v-slot:[`item.change`] ="{item}" >-->
+<!--     <v-btn v-if="item.peopleJob !== 'C'" depressed @click="handleChange(item)">-->
+<!--      更改角色 -->
+<!--    </v-btn>-->
+<!--  </template>-->
 </v-data-table>
       </div>
 
@@ -137,9 +137,9 @@
         <div>请选择你要为该成员分配的<strong>角色</strong></div>
       </template>
       <v-radio-group v-model="changeRoleForm.role" style="top:50px;position: absolute;">
-      <v-radio value="管理员">
+      <v-radio value="项目经理">
         <template v-slot:label>
-          <div> <strong class="success--text">管理员</strong></div>
+          <div> <strong class="success--text">项目经理</strong></div>
         </template>
       </v-radio>
       <v-radio value="开发人员">
@@ -342,8 +342,8 @@ export default {
       }
       if (this.changeRoleForm.role == '开发人员') {
         this.changeRoleForm.role = 'A';
-      } else if (this.changeRoleForm.role == '管理员') {
-        this.changeRoleForm.role = 'B';
+      } else if (this.changeRoleForm.role == '项目经理') {
+        this.changeRoleForm.role = 'C';
       } 
       console.log(this.changeRoleForm);
       modifyRole({projectId: this.selectedProj.projectId, userId: this.user.id, role: this.changeRoleForm.role, personId: this.changeRoleForm.id}).then(
@@ -377,7 +377,7 @@ export default {
       } else if (role == 'B') {
         return '管理员'
       } else if (role == 'C') {
-        return '负责人'
+        return '项目经理'
       }
     },
     getTopicColor: topicSetting.getColor

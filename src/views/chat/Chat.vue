@@ -2,7 +2,7 @@
   <v-container class="chatroom_">
     <h1>聊天室</h1>
     <v-row>
-        <v-col cols="4" class="chatroom_">
+        <v-col cols="3" class="chatroom_">
           <v-list style="overflow-y: auto;">
             <v-toolbar>
               <v-toolbar-title>历史聊天室</v-toolbar-title>
@@ -25,7 +25,7 @@
                     <span :style="'color: ' + getDarkColor(user.topic) ">{{ item.title }}</span>
                     <span class="float-end grey--text">{{item.desc}}</span>
                   </v-list-item-title>
-                  <v-list-item-subtitle>
+                  <v-list-item-subtitle >
 <!--                    {{item.history.length === 0 ? ' ' : item.history[0].senderName + ' : ' }}-->
 <!--                    {{item.history[0].type === 'A' ? item.history[0].content :-->
 <!--                      item.history[0].type === 'B' ? '[PHOTO]' : '[FILE]'}}-->
@@ -40,7 +40,7 @@
           </v-list>
         </v-col>
 
-      <v-col cols="8">
+      <v-col cols="6">
           <!-- 聊天内容区域 -->
         <v-card class="chatroom_">
           <v-card-title v-if="this.chatRooms.length !== 0">
@@ -52,14 +52,14 @@
             <v-list dense>
 <!--              <v-list-item v-for="message in chatRooms[selectedRoom].history" :key="message.id">-->
                 <v-list-item v-for="message in messages" :key="message.id" >
-                  <v-list-item-avatar size="30px">
+                  <v-list-item-avatar size="30px" style="align-self: flex-start;">
                     <v-img :src="getIdenticon(message.from, 50, 'user')"></v-img>
                   </v-list-item-avatar>
                 <v-list-item-content>
                   <v-list-item-title >
                     {{ message.from }}
                   </v-list-item-title>
-                  <v-list-item-subtitle>
+                  <v-list-item-subtitle style="overflow: visible; white-space: normal;">
                     {{ message.content }}
                   </v-list-item-subtitle>
                 </v-list-item-content>
@@ -74,6 +74,47 @@
         </div>
         </v-card>
       </v-col>
+
+      <!-- 创建新的聊天室 }}-->
+      <v-col cols="3" class="chatroom_">
+        <v-list style="overflow-y: auto;">
+          <v-toolbar>
+            <v-toolbar-title>聊天室成员</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">
+              <v-icon>mdi-plus-circle</v-icon>
+            </v-btn>
+            <v-btn icon  small :color="getDarkColor(user.topic)">
+              <v-icon>mdi-minus</v-icon>
+              <!-- 创建新的聊天室 }}-->
+            </v-btn>
+
+          </v-toolbar>
+
+          <v-list-item-group v-model="selectedRoom">
+            <v-list-item two-line v-for="item in chatRooms" :key="item.id" @click="selectToRoom(item)">
+              <!--                <v-list-item two-line v-for="item in chatRooms" :key="item.id" @click="selectToRoom(item)">-->
+
+              <v-list-item-content>
+                <v-list-item-title style="font-weight: bold">
+                  <span :style="'color: ' + getDarkColor(user.topic) ">{{ item.title }}</span>
+                  <span class="float-end grey--text">{{item.desc}}</span>
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  <!--                    {{item.history.length === 0 ? ' ' : item.history[0].senderName + ' : ' }}-->
+                  <!--                    {{item.history[0].type === 'A' ? item.history[0].content :-->
+                  <!--                      item.history[0].type === 'B' ? '[PHOTO]' : '[FILE]'}}-->
+                  <!--                    {{' (' +  new Date(item.history[0].time).toLocaleTimeString() + ")"}}-->
+                  {{item.unread === 0 ? ' ' : '您有新的未读消息'}}
+                  <v-badge class="float-end" v-if="item.unread > 0" color="error" :content="item.unread" inline></v-badge>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+          <v-divider></v-divider>
+        </v-list>
+      </v-col>
+
     </v-row>
 
     <!--创建聊天室 -->

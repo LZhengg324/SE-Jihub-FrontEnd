@@ -85,7 +85,7 @@
       <template>
         <v-container class="pa-0">
           <v-card>
-            <v-card-title class="headline font-weight text-left"> 设置项目小管理员 </v-card-title>
+            <v-card-title class="headline font-weight text-left"> 设置项目管理员 </v-card-title>
             <v-card-text> 项目名:{{ changeProjectAssistantMessage.name }} / 创建人:{{ changeProjectAssistantMessage.leader }}</v-card-text>
             <v-divider></v-divider>
             <v-card-text>
@@ -100,6 +100,8 @@
         </v-container>
       </template>
     </v-dialog>
+
+    <!-- -->
     <v-dialog v-model="showProjectMemberDialog" width="800">
       <template>
         <v-container class="pa-0">
@@ -121,9 +123,9 @@
                 :items="projectMember"
                 :search="memberSearch"
               >
-                <template #item.changeAccess="{item}">
-                  <v-chip :color="getColor(item.peopleAccess)" dark @click="openChangeMemberAccessDialog(item)">
-                    {{ transform(item.peopleAccess) }}
+                <template #item.changeStatus="{item}">
+                  <v-chip :color="getColorStatus(item.peopleStatus)" dark @click="openChangeMemberAccessDialog(item)">
+                    {{ classifyStatus(item.peopleStatus) }}
                   </v-chip>
                 </template>
               </v-data-table>
@@ -145,14 +147,14 @@
             </v-card-title>
             <v-divider></v-divider>
             <v-card-text>
-              <v-radio-group v-model="selectedAccess">
-                <v-radio v-for="i in accessList" :key="i.value" :label="i.label" :value="i.value"></v-radio>
+              <v-radio-group v-model="selectedStatus">
+                <v-radio v-for="i in statusList" :key="i.value" :label="i.label" :value="i.value"></v-radio>
               </v-radio-group>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="closeChangeMemberAccessDialog">取消</v-btn>
-              <v-btn color="blue" text @click="changeMemberAccess">确认修改</v-btn>
+              <v-btn color="blue" text @click="changeMemberStatus">确认修改</v-btn>
             </v-card-actions>
           </v-card>
         </v-container>
@@ -255,16 +257,7 @@ export default {
       showChangeProjectAssistant: false,
       changeProjectAssistantMessage: '',
       selectedAssistant:[],
-      assistantList:[
-        // {
-        //   name: 'Cheryl',
-        //   email: 'jchye22@gmail.com',
-        // },
-        // {
-        //   name: 'User',
-        //   email: "hhhh"
-        // }
-      ],
+      assistantList:[],
 
 
       //查看项目人员
@@ -279,7 +272,7 @@ export default {
         {
           text: '状态',
           sortable: false,
-          value: 'changeAccess'
+          value: 'changeStatus'
         },
       ],
       memberSearch:'',
@@ -290,6 +283,21 @@ export default {
       //修改项目人员提交权限
       showChangeMemberAccessDialog:false,
       changeMemberAccessMessage:'',
+      selectedStatus: '',
+      statusList:[
+        {
+            label:'开发人员',
+            value:'A',
+        },
+        {
+          label:'项目经理',
+          value:'C',
+        },
+        {
+          label:'禁用',
+          value:'E',
+        }
+      ]
     }
   },
   created() {
@@ -436,6 +444,8 @@ export default {
             console.error(err);
           })
     },
+
+    //项目状态
     getColor(access) {
       if (access === "A") {
         return "green";
@@ -448,6 +458,30 @@ export default {
         return "正常";
       } else if (access === "B") {
         return "禁用";
+      }
+    },
+
+    //项目人员状态
+    getColorStatus(role) {
+      if (role == 'A') {
+        return 'orange';
+      } else if (role == 'B') {
+        return 'green';
+      } else if (role == 'C'){
+        return 'blue';
+      } else {
+        return 'red';
+      }
+    },
+    classifyStatus(role) {
+      if (role == 'A') {
+        return '开发人员'
+      } else if (role == 'B') {
+        return '管理员'
+      } else if (role == 'C') {
+        return '项目经理'
+      } else if (role == 'E') {
+        return '禁用'
       }
     },
 
@@ -471,121 +505,112 @@ export default {
 
     showAllAssistant() {
       console.log(this.user.id)
-      // axios.get("api/management/showAssistants", {managerId: this.user.id})
-      //     .then((response) => {
-      //       console.log(response)
-      //       if (response.data.errcode === 1) {
-      //         window.alert("您没有权限")
-      //       } else {
-      //         this.assistantList = response.data;
-      //       }
-      //     })
-      //     .catch((err) => {
-      //       console.error(err);
-      //       this.assistantList = null
-      //     })
-      this.assistantList = [
-        {
-          name: 'Cheryl',
-          email: 'jchye22@gmail.com',
-          id: '1',
-        },
-        {
-          name: 'User',
-          email: "hhhh",
-          id: '2',
-        }
-      ]
+      axios.post("/api/management/showAssistants", {managerId: this.user.id})
+          .then((response) => {
+            console.log(response)
+            if (response.data.errcode === 1) {
+              window.alert("您没有权限")
+            } else {
+              this.assistantList = response.data.users;
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            this.assistantList = null
+          })
+      console.log(this.assistantList)
     },
 
     showProjectSelectedAssistant(item) {
       console.log(item)
-      // axios.get("api/management/getProjectAssistants", {managerId: this.user.id , projectId: item.projectId})
-      //     .then((response) => {
-      //       console.log(response)
-      //       if (response.data.errcode === 1) {
-      //         window.alert("您没有权限")
-      //       } else {
-      //         this.selectedAssistant = response.data
-      //this.assistantList.forEach(assistant => {
-      //  assistant.checked = this.selectedAssistant.find(a => a.name === assistant.name);
-      //  console.log(assistant)
-      //});
-      //       }
-      //     })
-      //     .catch((err) => {
-      //       console.error(err);
-      //       this.selectedAdmin = null
-      //     })
-
-      //测试用
-      // this.selectedAssistant = [
-      //   {
-      //     name: 'Cheryl',
-      //     email: 'jchye22@gmail.com'
-      //   }
-      // ]
-
-      this.assistantList.forEach(assistant => {
-        assistant.checked = this.selectedAssistant.find(a => a.id === assistant.id);
-        console.log(assistant)
-      });
+      console.log(this.assistantList)
+      axios.post("/api/management/getProjectAssistants", {managerId: this.user.id , projectId: item.projectId})
+          .then((response) => {
+            console.log(response)
+            if (response.data.errcode === 1) {
+              window.alert("您没有权限")
+            } else {
+              this.selectedAssistant = response.data.assistants
+              console.log(this.selectedAssistant)
+              this.assistantList.forEach(assistant => {
+                  assistant.checked = !!this.selectedAssistant.find(a => a.id === assistant.id);
+                  console.log(assistant)
+                });
+              console.log(this.assistantList)
+              this.$forceUpdate();
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            this.selectedAssistant = null
+          })
     },
 
     changeProjectAssistant() {
-      // console.log(this.selectedAdmin)
-      // let projectId = this.changeProjectAssistantMessage.projectId
-      // let managerId = this.user.id
-      // axios.post("/api/management/setAssistantAccess", {
-      //   managerId: managerId,
-      //   projectId: projectId,
-      //   assistantsId: this.selectedAdmin
-      // })
-      //     .then((response) => {
-      //       this.showChangeProjectAssistant = false
-      //       console.log(response.data)
-      //       if (response.data.errcode === 1) {
-      //         this.$message({
-      //           type: 'error',
-      //           message: "您没有权限"
-      //         });
-      //       } else {
-      //         this.$message({
-      //           type: "success",
-      //           message: "成功设置小管理员"
-      //         })
-      //         this.showProjectMessages()
-      //       }
-      //       this.changeProjectAssistantMessage = ''
-      //       this.selectedAdmin = ''
-      //     })
-      //     .catch((err) => {
-      //       this.showChangeProjectAssistant = false
-      //       this.changeProjectAssistantMessage = ''
-      //       this.selectedAdmin = ''
-      //       console.error(err);
-      //     })
       if (this.assistantList.every(i=>!i.checked)) {
-        console.log("error")
-        this.$message({
-          type: 'warning',
-          message: "请选择至少一名小管理员！"
-        })
-      } else {
-        this.selectedAssistant = this.assistantList.filter(i => i.checked)
-        console.log(this.selectedAssistant)
+          console.log("error")
+          this.$message({
+            type: 'warning',
+            message: "请选择至少一名小管理员！"
+          })
+        } else {
+          this.selectedAssistant = this.assistantList.filter(i => i.checked)
+          console.log(this.selectedAssistant)
         let projectId = this.changeProjectAssistantMessage.projectId
         let managerId = this.user.id
-        console.log(projectId +": set success")
-        this.$message({
-          type: "success",
-          message: "成功设置小管理员"
-
+        axios.post("/api/management/setAssistantAccess", {
+          managerId: managerId,
+          projectId: projectId,
+          assistantsId: this.selectedAssistant.map(assistant => assistant.id)
         })
-        this.showChangeProjectAssistant = false
-        this.selectedAssistant = []
-        this.changeProjectAssistantMessage = ''
+            .then((response) => {
+              this.showChangeProjectAssistant = false
+              console.log(response.data)
+              if (response.data.errcode === 1) {
+                this.$message({
+                  type: 'error',
+                  message: "您没有权限"
+                });
+              } else {
+                this.$message({
+                  type: "success",
+                  message: "成功设置小管理员"
+                })
+                this.showProjectMessages()
+              }
+              this.changeProjectAssistantMessage = ''
+              this.selectedAssistant = ''
+            })
+            .catch((err) => {
+              this.showChangeProjectAssistant = false
+              this.changeProjectAssistantMessage = ''
+              this.selectedAssistant = ''
+              console.error(err);
+            })
       }
+      //console.log(this.selectedAssistant)
+
+      // if (this.assistantList.every(i=>!i.checked)) {
+      //   console.log("error")
+      //   this.$message({
+      //     type: 'warning',
+      //     message: "请选择至少一名小管理员！"
+      //   })
+      // } else {
+      //   this.selectedAssistant = this.assistantList.filter(i => i.checked)
+      //   console.log(this.selectedAssistant)
+      //   let projectId = this.changeProjectAssistantMessage.projectId
+      //   let managerId = this.user.id
+      //   console.log(projectId +": set success")
+      //   this.$message({
+      //     type: "success",
+      //     message: "成功设置小管理员"
+      //
+      //   })
+      //   this.showChangeProjectAssistant = false
+      //   this.selectedAssistant = []
+      //   this.changeProjectAssistantMessage = ''
+      // }
     },
 
 
@@ -593,42 +618,23 @@ export default {
     showAllProjectMembers(item) {
       let projectId = item.projectId
       let managerId = this.user.id
-      // axios.get("/api/management/getProjectUsers", {projectId: projectId, managerId: managerId})
-      //     .then((response) => {
-      //       console.log(response.data)
-      //       if (response.data.errcode === 1) {
-      //         this.$message({
-      //           type: 'error',
-      //           message: "您没有该权限"
-      //         });
-      //       } else {
-      //         console.log("load member details success")
-      //         this.projectMember = response.data
-      //       }
-      //     })
-      //     .catch((err) => {
-      //       console.error(err);
-      //       this.userMessages = null
-      //     })
-      // }
-      //测试用
-      this.projectMember = [
-        {
-          peopleId:'2',
-          peopleName: 'cheryl',
-          peopleEmail: 'jchye22@gmail.com',
-          peopleActive: '80',
-          peopleAccess: 'A'
-        },
-        {
-          peopleId:'1',
-          peopleName: 'user',
-          peopleEmail: 'jchye22@gmail.com',
-          peopleActive: '80',
-          peopleAccess: 'A'
-        },
-      ]
-      //测试用
+      axios.post("/api/management/getProjectUsers", {projectId: projectId, managerId: managerId})
+          .then((response) => {
+            console.log(response.data)
+            if (response.data.errcode === 1) {
+              this.$message({
+                type: 'error',
+                message: "您没有该权限"
+              });
+            } else {
+              console.log("load member details success")
+              this.projectMember = response.data.users
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            this.userMessages = null
+          })
     },
 
 
@@ -655,25 +661,74 @@ export default {
     openChangeMemberAccessDialog(item) {
       console.log(item)
       this.changeMemberAccessMessage = item
-      this.selectedAccess = item.peopleAccess
+      this.selectedStatus = item.peopleStatus
       this.showChangeMemberAccessDialog = true
     },
 
     //打开修改项目人员提交权限页面
     closeChangeMemberAccessDialog() {
       this.showChangeMemberAccessDialog = false
-      this.selectedAccess = ''
+      this.selectedStatus = ''
       this.changeMemberAccessMessage = ''
     },
 
-    changeMemberAccess() {
-      console.log(this.selectedAccess)
+    changeMemberStatus() {
+      console.log(this.selectedStatus)
       let projectId = this.showMemberProjectMessage.projectId
       let managerId = this.user.id
-      // axios.post("api/management/changeUserUploadAccess", {
+      let memberId = this.changeMemberAccessMessage.peopleId
+
+      axios.post("/api/plan/modifyRole", {
+        projectId: projectId,
+        personId: memberId,
+        role: this.selectedStatus
+      })
+          .then((response) => {
+            this.showChangeMemberAccessDialog = false
+            console.log(response.data)
+            if (response.data.errcode === 1) {
+              this.$message({
+                type: 'error',
+                message: "用户、项目、状态不存在"
+              });
+            } else if (response.data.errcode === 3) {
+              this.$message({
+                type: 'error',
+                message: "出现错误"
+              });
+
+            } else {
+              if (this.selectedStatus === 'A') {
+                this.$message({
+                  type: 'success',
+                  message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为开发人员"
+                });
+              } else if (this.selectedStatus === 'B') {
+                this.$message({
+                  type: 'success',
+                  message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为管理员"
+                });
+              } else if (this.selectedStatus === 'C') {
+                this.$message({
+                  type: 'success',
+                  message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为项目经理"
+                });
+              } else {
+                this.$message({
+                  type: 'success',
+                  message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为禁用"
+                });
+              }
+              this.showAllProjectMembers(this.showMemberProjectMessage)
+            }
+            this.selectedAccess = ''
+            this.changeMemberAccessMessage = ''
+          })
+
+      // axios.post("/api/management/changeUserUploadAccess", {
       //   managerId: managerId,
       //   projectId: projectId,
-      //   userId: changeMemberAccessMessage.peopleId,
+      //   userId: this.changeMemberAccessMessage.peopleId,
       //   status: this.selectedAccess
       // })
       //     .then((response) => {
@@ -714,14 +769,14 @@ export default {
       //     })
 
 //test
-      this.showChangeMemberAccessDialog = false
-      this.changeMemberAccessMessage.peopleAccess = this.selectedAccess
-      this.$message({
-        type: 'success',
-        message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为" + this.selectedAccess
-      });
-      this.selectedAccess = ''
-      this.changeMemberAccessMessage = ''
+//       this.showChangeMemberAccessDialog = false
+//       this.changeMemberAccessMessage.peopleAccess = this.selectedAccess
+//       this.$message({
+//         type: 'success',
+//         message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为" + this.selectedAccess
+//       });
+//       this.selectedAccess = ''
+//       this.changeMemberAccessMessage = ''
 
     }
   },
