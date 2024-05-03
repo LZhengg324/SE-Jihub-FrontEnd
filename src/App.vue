@@ -159,16 +159,16 @@
     </v-app-bar>
 
     <v-navigation-drawer
-        v-model="drawer"
-        app
-        clipped
-        permanent
-        v-if="((user && proj && showLabel()) || (user && user.status === 'C')) && this.scrollUp"
+      v-model="drawer"
+      app
+      clipped
+      permanent
+      v-if="((user && proj && showLabel()) || (user && user.status === 'C') || (user && user.status === 'D'))  && this.scrollUp"
     >
       <!-- <div style="background-color: aqua;width: 100%;">
 
       </div> -->
-      <v-list v-if="user.status !== 'C'">
+      <v-list v-if="user.status !== 'C' & user.status !== 'D'">
         <v-list-item :style="getLinearGradient(user.topic)" two-line class="px-2">
           <v-list-item-avatar size="40" color="indigo">
             <!--            <span class="white&#45;&#45;text text-h5">{{ this.proj.projectName[0] }}</span>-->
@@ -180,7 +180,7 @@
               <strong :style="'color: ' + getDarkColor(user.topic)">{{ this.proj.projectName }}</strong>
             </v-list-item-title>
             <v-list-item-subtitle>
-              {{ this.proj.projectIntro == '' ? '暂无简介' : this.proj.projectIntro }}
+              {{ this.proj.projectIntro === '' ? '暂无简介' : this.proj.projectIntro }}
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -197,14 +197,12 @@
           </v-list-item-avatar>
         </v-list-item>
       </v-list>
-      <v-list subheader v-if="user.status !== 'C'">
-
-        <v-subheader inset>规划</v-subheader>
-
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/allTask'">
-          <v-list-item-avatar>
-            <v-icon :color="getDarkColor(user.topic)">mdi-ballot-outline</v-icon>
-          </v-list-item-avatar>
+      <v-list subheader v-if="user.status !== 'C' & user.status !== 'D'">
+      <v-subheader inset>规划</v-subheader>
+      <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/allTask'">
+        <v-list-item-avatar>
+          <v-icon :color="getDarkColor(user.topic)">mdi-ballot-outline</v-icon>
+        </v-list-item-avatar>
 
           <v-list-item-content>
             <v-list-item-title>任务列表</v-list-item-title>
@@ -298,7 +296,7 @@
         </v-list-item>
       </v-list>
 
-      <v-list subheader v-if="user.status === 'C'">
+      <v-list subheader v-if="user.status === 'C' || user.status === 'D'" >
         <v-list-item link to="/manager/home">
           <v-list-item-icon>
             <v-icon>mdi-home-outline</v-icon>
@@ -789,7 +787,7 @@ export default {
       }
     },
     showLabel() {
-      if (this.user === null || this.user === undefined || this.user.status === 'C') {
+      if (this.user === null || this.user === undefined || this.user.status === 'C' || this.user.status === 'D') {
         return false;
       }
       console.log("showLabel");
