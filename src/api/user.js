@@ -197,7 +197,7 @@ export const isDocLocked = (data) => {
 
 
 export const completeCreateNewPR = (data) =>{
-  return request.post("/api/plan/createPullRequest",data)
+  return request.post("/api/develop/createPullRequest",data)
 }
 
 export const completeCreateNewBranch = (data) =>{
@@ -218,4 +218,12 @@ export const approvePullRequest =(data)=>{
 
 export const closePullRequest =(data)=>{
   return request.post("/api/develop/closePullRequest",data)
+}
+
+export const initRepo = (data) =>{
+  return request.post("api/develop/initRepo",data)
+}
+
+export const readNotice =(data) =>{
+  return request.post("api/plan/seenNotice", data)
 }

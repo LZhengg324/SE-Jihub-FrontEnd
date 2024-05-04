@@ -118,7 +118,7 @@ export default {
                 </v-col>
             </v-row>
 
-            <v-row>
+            <v-row >
                 <repoView />
             </v-row>
         </v-container>

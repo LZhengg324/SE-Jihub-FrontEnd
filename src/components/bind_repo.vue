@@ -1,7 +1,7 @@
 <script>
 import axios from 'axios'
 import topicSetting from "@/utils/topic-setting";
-import {createRepo} from "@/api/user";
+import {createRepo, initRepo} from "@/api/user";
 
 export default {
   name: "bindGithubRepo",
@@ -50,6 +50,9 @@ export default {
         this.createRepoInProgress = false;
         this.gh_username = 'CBY11';
         this.gh_reponame = this.gh_reponame + '_' + this.proj.id;
+        initRepo({
+          repo_name : this.gh_reponame
+        })
         this.bindSplit();
       }).catch((err) => {
         alert('哦不，好像绑定失败了！');

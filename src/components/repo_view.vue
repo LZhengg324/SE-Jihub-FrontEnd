@@ -72,17 +72,19 @@ export default {
               </v-card>
             </v-col>
           </v-row>
+          <!--<v-row>-->
+          <!--  <v-col class="ma-1">-->
+          <!--    <v-card  :style="getRadialGradient(user.topic)" raised class="pa-2 overflow-y-auto">-->
+          <!--      <v-card-title>事务</v-card-title>-->
+          <!--      <v-card-text>-->
+          <!--        <issue_view/>-->
+          <!--      </v-card-text>-->
+          <!--    </v-card>-->
+          <!--  </v-col>-->
+          <!--</v-row>-->
           <v-row>
-            <v-col cols="12" sm="12" md="6" lg="6" xl="6" class="ma-auto">
-              <v-card height="200px" :style="getRadialGradient(user.topic)" raised class="pa-2 overflow-y-auto">
-                <v-card-title>事务</v-card-title>
-                <v-card-text>
-                  <issue_view/>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="12" sm="12" md="6" lg="6" xl="6" class="ma-auto">
-              <v-card height="200px" :style="getRadialGradient(user.topic)" raised class="pa-2 overflow-y-auto">
+            <v-col class="ma-1">
+              <v-card  :style="getRadialGradient(user.topic)" raised class="pa-2 overflow-y-auto">
                 <v-card-title>和并请求</v-card-title>
                 <v-card-text>
                   <pr_view/>

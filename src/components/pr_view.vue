@@ -152,7 +152,6 @@ export default {
 
   <v-card-actions>
     <v-spacer></v-spacer>
-
     <v-btn :color="getTopicColor(user.topic)" link :href="'https://github.com/' + selectedRepo.user + '/' + selectedRepo.repo + '/pulls'" target="_blank">
       <v-icon>mdi-github</v-icon>在GitHub浏览
     </v-btn>
