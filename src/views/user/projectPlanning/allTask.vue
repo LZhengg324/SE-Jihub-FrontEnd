@@ -1109,7 +1109,9 @@ export default {
       this.setupAlarm = false;
       notice({
         taskId: this.newAlarmForm.taskId,
-        deadline: this.newAlarmForm.date + '-' + this.newAlarmForm.time.replace(':', '-')
+        deadline: this.newAlarmForm.date + '-' + this.newAlarmForm.time.replace(':', '-'),
+        project_id: this.selectedProj.projectId,
+        user_id:this.user.id,
       }).then(
           res => {
             console.log(res);

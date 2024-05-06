@@ -87,10 +87,14 @@ export default {
               type: 'success',
               message: '正在进入！'
             });
-            Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
+            console.log("cbycby2" + res['data']['diff_output']);
+            localStorage.setItem("diffString", res['data']['diff_output']);
+            localStorage.setItem("comment", res['data']['comment']);
+            // Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
+            console.log("cbycby3" + res['data']['diff_output']);
             Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
             Cookies.set("PrToAudit", JSON.stringify(PrToAudit));
-            Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
+            Cookies.set("PrToAudit_ReadOnly", false);
 
             this.$router.push({ name: 'audit' });
           }

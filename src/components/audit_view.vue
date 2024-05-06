@@ -12,12 +12,12 @@
       <h1>审核意见</h1>
       <el-form :model="form" ref="form">
         <el-form-item >
-          <el-input v-model="form.comment" type="textarea"></el-input>
+          <el-input v-model="form.comment" type="textarea" ></el-input>
         </el-form-item>
       </el-form>
-      <el-button @click="turnBack">取 消</el-button>
-      <el-button type="primary" @click="createNewComment()">不通过</el-button>
-      <el-button type="primary" @click="approvePr()">通过</el-button>
+      <el-button  @click="turnBack">取 消</el-button>
+      <el-button  type="primary" @click="createNewComment()">不通过</el-button>
+      <el-button  type="primary" @click="approvePr()">通过</el-button>
     </div>
   </div>
 
@@ -38,6 +38,7 @@ export default {
       },
       PrToAudit: {},
       selectedRepo:{},
+      PrToAudit_ReadOnly: false,
     }
   },
   inject: {
@@ -48,15 +49,22 @@ export default {
   mounted() {
   },
   created() {
-    this.PrToAudit = JSON.parse(Cookies.get("PrToAudit"));
+    this.PrToAudit_ReadOnly = Cookies.get('PrToAudit_ReadOnly');
+    this.PrToAudit_ReadOnly = this.user.id === this.user.managerId ? this.PrToAudit_ReadOnly : true ;
+    this.form.comment = localStorage.getItem('comment');
+
+    if(this.PrToAudit_ReadOnly)
+      this.PrToAudit = JSON.parse(Cookies.get("PrToAudit"));
+
     this.selectedRepo = JSON.parse(Cookies.get("selectedRepo"));
   },
   methods: {
     sendDataToIframe() {
-      const diffString = Cookies.get('diffString');
+      const diffString = localStorage.getItem('diffString');
+      // const diffString = Cookies.get('diffString');
+      console.log("cbycby" + diffString);
       this.$refs.showDiffHtml.contentWindow.postMessage(
           diffString);
-      Cookies.delete('diffString');
     },
     turnBack() {
       this.$router.back();
@@ -64,6 +72,8 @@ export default {
     createNewComment() {
       closePullRequest({
         ghpr_id: this.PrToAudit.id,
+        repo_id: this.selectedRepo.id,
+        comment: this.form.comment,
       }).then((res) => {
         alert('您拒绝了一个PullRequest并提出修改意见！');
       }).catch((err) => {
@@ -74,6 +84,7 @@ export default {
       approvePullRequest({
         ghpr_id: this.PrToAudit.id,
         repo_id: this.selectedRepo.id,
+        comment: this.form.comment,
       }).then((res) => {
         alert('您同意了一个PullRequest');
       }).catch((err) => {

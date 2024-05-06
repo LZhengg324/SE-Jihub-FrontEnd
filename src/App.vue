@@ -391,9 +391,7 @@
           <th class="text-left">
             状态
           </th>
-          <th class="text-left">
-            所属任务
-          </th>
+
           <th class="text-left">
             时间
           </th>
@@ -411,7 +409,6 @@
               {{notice.seen ? "已读":"未读"}}
             </v-chip>
           </td>
-          <td>{{ getTaskName(notice.taskId) }}</td>
           <td>{{ new Date(notice.deadline).toLocaleString() }}</td>
           <td>{{notice.content}}</td>
           <td style="width: 10%">
@@ -426,6 +423,13 @@
                    class="white--text"
                    @click="handleReadNotice(notice.noticeId)">
               已读
+            </v-btn>
+          </td>
+          <td style="width: 10%">
+            <v-btn :color="getTopicColor(user.topic)"
+                   class="white--text"
+                   @click="handleNoticeDetail(notice)">
+              详情
             </v-btn>
           </td>
         </tr>
@@ -490,7 +494,7 @@ import Cookies from "js-cookie"
 import {computed} from "vue"
 import {
   newProject, showTaskList, watchAllProject, getEmail, showNoticeList, removeNotice,
-  userReleaseDocLock, readNotice
+  userReleaseDocLock, readNotice, getDiffString
 } from "@/api/user"
 import axios from "axios"
 import AllTask from "@/views/user/projectPlanning/allTask.vue"
@@ -591,7 +595,7 @@ export default {
     console.log('setting interval...')
     setInterval(() => {
       this.updateNoticeList();
-    }, 5000)
+    }, 50000)
   },
   components: {
     AllTask,
@@ -691,7 +695,10 @@ export default {
     },
     updateNoticeList() {
       console.log("updating NoticeList...")
-      showNoticeList({projectId: this.proj.projectId}).then(
+      showNoticeList({
+        projectId: this.proj.projectId,
+        // user_id:this.user.id,
+      }).then(
           res => {
             this.existUnreadNote = false;
             this.noticeList = res['data']['data']
@@ -726,7 +733,10 @@ export default {
     },
     checkClock() {
       this.clockDialog = true;
-      showNoticeList({projectId: this.proj.projectId}).then(
+      showNoticeList({
+        projectId: this.proj.projectId,
+        // user_id:this.user.id,
+      }).then(
           res => {
             var allNotice = res['data']['data'];
             var tmpNoticeList = [];
@@ -968,7 +978,10 @@ export default {
           .then(() => {
             removeNotice({noticeId: noticeId}).then(
                 res => {
-                  showNoticeList({projectId: this.proj.projectId}).then(
+                  showNoticeList({
+                    projectId: this.proj.projectId,
+                    // user_id:this.user.id,
+                  }).then(
                       res => {
                         var allNotice = res['data']['data'];
                         var tmpNoticeList = [];
@@ -988,12 +1001,15 @@ export default {
     handleReadNotice(noticeId) {
       readNotice({id: noticeId}).then(
           res => {
-            showNoticeList({projectId: this.proj.projectId}).then(
+            showNoticeList({
+              projectId: this.proj.projectId,
+              // user_id:this.user.id,
+            }).then(
                 res => {
                   var allNotice = res['data']['data'];
                   var tmpNoticeList = [];
                   for (let i = 0; i < allNotice.length; i++)
-                    if(allNotice[i].type === "A")
+                    if(allNotice[i].type === "A" && allNotice[i].user_id === this.user.id)
                       tmpNoticeList.push(allNotice[i]);
                   this.noticeList2 = tmpNoticeList;
                 }
@@ -1001,6 +1017,35 @@ export default {
           }
       )
     },
+
+    handleNoticeDetail(notice){
+
+      getDiffString({
+        user_id: Cookies.get("user").id,
+        remote_path: Cookies.get("selectedRepo").user+'/'+Cookies.get("selectedRepo").repo,
+        project_id: this.proj.id,
+        ghpr_id:notice.ghpr_id,
+      }).then(
+          res =>{
+            console.log(res);
+            this.$message({
+              type: 'success',
+              message: '正在进入！'
+            });
+            console.log("cbycby2" + res['data']['diff_output']);
+            localStorage.setItem("diffString", res['data']['diff_output']);
+            localStorage.setItem("comment", res['data']['comment']);
+            // Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
+            console.log("cbycby3" + res['data']['diff_output']);
+            Cookies.set("PrToAudit_ReadOnly", true);
+
+            this.$router.push({ name: 'audit' });
+          }
+      )
+
+
+    },
+
     changeSelectedProj(proj) {
       this.selectedProj = proj;
     },
@@ -1048,12 +1093,15 @@ export default {
 
     checkNote(){
       this.noteDialog = true;
-      showNoticeList({projectId: this.proj.projectId}).then(
+      showNoticeList({
+        projectId: this.proj.projectId,
+        // user_id:this.user.id,
+      }).then(
           res => {
             var allNotice = res['data']['data'];
             var tmpNoticeList = [];
             for (let i = 0; i < allNotice.length; i++)
-              if(allNotice[i].type === "A")
+              if(allNotice[i].type === "A" && allNotice[i].user_id === this.user.id)
                 tmpNoticeList.push(allNotice[i]);
             this.noticeList2 = tmpNoticeList;
             return true;
@@ -1064,6 +1112,8 @@ export default {
     getColor(state){
       return state ? "green" : "red";
     },
+
+
 
 
 

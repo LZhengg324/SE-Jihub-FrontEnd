@@ -74,6 +74,7 @@ export default {
         user_id: JSON.parse(Cookies.get("user")).id,
         project_id: JSON.parse(Cookies.get("proj")).projectId,
         source_branch_name: this.selectedBranch.name,
+        repo_id:this.selectedRepo.id,
         tasks: taskIdList,
       }).then(
           res => {

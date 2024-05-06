@@ -70,7 +70,7 @@ export default {
         }
       }
       console.log("cbycby " + this.proj.id + "cbycbycby")
-      completeCreateNewBranch({
+      axios.post("/api/develop/createBranch",{
         name: this.newBranchForm.branchName,
         project_id:this.proj.id,
         remote_path:this.selectedRepo.user+'/'+this.selectedRepo.repo,

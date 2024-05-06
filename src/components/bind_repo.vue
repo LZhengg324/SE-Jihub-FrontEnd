@@ -41,21 +41,18 @@ export default {
     },
     createRepo() {
       this.createRepoInProgress = true;
-      createRepo({
+      axios.post('/api/develop/CreateRepo',{
         name: this.gh_reponame,
         user_id: this.user.id,
         project_id: this.proj.id,
-        remote_path: 'CBY11/' + this.gh_reponame +'_' + this.proj.id,
+        remote_path: 'https://github.com/CBY11/',
       }).then((res) => {
         this.createRepoInProgress = false;
         this.gh_username = 'CBY11';
         this.gh_reponame = this.gh_reponame + '_' + this.proj.id;
-        initRepo({
-          repo_name : this.gh_reponame
-        })
         this.bindSplit();
       }).catch((err) => {
-        alert('哦不，好像绑定失败了！');
+        alert('哦不，创建失败了！');
         this.createRepoInProgress = false;
       })
     },

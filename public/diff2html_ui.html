@@ -39,7 +39,7 @@
     window.addEventListener(
         'message',
         function(event) {
-            const diffString = unescapeString(event.data);
+            const diffString = unescapeString(event.data.toString());
             const targetElement = document.getElementById('myDiffElement');
             const configuration = {
                 inputFormat: 'json',
