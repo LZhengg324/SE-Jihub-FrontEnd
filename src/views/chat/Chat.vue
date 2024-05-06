@@ -757,7 +757,7 @@ export default {
           let chatroom = document.getElementsByClassName("messages")[0]
           chatroom.scrollTop = chatroom.scrollHeight;
           console.log("scrolling")
-        }, 50); // 延迟时间
+        }, 100); // 延迟时间
       })
     },
     //

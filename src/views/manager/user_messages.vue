@@ -352,17 +352,6 @@ export default {
     },
     // 打开修改用户状态窗口，并显示当前状态
     openChangeUserStatusDialog(item) {
-<<<<<<< HEAD
-      console.log("here"+ user)
-      if (user.status === 'C') {
-        console.log(item)
-        console.log("open change user status dialog")
-        this.userStatusDialogMessage = item
-        this.selectedStatus = item.status
-        this.showChangeUserStatus = true
-      } else {
-        this.$message.error("你不是超级管理员，没有权限")
-=======
       console.log(item)
       if (this.user.status === 'D') {
         this.$message({
@@ -370,7 +359,6 @@ export default {
           message: "您没有权限"
         });
         return
->>>>>>> 7ef66f34462080f1e097631a3fbb98133d9bd64d
       }
       console.log("open change user status dialog")
       this.userStatusDialogMessage = item
