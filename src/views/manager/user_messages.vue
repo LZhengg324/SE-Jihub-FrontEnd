@@ -346,6 +346,7 @@ export default {
     },
     // 打开修改用户状态窗口，并显示当前状态
     openChangeUserStatusDialog(item) {
+      console.log("here"+ user)
       if (user.status === 'C') {
         console.log(item)
         console.log("open change user status dialog")

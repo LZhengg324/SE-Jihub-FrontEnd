@@ -441,7 +441,7 @@ console.log(user);
 if (user === undefined) { // 用户未登录
   console.log("not logged in");
   if (window.location.pathname !== "/login") {
-    //window.location.href = '/login'
+    window.location.href = '/login'
   }
 } else { // 用户已登录
   let userpath = (window.location.pathname !== "/workDetail" && window.location.pathname !== "/allFile" &&
