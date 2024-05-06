@@ -219,7 +219,7 @@ export default {
           value: 'B'
         },
         {
-          label: '小管理员',
+          label: '项目管理员',
           value: 'D'
         },
       ],
@@ -237,7 +237,7 @@ export default {
           value: 'B'
         },
         {
-          label: '小管理员',
+          label: '项目管理员',
           value: 'D'
         },
       ],
@@ -285,6 +285,9 @@ export default {
                 type: 'error',
                 message: "您没有权限"
               });
+            } else if (this.user.status === 'D') {
+              //过滤掉小管理员
+              this.userMessages = response.data.users.filter(user => user.status !== 'D')
             } else {
               this.userMessages = response.data.users
 
@@ -297,14 +300,17 @@ export default {
     },
     // 打开重置用户密码窗口
     openResetPasswordDialog(item) {
-      if (user.status === 'C') {
-        this.userResetPasswordDialogMessage = item
-        console.log("open reset password dialog")
-        console.log(this.userResetPasswordDialogMessage)
-        this.showResetPassword = true
-      } else {
-        this.$message.error("您不是超级管理员，没有权限")
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
       }
+      this.userResetPasswordDialogMessage = item
+      console.log("open reset password dialog")
+      console.log(this.userResetPasswordDialogMessage)
+      this.showResetPassword = true
     },
     // 关闭重置用户密码窗口
     closeResetPasswordDialog() {
@@ -346,6 +352,7 @@ export default {
     },
     // 打开修改用户状态窗口，并显示当前状态
     openChangeUserStatusDialog(item) {
+<<<<<<< HEAD
       console.log("here"+ user)
       if (user.status === 'C') {
         console.log(item)
@@ -355,7 +362,20 @@ export default {
         this.showChangeUserStatus = true
       } else {
         this.$message.error("你不是超级管理员，没有权限")
+=======
+      console.log(item)
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
+>>>>>>> 7ef66f34462080f1e097631a3fbb98133d9bd64d
       }
+      console.log("open change user status dialog")
+      this.userStatusDialogMessage = item
+      this.selectedStatus = item.status
+      this.showChangeUserStatus = true
     },
     // 关闭修改用户状态窗口
     closeChangeUserStatusDialog() {
@@ -370,74 +390,70 @@ export default {
     },
     // 修改用户状态
     changeStatus() {
-      if (user.status === 'C') {
-        console.log(this.selectedStatus)
-        let userId = this.userStatusDialogMessage.id
-        let managerId = this.user.id
-        axios.post("/api/management/changeUserStatus", {
-          managerId: managerId,
-          userId: userId,
-          changeToStatus: this.selectedStatus
-        })
-            .then((response) => {
-              this.showChangeUserStatus = false
-              console.log(response.data)
-              if (response.data.errcode === 1) {
-                this.$message({
-                  type: 'error',
-                  message: "您没有该权限"
-                });
-              } else if (response.data.errcode === 2) {
-                let showStatus;
-                if (this.selectedStatus === 'A') {
-                  showStatus = "正常"
-                } else if (this.selectedStatus === 'B') {
-                  showStatus = "禁用"
-                } else if (this.selectedStatus === 'D') {
-                  showStatus = "小管理员"
-                }
-                this.$message({
-                  type: 'info',
-                  message: "用户" + this.userStatusDialogMessage.name + "的状态已为" + showStatus
-                });
-              } else if (response.data.errcode === 3) {
-                console.log(response.data)
-                this.$message({
-                  type: 'info',
-                  message: "用户" + this.userStatusDialogMessage.name + "不能设置为小管理员"
-                })
-              } else {
-                if (this.selectedStatus === 'A') {
-                  this.$message({
-                    type: 'success',
-                    message: "成功将用户" + this.userStatusDialogMessage.name + "的状态恢复为正常"
-                  });
-                } else if (this.selectedStatus === 'B') {
-                  this.$message({
-                    type: 'success',
-                    message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为禁用"
-                  });
-                } else if (this.selectedStatus === 'D') {
-                  this.$message({
-                    type: 'success',
-                    message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为小管理员"
-                  });
-
-                }
+      console.log(this.selectedStatus)
+      let userId = this.userStatusDialogMessage.id
+      let managerId = this.user.id
+      axios.post("/api/management/changeUserStatus", {
+        managerId: managerId,
+        userId: userId,
+        changeToStatus: this.selectedStatus
+      })
+          .then((response) => {
+            this.showChangeUserStatus = false
+            console.log(response.data)
+            if (response.data.errcode === 1) {
+              this.$message({
+                type: 'error',
+                message: "您没有该权限"
+              });
+            } else if (response.data.errcode === 2) {
+              let showStatus;
+              if (this.selectedStatus === 'A') {
+                showStatus = "正常"
+              } else if (this.selectedStatus === 'B'){
+                showStatus = "禁用"
+              } else if (this.selectedStatus === 'D'){
+                showStatus = "小管理员"
               }
-              this.userStatusDialogMessage = ''
-              this.selectedStatus = ''
-              this.showUserMessages()
-            })
-            .catch((err) => {
-              this.showChangeUserStatus = false
-              this.userStatusDialogMessage = ''
-              this.selectedStatus = ''
-              console.error(err);
-            })
-      } else {
-        this.$message.error("你不是超级管理员，没有权限")
-      }
+              this.$message({
+                type: 'info',
+                message: "用户" + this.userStatusDialogMessage.name + "的状态已为" + showStatus
+              });
+            } else if (response.data.errcode === 3) {
+              console.log(response.data)
+              this.$message({
+                type: 'info',
+                message: "用户" + this.userStatusDialogMessage.name + "不能设置为项目管理员"
+              })
+            } else {
+              if (this.selectedStatus === 'A') {
+                this.$message({
+                  type: 'success',
+                  message: "成功将用户" + this.userStatusDialogMessage.name + "的状态恢复为正常"
+                });
+              } else if (this.selectedStatus === 'B'){
+                this.$message({
+                  type: 'success',
+                  message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为禁用"
+                });
+              } else if (this.selectedStatus === 'D'){
+              this.$message({
+                type: 'success',
+                message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为项目管理员"
+              });
+
+            }
+            }
+            this.userStatusDialogMessage = ''
+            this.selectedStatus = ''
+            this.showUserMessages()
+          })
+          .catch((err) => {
+            this.showChangeUserStatus = false
+            this.userStatusDialogMessage = ''
+            this.selectedStatus = ''
+            console.error(err);
+          })
     },
     // 打开用户个人信息窗口
     openUserProfileDialog(item) {
@@ -464,37 +480,40 @@ export default {
     },
     // 跳转到用户端页面
     gotoUserPage(item) {
-      if (user.status === 'C') {
-        console.log("232534")
-        Cookies.set('manager', Cookies.get('user'))
-        console.log(Cookies.get('manager'))
-        axios.post("/api/getUserInfo", {
-          managerId: this.user.id,
-          userId: item.id,
-        })
-            .then((response) => {
-              console.log(response.data)
-              if (response.data.errcode === 1) {
-                this.$message({
-                  type: 'error',
-                  message: "用户不存在"
-                });
-              } else {
-                Cookies.set('user', JSON.stringify(response.data.data))
-                this.$message({
-                  type: 'success',
-                  message: "跳转成功"
-                });
-                Cookies.set("from", 0)
-                window.location.href = '/allProject'
-              }
-            })
-            .catch((err) => {
-              console.error(err);
-            })
-      } else {
-        this.$message.error("你不是超级管理员，没有权限")
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
       }
+      console.log("232534")
+      Cookies.set('manager', Cookies.get('user'))
+      console.log(Cookies.get('manager'))
+      axios.post("/api/getUserInfo", {
+        managerId: this.user.id,
+        userId: item.id,
+      })
+          .then((response) => {
+            console.log(response.data)
+            if (response.data.errcode === 1) {
+              this.$message({
+                type: 'error',
+                message: "用户不存在"
+              });
+            } else {
+              Cookies.set('user', JSON.stringify(response.data.data))
+              this.$message({
+                type: 'success',
+                message: "跳转成功"
+              });
+              Cookies.set("from", 0)
+              window.location.href = '/allProject'
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+          })
     },
     getColor(status) {
       if (status === "A") {

@@ -1,35 +1,37 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
   <v-container class="chatroom_">
     <h1>聊天室</h1>
+    <!--主要页面-->
     <v-row>
-        <v-col cols="4" class="chatroom_">
+      <v-col cols="3">
+        <v-toolbar>
+          <v-toolbar-title>历史聊天室</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <!--搜索聊天室 -->
+          <!--              <v-btn icon  small :color="getDarkColor(user.topic)">-->
+          <!--                <v-icon>mdi-magnify</v-icon>-->
+          <!--              </v-btn>-->
+          <!-- 创建新的聊天室 }}-->
+          <v-btn icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">
+            <v-icon>mdi-plus-circle</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <!--历史聊天室 -->
+        <div class="chatroom">
           <v-list style="overflow-y: auto;">
-            <v-toolbar>
-              <v-toolbar-title>历史聊天室</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-btn icon  small :color="getDarkColor(user.topic)">
-                <v-icon>mdi-magnify</v-icon>
-                <!-- 创建新的聊天室 }}-->
-              </v-btn>
-              <v-btn icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">
-                <v-icon>mdi-plus-circle</v-icon>
-              </v-btn>
-            </v-toolbar>
-
-            <v-list-item-group v-model="selectedRoom">
+            <v-list-item-group  v-model="selectedRoom">
               <v-list-item two-line v-for="item in chatRooms" :key="item.id" @click="selectToRoom(item)">
-<!--                <v-list-item two-line v-for="item in chatRooms" :key="item.id" @click="selectToRoom(item)">-->
-
                 <v-list-item-content>
                   <v-list-item-title style="font-weight: bold">
                     <span :style="'color: ' + getDarkColor(user.topic) ">{{ item.title }}</span>
                     <span class="float-end grey--text">{{item.desc}}</span>
                   </v-list-item-title>
-                  <v-list-item-subtitle>
-<!--                    {{item.history.length === 0 ? ' ' : item.history[0].senderName + ' : ' }}-->
-<!--                    {{item.history[0].type === 'A' ? item.history[0].content :-->
-<!--                      item.history[0].type === 'B' ? '[PHOTO]' : '[FILE]'}}-->
-<!--                    {{' (' +  new Date(item.history[0].time).toLocaleTimeString() + ")"}}-->
+                  <v-list-item-subtitle >
+                    <!--                    {{item.history.length === 0 ? ' ' : item.history[0].senderName + ' : ' }}-->
+                    <!--                    {{item.history[0].type === 'A' ? item.history[0].content :-->
+                    <!--                      item.history[0].type === 'B' ? '[PHOTO]' : '[FILE]'}}-->
+                    <!--                    {{' (' +  new Date(item.history[0].time).toLocaleTimeString() + ")"}}-->
                     {{item.unread === 0 ? ' ' : '您有新的未读消息'}}
                     <v-badge class="float-end" v-if="item.unread > 0" color="error" :content="item.unread" inline></v-badge>
                   </v-list-item-subtitle>
@@ -38,28 +40,28 @@
             </v-list-item-group>
             <v-divider></v-divider>
           </v-list>
-        </v-col>
+        </div>
+      </v-col>
 
-      <v-col cols="8">
-          <!-- 聊天内容区域 -->
-        <v-card class="chatroom_">
-          <v-card-title v-if="this.chatRooms.length !== 0">
-            {{ this.chatRooms[this.selectedRoom].title }}
+      <v-col cols="6">
+          <!-- 聊天窗口 -->
+        <v-card class="chatroom_" v-if="this.chatRooms.length !== 0 & this.selectedRoom !== null">
+          <v-card-title>
+            {{ roomNow.title }}
           </v-card-title>
+          <!-- 聊天内容区域 -->
         <div class="messages">
-
           <v-card-text>
             <v-list dense>
-<!--              <v-list-item v-for="message in chatRooms[selectedRoom].history" :key="message.id">-->
-                <v-list-item v-for="message in messages" :key="message.id" >
-                  <v-list-item-avatar size="30px">
+                <v-list-item v-for="message in messages" :key="message.id">
+                  <v-list-item-avatar size="30px" style="align-self: flex-start;">
                     <v-img :src="getIdenticon(message.from, 50, 'user')"></v-img>
                   </v-list-item-avatar>
                 <v-list-item-content>
                   <v-list-item-title >
                     {{ message.from }}
                   </v-list-item-title>
-                  <v-list-item-subtitle>
+                  <v-list-item-subtitle style="overflow: visible; white-space: normal;">
                     {{ message.content }}
                   </v-list-item-subtitle>
                 </v-list-item-content>
@@ -73,8 +75,57 @@
           <button @click="sendMessage">Send</button>
         </div>
         </v-card>
+
+        <!-- 没有聊天室时 -->
+        <v-card class="chatroom_" v-else>
+          <v-card-title>
+          </v-card-title>
+          <div class="messages">
+          </div>
+          <!-- 消息输入区域 -->
+          <div class="input">
+            <input :disabled = "true" v-model="messageInput" @keyup.enter="sendMessage" placeholder="Type your message here...">
+            <button :disabled="true" @click="sendMessage">Send</button>
+          </div>
+        </v-card>
+
+      </v-col>
+
+      <!-- 聊天室成员-->
+      <v-col cols="3" class="chatroom_">
+        <div v-if="this.selectedRoom !== null">
+          <v-toolbar>
+            <v-toolbar-title>聊天室成员</v-toolbar-title>
+            <v-spacer></v-spacer>
+                <!--拉人按钮 -->
+<!--            <v-btn icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">-->
+<!--              <v-icon>mdi-plus-circle</v-icon>-->
+<!--            </v-btn>-->
+          </v-toolbar>
+          <v-list style="overflow-y: auto;">
+              <v-list-item v-for="item in roomNow.users">
+              <v-list-item-avatar>
+                    <v-img :src="getIdenticon(item.userName, 50, 'user')" ></v-img>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                {{ item.userName }}
+              </v-list-item-content>
+                <!--踢人按钮 -->
+<!--              <v-btn icon ripple small color="red" @click="openShowConfirmDeleteMember()">-->
+<!--                <v-icon>mdi-minus-circle-outline</v-icon>-->
+<!--              </v-btn>-->
+            </v-list-item>
+            <v-list-item v-if="this.roomNow.type==='PUB'" >
+              <v-btn block @click="openShowConfirmDeleteRoom()" >
+                解散群聊
+              </v-btn>
+            </v-list-item>
+          </v-list>
+          <v-divider></v-divider>
+        </div>
       </v-col>
     </v-row>
+
 
     <!--创建聊天室 -->
     <v-dialog v-model="createNewChatSheet" width="390" height="20vh" scrollable>
@@ -91,7 +142,6 @@
               <v-text-field label="聊天室简介" v-model="createRoomDesc"></v-text-field>
             </v-col>
           </v-row>
-
         </v-card-subtitle>
 
         <v-card-text>
@@ -137,14 +187,40 @@
 
     </v-dialog>
 
+    <!-- 确认移除成员-->
+    <v-dialog v-model="showConfirmDeleteMember" max-width="300" persistent>
+      <v-card>
+        <v-card-title> 删除成员{{}}？</v-card-title>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green" class="white--text" @click="closeShowConfirmDeleteMember">
+            取消
+          </v-btn>
+          <v-btn color="red" class="white--text" @click="deleteMember()">
+            确定
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
+    <!-- 确认解散群聊-->
+    <v-dialog v-if="this.roomNow !== null" v-model="showConfirmDeleteRoom" max-width="300" persistent>
+      <v-card>
+        <v-card-title> 解散群聊{{ this.roomNow.title }}？</v-card-title>
+        <v-card-text> 所有聊天记录都会消失哦 </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green" class="white--text" @click="closeShowConfirmDeleteRoom()">
+            取消
+          </v-btn>
+          <v-btn color="red" class="white--text" @click="deleteRoom()">
+            确定
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
   </v-container>
-
-
-
-
-
 </template>
 
 <script>
@@ -153,6 +229,7 @@ import getIdenticon from "@/utils/identicon";
 import ChatMessage from "@/views/chat/ChatMessage.vue";
 import ChatMessageLeft from "@/views/chat/ChatMessageLeft.vue";
 import axios from "axios";
+import Vue from "vue";
 
 
 export default {
@@ -172,7 +249,7 @@ export default {
     return {
 
       selectedRoomIndex:0,
-      selectedRoom:0,
+      selectedRoom:null,
       messageInput: '',
       messages: [],
       createNewChatSheet: false,
@@ -184,75 +261,174 @@ export default {
 
       chatRooms:[],
       search_Chatroom:'',
+
+      groupMember:[],
+      roomNow:null,
+      ws:null,
+
+      showConfirmDeleteMember: false,
+      showConfirmDeleteRoom: false,
+
+
     };
   },
   methods: {
     getIdenticon,
 
-    updateChatRooms() {
+    async updateChatRooms() {
       console.log('updating chat rooms...')
-      let tempWS = {}
-      let tempHistory = {}
-      this.chatRooms.forEach((item, index) => {
-        if (item.ws !== null) {
-          tempWS[item.id] = item.ws
-          tempHistory[item.id] = item.history
-        }
-      })
-
-
-      axios.post('/api/chat/discussions', {
-        projectId: this.proj.projectId,
-        currentUserId: this.user.id
-      }).then((res) => {
+      console.log(this.chatRooms)
+      let prevLength = this.chatRooms.length
+      try{
+        let res = await axios.post('/api/chat/getRoomList', {
+          projectId: this.proj.projectId,
+          currentUserId: this.user.id
+        })
         console.log(res.data)
-            if (res.data.errcode === 0) {
-              this.chatRooms = res.data.data.discussions.map((item, index) => {
-                return {
-                  id: item.roomId,
-                  title: item.roomName,
-                  desc: item.outline,
-                  users: item.users,
-                  history: tempHistory[item.id] || [],
-                  unread: 0,
-                }
-              })
+        if (res.data.errcode === 0) {
+          // this.chatRooms = res.data.data.rooms.map((item, index) => {
+          //   const groupAdmin = item.users.find(user => user.userRole === 'B');
+          //   return {
+          //     id: item.roomId,
+          //     title: item.roomName,
+          //     desc: item.outline,
+          //     users: item.users,
+          //     history: [],
+          //     unread: item.unReadNums,
+          //     time: item.time,
+          //     type: item.roomType,
+          //     admin: groupAdmin ? groupAdmin : null
+          //   }
+          // })
+          Vue.set(this, 'chatRooms', res.data.data.rooms.map((item, index) => {
+            const groupAdmin = item.users.find(user => user.userRole === 'B');
+            return {
+              id: item.roomId,
+              title: item.roomName,
+              desc: item.outline,
+              users: item.users,
+              history: [],
+              unread: item.unReadNums,
+              time: item.time,
+              type: item.roomType,
+              admin: groupAdmin ? groupAdmin : null
+            };
+          }));
+        } else {
+          throw new Error('get discussion list failure with non 0 errcode (' + res.data.errcode + ')')
+        }
 
-              console.log(this.chatRooms)
+        //new
+        if (this.ws === null) {
+          this.ws = this.initWS()
+        }
 
-            } else {
-              throw new Error('get discussion list failure with non 0 errcode (' + res.data.errcode + ')')
-            }
-
-      }).catch((err) => {
+      } catch(err) {
         this.chatRooms = []
         console.error(err)
         this.$message({
           type: 'error',
           message: 'get discussion list failure with error: ' + err
         })
-      }).finally(() => {
-            // 重新分配ws
-            this.chatRooms.forEach((item, index) => {
-              if (tempWS[item.id] !== undefined) {
-                item.ws = tempWS[item.id]
-                tempWS[item.id] = undefined
-                item.history = tempHistory[item.id]
-              } else {
-                item.ws = this.initWS(item.id)
-                console.log(item)
-                this.getChatHistory(item)
-              }
-            })
+      } finally {
+        console.log("after updating chatrooms")
+        console.log(this.chatRooms)
 
-        // 关闭多余的ws
-        for (const [key, value] of Object.entries(tempWS)) {
-          if (value !== undefined) {
-            value.close()
-          }
+
+        if (this.roomNow != null && !this.chatRooms.find(room => room.id === this.roomNow.id)) {
+          this.roomNow = null
+          this.selectedRoom = null
         }
-      })
+        //this.scrollToTop()
+        //this.scrollToItem()
+      }
     },
+
+    // updateChatRooms() {
+    //   console.log('updating chat rooms...')
+    //   console.log(this.chatRooms)
+    //   // // 之前的
+    //   // let tempWS = {}
+    //   // let tempHistory = {}
+    //   // this.chatRooms.forEach((item, index) => {
+    //   //   if (item.ws !== null) {
+    //   //     tempWS[item.id] = item.ws
+    //   //     tempHistory[item.id] = item.history
+    //   //     console.log(item.ws)
+    //   //     console.log(tempWS)
+    //   //   }
+    //   // })
+    //   // console.log(tempWS)
+    //
+    //   axios.post('/api/chat/getRoomList', {
+    //     projectId: this.proj.projectId,
+    //     currentUserId: this.user.id
+    //   }).then((res) => {
+    //     console.log(res.data)
+    //         if (res.data.errcode === 0) {
+    //           this.chatRooms = res.data.data.rooms.map((item, index) => {
+    //             const groupAdmin = item.users.find(user => user.userRole === 'B');
+    //             return {
+    //               id: item.roomId,
+    //               title: item.roomName,
+    //               desc: item.outline,
+    //               users: item.users,
+    //               // history: tempHistory[item.id] || [],
+    //
+    //               //new
+    //               history: [],
+    //               unread: item.unReadNums,
+    //               time: item.time,
+    //               type: item.roomType,
+    //               admin: groupAdmin ? groupAdmin : null
+    //             }
+    //           })
+    //         } else {
+    //           throw new Error('get discussion list failure with non 0 errcode (' + res.data.errcode + ')')
+    //         }
+    //
+    //   }).catch((err) => {
+    //     this.chatRooms = []
+    //     console.error(err)
+    //     this.$message({
+    //       type: 'error',
+    //       message: 'get discussion list failure with error: ' + err
+    //     })
+    //   }).finally(() => {
+    //     console.log("after updating chatrooms")
+    //     console.log(this.chatRooms)
+    //         // // 重新分配ws
+    //         // this.chatRooms.forEach((item, index) => {
+    //         //   if (tempWS[item.id] !== undefined) {
+    //         //     item.ws = tempWS[item.id]
+    //         //     tempWS[item.id] = undefined
+    //         //     item.history = tempHistory[item.id]
+    //         //   } else {
+    //         //     item.ws = this.initWS(item.id)
+    //         //     console.log(item)
+    //         //     this.getChatHistory(item)
+    //         //   }
+    //         // })
+    //
+    //     //new
+    //     if (this.ws === null) {
+    //       this.ws = this.initWS()
+    //     }
+    //     //
+    //     // // 值钱的
+    //     // // 关闭多余的ws
+    //     // for (const [key, value] of Object.entries(tempWS)) {
+    //     //   if (value !== undefined) {
+    //     //     value.close()
+    //     //   }
+    //     // }
+    //
+    //     if (this.selectedRoom) {
+    //       console.log(this.selectedRoom)
+    //       this.selectToRoom(this.chatRooms[this.selectedRoom])
+    //     }
+    //   })
+    // },
 
     getProjectMember() {
       console.log(this.proj.projectId)
@@ -294,8 +470,20 @@ export default {
           currentUserId: this.user.id,
           projectId: this.proj.projectId,
           targetUserId: this.selectedMembers[0].peopleId
-        }).finally( () => {
-          this.updateChatRooms()
+        }).then((res) => {
+          this.updateChatRooms().then(() => {
+            console.log("after create: go to room")
+            let room = this.chatRooms.find((item) => {
+              return item.id === res.data.data.roomId
+            })
+            console.log(room)
+            this.selectedRoom = this.chatRooms.indexOf(room)
+            this.selectToRoom(room)
+
+            this.ws.send(JSON.stringify({
+              type: 3,
+            }));
+          })
         })
       } else {
         if (this.createRoomName === '') {
@@ -320,8 +508,20 @@ export default {
           users: users,
           roomName: this.createRoomName,
           outline: this.createRoomDesc
-        }).finally(() => {
-          this.updateChatRooms()
+        }).then((res) => {
+          this.updateChatRooms().then(() => {
+            console.log("after create: go to room")
+            console.log(this.chatRooms)
+            this.selectedRoom = 0
+            this.$forceUpdate()
+            this.selectToRoom(this.chatRooms[this.selectedRoom])
+
+            this.ws.send(JSON.stringify({
+              type: 3,
+            }));
+
+          })
+
         })
       }
       this.selectedMembers = []
@@ -332,85 +532,194 @@ export default {
     },
 
     getChatHistory(room) {
-      axios.post('/api/chat/getRoomMessages', {
-        roomId: room.id,
-        currentUserId: this.user.id
-      }).then((res) => {
-        if (res.data.errcode === 0) {
-          room.history = res.data.data.messages.map(((item, index) => {
-            return {
-              from: item.senderName,
-              fromId: item.senderId,
-              content: item.content,
-              time: item.time,
-              type: item.type
-            }
-          }))
-          this.messages = room.history
-          this.scrollToBottom()
-        }
-      })
+      console.log(room)
+      if (room) {
+        console.log("getting chat history")
+        axios.post('/api/chat/getRoomMessages', {
+          roomId: room.id,
+          currentUserId: this.user.id
+        }).then((res) => {
+          if (res.data.errcode === 0) {
+            room.history = res.data.data.messages.map(((item, index) => {
+              return {
+                from: item.senderName,
+                fromId: item.senderId,
+                content: item.content,
+                time: item.time,
+                type: item.type
+              }
+            }))
+            this.messages = room.history
+            //this.scrollToTop()
+            //this.scrollToItem()
+            this.scrollToBottom()
+          }
+        })
+      }
     },
 
+    initWS() {
+      console.log('initWS: connecting to ws://127.0.0.1:8000/ws/chat/' + this.user.id.toString() + '/' + this.proj.projectId.toString())
+      const socket = new WebSocket('ws://127.0.0.1:8000/ws/chat/' + this.user.id.toString() + '/' + this.proj.projectId.toString());
 
-    initWS(rid) {
-      console.log('initWS: connecting to ws://127.0.0.1:8000/ws/chat/' + this.user.id.toString() + '/' + rid.toString())
-      const socket = new WebSocket('ws://127.0.0.1:8000/ws/chat/' + this.user.id.toString() + '/' + rid.toString());
-
-      const onopen = (e) => {
+      socket.onopen = (e) => {
         console.log('socket opened')
       }
 
-      socket.onopen = onopen
-
       const onmessage = (fromName, fromId, content, time) => {
-        // 找到this.chatRooms中id为rid的room
-        let room = this.chatRooms.find((item, index) => {
-          return item.id === rid
-        })
-        if (room === undefined) {
+        this.updateChatRooms()
+        console.log(this.roomNow)
+        if (this.roomNow === undefined) {
           console.error('room not found')
         } else {
-          room.history.push({
+          this.roomNow.history.push({
             from: fromName,
             type: 'group',
             content: content,
             time: time
           })
-          //this.chatRooms[this.selectedRoom].history.push({user:this.user.name, content:this.messageInput})
-          // if (this.messageServiceAvailable && document.visibilityState === 'hidden' && fromName !== this.user.name) {
-          //   const notification = new Notification(`来自讨论室 ${room.title} 的一条新消息`, {
-          //     body: `${fromName}: ${content}`,
-          //     icon: getIdenticon(fromName, 100, 'user')
-          //   })
-          // }
-          //this.messages.push({user: fromName, content: content})
           console.log("显示聊天记录")
           console.log(this.messages)
           //this.scrollToBottom()
         }
       }
 
+      const onmessage_remind = () => {
+        console.log("update unread or group")
+        //this.roomNow.unread = 0
+        this.updateChatRooms()
+      }
+
+
       socket.onmessage = function (event) {
         console.log('Message from server ', event.data);
         var data = JSON.parse(event.data)
-        onmessage(data.senderName, data.senderId, data.content, data.time)
+        if (data.type === 1) {
+          onmessage(data.senderName, data.senderId, data.mes, data.time)
+        } else if (data.type === 2) {
+          onmessage_remind()
+        }
       };
 
       socket.onerror = function (event) {
         console.error('WebSocket error observed:', event)
       }
+      const initagain = () => {
+        this.ws = this.initWS()
+      }
 
       socket.onclose = function (e) {
         console.log('Socket is closed.', e.reason);
+        //initagain()
       }
 
       return socket
     },
 
+
+    // 多个socket版 之前的
+    // initWS(rid) {
+    //   // console.log('initWS: connecting to ws://127.0.0.1:8000/ws/chat/' + this.user.id.toString() + '/' + rid.toString())
+    //   // const socket = new WebSocket('ws://127.0.0.1:8000/ws/chat/' + this.user.id.toString() + '/' + rid.toString());
+    //
+    //   console.log('initWS: connecting to ws://127.0.0.1:8000/ws/chat/' + this.user.id.toString() + '/' + this.proj.projectId.toString())
+    //   const socket = new WebSocket('ws://127.0.0.1:8000/ws/chat/' + this.user.id.toString() + '/' + this.proj.projectId.toString());
+    //
+    //   socket.onopen = (e) => {
+    //     console.log('socket opened')
+    //   }
+    //
+    //   const onmessage = (fromName, fromId, content, time) => {
+    //     // 找到this.chatRooms中id为rid的room
+    //     // console.log("on message "+ rid)
+    //     console.log(this.roomNow)
+    //     // let room = this.chatRooms.find((item, index) => {
+    //     //   return item.id === rid
+    //     // })
+    //     if (this.roomNow === undefined) {
+    //       console.error('room not found')
+    //     } else {
+    //       this.roomNow.history.push({
+    //         from: fromName,
+    //         type: 'group',
+    //         content: content,
+    //         time: time
+    //       })
+    //       console.log("显示聊天记录")
+    //       console.log(this.messages)
+    //       //this.scrollToBottom()
+    //     }
+    //   }
+    //
+    //
+    //   socket.onmessage = function (event) {
+    //     console.log('Message from server ', event.data);
+    //     var data = JSON.parse(event.data)
+    //     if (data.type === 1) {
+    //       onmessage(data.senderName, data.senderId, data.mes, data.time)
+    //     } else if (data.type === 2) {
+    //
+    //     }
+    //
+    //   };
+    //
+    //   socket.onerror = function (event) {
+    //     console.error('WebSocket error observed:', event)
+    //   }
+    //
+    //   socket.onclose = function (e) {
+    //     console.log('Socket is closed.', e.reason);
+    //   }
+    //
+    //   return socket
+    // },
+
+    // selectToRoom(room) {
+    //
+    //   this.getChatHistory(room)
+    //   this.chatRooms[this.selectedRoom].ws.send(JSON.stringify({
+    //     type: 1,
+    //     roomId: this.chatRooms[this.selectedRoom].id,
+    //   }));
+    //   console.log("send msg-type 1")
+    //   //this.scrollToTop()
+    //   this.scrollToBottom()
+    // },
+
+    // 多个socket 版  成功的
+    // selectToRoom(room) {
+    //   console.log(room)
+    //   this.roomNow = room
+    //   console.log("select to room, roomNow")
+    //   console.log(this.roomNow)
+    //
+    //   //this.getChatHistory(room)
+    //   // room.ws.send(JSON.stringify({
+    //   //   type: 1,
+    //   //   roomId: room.id,
+    //   // }));
+    //
+    //   this.getChatHistory(this.roomNow)
+    //   room.ws.send(JSON.stringify({
+    //     type: 1,
+    //     roomId: this.roomNow.id,
+    //   }));
+    //   this.scrollToBottom()
+    // },
+
     selectToRoom(room) {
-      this.getChatHistory(room)
+      console.log(room)
+      this.roomNow = room
+      console.log("select to room, roomNow")
+      console.log(this.roomNow)
+      this.getChatHistory(this.roomNow)
+
+      this.ws.send(JSON.stringify({
+        type: 1,
+        roomId: this.roomNow.id,
+      }));
       //this.scrollToTop()
+      //this.scrollToItem()
       this.scrollToBottom()
     },
 
@@ -429,15 +738,15 @@ export default {
       //console.log(this.selectedRoom)
       //console.log(this.chatRooms)
       //console.log(this.chatRooms[this.selectedRoom])
-      this.chatRooms[this.selectedRoom].ws.send(JSON.stringify({
-        sender: this.user.id,
-        type: 1,
-        message: this.messageInput
-      }));
-      // this.messages.push({user:this.user.name, content:this.messageInput})
 
+
+      this.ws.send(JSON.stringify({
+        roomId: this.roomNow.id,
+        type: 2,
+        mes: this.messageInput,
+        mes_type: 'A'
+      }));
       this.messageInput = ''
-      //this.scrollToTop()
       this.scrollToBottom()
     },
 
@@ -451,11 +760,98 @@ export default {
         }, 50); // 延迟时间
       })
     },
+    //
+    // scrollToTop() {
+    //   console.log("show selectedroom")
+    //   console.log(this.selectedRoom)
+    //   this.$nextTick(() => {
+    //     setTimeout(() => {
+    //       let chatroom= document.getElementsByClassName("chatroom")[0]
+    //       console.log(chatroom.scrollTop)
+    //       chatroom.scrollTop = 0;
+    //       console.log("scrolling to top")
+    //     }, 50); // 延迟时间
+    //   })
+    // },
+
+    scrollToTop() {
+      this.$nextTick(() => {
+        const chatroom = this.$refs.chatroom;
+        if (chatroom) {
+          chatroom.scrollTop = 0;
+        }
+      });
+    },
+
+    //
+    // scrollToItem() {
+    //   const element = this.$refs[this.selectedRoom];
+    //   if (element) {
+    //     element.scrollIntoView({ behavior: "smooth", block: "start" });
+    //   }
+    // },
 
     getDarkColor: topicSetting.getDarkColor,
     getTopicColor: topicSetting.getColor,
     getLinearGradient: topicSetting.getLinearGradient,
-    getRadialGradient: topicSetting.getRadialGradient
+    getRadialGradient: topicSetting.getRadialGradient,
+
+    openShowConfirmDeleteMember() {
+      this.showConfirmDeleteMember = true
+    },
+
+    closeShowConfirmDeleteMember() {
+      this.showConfirmDeleteMember = false
+    },
+
+    deleteMember() {
+
+    },
+
+
+    openShowConfirmDeleteRoom() {
+      this.showConfirmDeleteRoom = true
+    },
+
+    closeShowConfirmDeleteRoom() {
+      this.showConfirmDeleteRoom = false
+    },
+
+    deleteRoom() {
+      console.log("delete room")
+      console.log(this.roomNow)
+      axios.post('/api/chat/deleteRoom', {
+        roomId: this.roomNow.id,
+        currentUserId: this.user.id
+      }).then((res) => {
+        console.log(res.data)
+        if (res.data.errcode === 1) {
+          this.$message({
+            type: 'error',
+            message: "您不是群主！"
+          });
+        } else if (res.data.errcode === 0) {
+          this.selectedRoom = null
+          this.roomNow = null
+          this.updateChatRooms().then(() => {
+            this.$message({
+              type: 'success',
+              message: "群已解散！"
+            });
+            this.ws.send(JSON.stringify({
+              type: 3,
+            }));
+          });
+
+
+        }
+      }).catch((err) => {
+        console.error(err)
+      })
+
+      this.showConfirmDeleteRoom = false
+
+    }
   }
 };
 </script>
@@ -463,6 +859,12 @@ export default {
 <style>
 .chatroom_ {
   height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatroom {
+  height: 72vh;
   display: flex;
   flex-direction: column;
 }
