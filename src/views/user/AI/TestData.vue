@@ -144,7 +144,7 @@ export default {
                 message: "未知错误"
               });
             } else {
-              this.result = response.data.data
+              this.result = response.data.data.content
               this.cmViewer.setValue(this.result)
             }
           })

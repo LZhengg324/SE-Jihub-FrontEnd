@@ -60,13 +60,22 @@ export default {
     getTopicColor: topicSetting.getColor,
     getDarkColor: topicSetting.getDarkColor,
     createNewPullRequest () {
+      var taskIdList = [];
+      for (let i = 0; i < this.newPRForm.taskList.length; i++) {
+        taskIdList.push(
+            this.taskIds[(this.taskNames.indexOf(this.newPRForm.taskList[i]))]);
+      }
+      console.log("hhh c" + taskIdList);
+
+
       completeCreateNewPR({
         title:this.newPRForm.title,
         description: this.newPRForm.msg,
-        creator_id: JSON.parse(Cookies.get("user")).id,
+        user_id: JSON.parse(Cookies.get("user")).id,
         project_id: JSON.parse(Cookies.get("proj")).projectId,
-        source_branch: this.selectedBranch.name,
-        taskList: this.newPRForm.taskList
+        source_branch_name: this.selectedBranch.name,
+        repo_id:this.selectedRepo.id,
+        tasks: taskIdList,
       }).then(
           res => {
             this.$message({
@@ -88,9 +97,15 @@ export default {
     getTaskNameList() {
       console.log("get name list!");
       for (let i = 0; i < this.tasks.length; i++) {
-        this.taskNames.push(this.tasks[i].taskName);
+        var tmp_taskName = this.tasks[i].taskName;
+        // this.taskNames.push(this.tasks[i].taskName);
+        for (let j = 0; j < this.tasks[i].subTaskList.length; j++) {
+          this.taskNames.push(tmp_taskName + "--" + this.tasks[i].subTaskList[j].subTaskName);
+          this.taskIds.push(this.tasks[i].subTaskList[j].subTaskId);
+        }
       }
-      console.log(this.taskNames);
+      console.log("hhh" + this.taskNames);
+      console.log("hhh" + this.taskIds);
     },
     checkMyTask() {
       //checkMyTask
@@ -131,6 +146,7 @@ export default {
       checkMyFlag: false,
       tasks: [],
       taskNames: [],
+      taskIds:[],
 
     }
   }, watch: {
@@ -260,13 +276,13 @@ export default {
             :items="taskNames"
         >
           <template v-slot:item="{ item }">
-            <div style="position: relative;background-color: aliceblue;">
-              <v-avatar size="25">
+            <div style="position: relative;background-color: aliceblue; ">
+              <v-avatar size="25" color="indigo">
                 <v-icon class="mr-2" :color="getTopicColor(user.topic)">
                   mdi-bullseye-arrow
                 </v-icon>
               </v-avatar>
-              <span style="position:absolute;left: 120%;">
+              <span style="position:absolute;left: 120%; width: 500px">
               {{ item }}
             </span>
             </div>

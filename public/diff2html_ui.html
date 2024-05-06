@@ -16,7 +16,7 @@
 </head>
 
 <body>
-<h1>diff2html-ui</h1>
+<h1>代码差异界面</h1>
 <div id="myDiffElement">Waiting for data...</div>
 <script>
     function unescapeString(str) {
@@ -35,65 +35,11 @@
             }
         });
     }
-    //
-    // // 例子
-    // var str = "Hello\\nWorld\\t!";
-    // var unescapedStr = unescapeString(str);
-    // console.log(unescapedStr); // 输出：Hello\nWorld\t!
 
     window.addEventListener(
         'message',
         function(event) {
-            // // 检查消息来源
-            // if (event.origin === "https://your-app-url.com") {
-            //     document.getElementById('displayData').
-            //         innerText = 'Received data: ' + event.data;
-            // }
-            // console.log(event.data);
-            const diffString = unescapeString(event.data);
-
-            // const diffString = "diff --git a/data.json b/data.json\n" +
-            //     "new file mode 100644\n" +
-            //     "index 0000000..1221ebd\n" +
-            //     "--- /dev/null\n" +
-            //     "+++ b/data.json\n" +
-            //     "@@ -0,0 +1,3 @@\n" +
-            //     "+{\n" +
-            //     "+ \"cby\":\"handsome boy\"\n" +
-            //     "+}\n" +
-            //     "\\ No newline at end of file\n" +
-            //     "diff --git a/test.json b/test.json\n" +
-            //     "new file mode 100644\n" +
-            //     "index 0000000..f26370a\n" +
-            //     "--- /dev/null\n" +
-            //     "+++ b/test.json\n" +
-            //     "@@ -0,0 +1,14 @@\n" +
-            //     "+\n" +
-            //     "+{\"id\":11,\n" +
-            //     "+\"name\":\"ccc\",\n" +
-            //     "+\"email\":\"123@qq.com\",\n" +
-            //     "+\"projects\":\n" +
-            //     "+[{\"projectId\":11,\n" +
-            //     "+\"projectName\":\"task1\",\n" +
-            //     "+\"projectIntro\":\"\",\n" +
-            //     "+\"state\":\"B\",\n" +
-            //     "+\"deadline\":\"2024-4-15\",\n" +
-            //     "+\"managerId\":11,\n" +
-            //     "+\"managerName\":\"ccc\",\n" +
-            //     "+\"access\":\"A\"}],\n" +
-            //     "+\"status\":\"A\",\"topic\":\"B\"}\n" +
-            //     "\\ No newline at end of file\n" +
-            //     "diff --git a/test.txt b/test.txt\n" +
-            //     "deleted file mode 100644\n" +
-            //     "index 9b44207..0000000\n" +
-            //     "--- a/test.txt\n" +
-            //     "+++ /dev/null\n" +
-            //     "@@ -1,2 +0,0 @@\n" +
-            //     "-cbycby\n" +
-            //     "-cbycbycby\n" +
-            //     "\\ No newline at end of file\n";
-            // console.log("-----------------\n" + diffString + "\n-----------------------");
-            // diffString = "diff --git a/test.txt b/test.txt\\nindex 9b44207..7e4d904 100644\\n--- a/test.txt\\n+++ b/test.txt\\n@@ -1,2 +1,22 @@\\n-cbycby\\n+cbycbycby\\n+\\n+\\n+\\n+\\n+\\n+\\n+\\n+\\n+\\n+\\n+cbycbycbycby\\n+\\n+\\n+\\n+\\n+\\n+\\n+\\n+\\n+\\n cbycbycby\\n\\\\ No newline at end of file\\n\n";
+            const diffString = unescapeString(event.data.toString());
             const targetElement = document.getElementById('myDiffElement');
             const configuration = {
                 inputFormat: 'json',
@@ -109,21 +55,7 @@
 
         },
         false);
-    // document.addEventListener('DOMContentLoaded', () => {
-    //     const diffString = Cookies.get('diffString');
-    //     const targetElement = document.getElementById('myDiffElement');
-    //     const configuration = {
-    //         inputFormat: 'json',
-    //         drawFileList: true,
-    //         matching: 'lines',
-    //         highlight: true,
-    //         outputFormat: "side-by-side"
-    //     };
-    //     const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
-    //     diff2htmlUi.draw();
-    //     diff2htmlUi.highlightCode();
-    //     diff2htmlUi.fileListToggle(true);
-    // });
+
 </script>
 
 </body>

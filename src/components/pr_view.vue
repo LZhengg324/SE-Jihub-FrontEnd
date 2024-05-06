@@ -78,7 +78,8 @@ export default {
         user_id: this.user.id,
         remote_path: this.selectedRepo.user+'/'+this.selectedRepo.repo,
         project_id: this.proj.id,
-        source_branch: PrToAudit.toBranchName
+        source_branch: PrToAudit.fromBranchName,
+        ghpr_id:PrToAudit.id,
       }).then(
           res =>{
             console.log(res);
@@ -86,13 +87,18 @@ export default {
               type: 'success',
               message: '正在进入！'
             });
-            Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
+            console.log("cbycby2" + res['data']['diff_output']);
+            localStorage.setItem("diffString", res['data']['diff_output']);
+            localStorage.setItem("comment", res['data']['comment']);
+            // Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
+            console.log("cbycby3" + res['data']['diff_output']);
+            Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
+            Cookies.set("PrToAudit", JSON.stringify(PrToAudit));
+            Cookies.set("PrToAudit_ReadOnly", false);
+
             this.$router.push({ name: 'audit' });
           }
       )
-      Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));
-      Cookies.set("PrToAudit", JSON.stringify(PrToAudit));
-
     },
     getTopicColor: topicSetting.getColor
   }, inject: {
@@ -101,6 +107,10 @@ export default {
         selectedRepo: {default: null}
   }, created() {
       this.updatePR()
+  }, provide(){
+    return {
+      selectedRepo: this.selectedRepo,
+    }
   }
 }
 </script>
@@ -146,7 +156,6 @@ export default {
 
   <v-card-actions>
     <v-spacer></v-spacer>
-
     <v-btn :color="getTopicColor(user.topic)" link :href="'https://github.com/' + selectedRepo.user + '/' + selectedRepo.repo + '/pulls'" target="_blank">
       <v-icon>mdi-github</v-icon>在GitHub浏览
     </v-btn>

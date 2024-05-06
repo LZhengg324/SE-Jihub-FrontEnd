@@ -194,8 +194,10 @@ export const isDocLocked = (data) => {
   return request.post("/api/doc/isDocLocked", data);
 }
 
+
+
 export const completeCreateNewPR = (data) =>{
-  return request.post("/api/plan/createPullRequest",data)
+  return request.post("/api/develop/createPullRequest",data)
 }
 
 export const completeCreateNewBranch = (data) =>{
@@ -204,4 +206,24 @@ export const completeCreateNewBranch = (data) =>{
 
 export const getDiffString =(data) =>{
   return request.post("/api/develop/getDiff", data)
+}
+
+export const createRepo =(data)=>{
+  return request.post("/api/develop/CreateRepo",data)
+}
+
+export const approvePullRequest =(data)=>{
+  return request.post("api/develop/approvePullRequest",data)
+}
+
+export const closePullRequest =(data)=>{
+  return request.post("/api/develop/closePullRequest",data)
+}
+
+export const initRepo = (data) =>{
+  return request.post("api/develop/initRepo",data)
+}
+
+export const readNotice =(data) =>{
+  return request.post("api/plan/seenNotice", data)
 }

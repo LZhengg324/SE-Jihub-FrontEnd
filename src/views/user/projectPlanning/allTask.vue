@@ -1109,7 +1109,9 @@ export default {
       this.setupAlarm = false;
       notice({
         taskId: this.newAlarmForm.taskId,
-        deadline: this.newAlarmForm.date + '-' + this.newAlarmForm.time.replace(':', '-')
+        deadline: this.newAlarmForm.date + '-' + this.newAlarmForm.time.replace(':', '-'),
+        project_id: this.selectedProj.projectId,
+        user_id:this.user.id,
       }).then(
           res => {
             console.log(res);
@@ -1260,8 +1262,6 @@ export default {
       }
     },
     getName(id) {
-      console.log(this.personIdList);
-      console.log(this.personNameList);
       return this.personNameList[this.personIdList.indexOf(id)];
     },
     getTopicColor: topicSetting.getColor,
