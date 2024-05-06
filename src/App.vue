@@ -8,7 +8,9 @@
       <v-spacer></v-spacer>
 
 
-      <v-icon v-if="false" style="right: 1%">mdi-bell</v-icon>
+      <v-icon v-if="!existUnreadNote" style="right: 1%" @click="checkNote">mdi-bell</v-icon>
+      <v-icon v-else style="right: 1%" @click="checkNote">mdi-bell-badge</v-icon>
+
       <v-icon v-if="existUser()" @click="checkClock">mdi-clock-outline</v-icon>
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
@@ -326,32 +328,7 @@
           <v-list-item-title>项目信息</v-list-item-title>
         </v-list-item>
       </v-list>
-      <!--        <v-list>-->
-      <!--        <v-list-item-group v-if="user.status === 'C'">-->
-      <!--          <v-list-item link to="/manager">-->
-      <!--            <v-list-item-icon-->
-      <!--              ><v-icon>mdi-home-outline</v-icon></v-list-item-icon-->
-      <!--            >-->
-      <!--            <v-list-item-title>主页</v-list-item-title>-->
-      <!--          </v-list-item>-->
-      <!--          <v-list-item link to="/manager/userMessages">-->
-      <!--            <v-list-item-icon-->
-      <!--              ><v-icon>mdi-account-multiple</v-icon></v-list-item-icon-->
-      <!--            >-->
-      <!--            <v-list-item-title>用户信息</v-list-item-title>-->
-      <!--          </v-list-item>-->
-      <!--          <v-list-item link to="/manager/loginMessages">-->
-      <!--            <v-list-item-icon><v-icon>mdi-history</v-icon></v-list-item-icon>-->
-      <!--            <v-list-item-title>用户登录信息</v-list-item-title>-->
-      <!--          </v-list-item>-->
-      <!--          <v-list-item link to="/manager/projectMessages">-->
-      <!--            <v-list-item-icon-->
-      <!--              ><v-icon>mdi-book-edit-outline</v-icon></v-list-item-icon-->
-      <!--            >-->
-      <!--            <v-list-item-title>项目信息</v-list-item-title>-->
-      <!--          </v-list-item>-->
-      <!--        </v-list-item-group>-->
-      <!--      </v-list>-->
+
     </v-navigation-drawer>
     <el-dialog title="创建项目"
                :visible.sync="setupDialog"
@@ -400,6 +377,97 @@
       </v-simple-table>
     </el-dialog>
 
+    <el-dialog
+        title="我的通知"
+        :visible.sync="noteDialog"
+        width="80%"
+    >
+      <v-simple-table>
+        <thead>
+
+        <tr>
+          <th class="text-left">
+            状态
+          </th>
+
+          <th class="text-left">
+            时间
+          </th>
+          <th class="text-left">
+            详情
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="notice in noticeList2" :key="notice.noticeId" @mouseenter="arr[notice.taskId] = true"
+            @mouseleave="arr[notice.taskId] = false">
+          <td>
+
+            <v-chip :color="getColor(notice.seen)" dark>
+              {{notice.seen ? "已读":"未读"}}
+            </v-chip>
+          </td>
+          <td>{{ new Date(notice.deadline).toLocaleString() }}</td>
+          <td>{{notice.content}}</td>
+          <td style="width: 10%">
+            <v-btn :color="getTopicColor(user.topic)"
+                   class="white--text"
+                   @click="handleDeleteNotice(notice.noticeId)">
+              删除
+            </v-btn>
+          </td>
+          <td style="width: 10%">
+            <v-btn :color="getTopicColor(user.topic)"
+                   class="white--text"
+                   @click="handleReadNotice(notice.noticeId)">
+              已读
+            </v-btn>
+          </td>
+          <td style="width: 10%">
+            <v-btn :color="getTopicColor(user.topic)"
+                   class="white--text"
+                   @click="handleNoticeDetail(notice)">
+              详情
+            </v-btn>
+          </td>
+        </tr>
+        </tbody>
+      </v-simple-table>
+    </el-dialog>
+
+    <!--<el-dialog-->
+    <!--    title="通知详情"-->
+    <!--    :visible.sync="noteDetailDialog"-->
+    <!--    width="80%"-->
+    <!--&gt;-->
+    <!--  <v-simple-table>-->
+    <!--    <thead>-->
+    <!--    <tr>-->
+    <!--      <th class="text-left">-->
+    <!--        所属任务-->
+    <!--      </th>-->
+    <!--      <th class="text-left">-->
+    <!--        时间-->
+    <!--      </th>-->
+    <!--    </tr>-->
+    <!--    </thead>-->
+    <!--    <tbody>-->
+    <!--    <tr v-for="notice in noticeList2" :key="notice.noticeId" @mouseenter="arr[notice.taskId] = true"-->
+    <!--        @mouseleave="arr[notice.taskId] = false">-->
+    <!--      <td>{{ getTaskName(notice.taskId) }}</td>-->
+    <!--      <td>{{ new Date(notice.deadline).toLocaleString() }}</td>-->
+    <!--      <td>-->
+    <!--        <v-btn :color="getTopicColor(user.topic)"-->
+    <!--               class="white&#45;&#45;text"-->
+    <!--               @click="handleDeleteNotice(notice)">-->
+    <!--          详情-->
+    <!--        </v-btn>-->
+    <!--      </td>-->
+    <!--    </tr>-->
+    <!--    </tbody>-->
+    <!--  </v-simple-table>-->
+    <!--</el-dialog>-->
+
     <v-main>
       <router-view v-if="showRouterView"/>
     </v-main>
@@ -424,7 +492,7 @@ import Cookies from "js-cookie"
 import {computed} from "vue"
 import {
   newProject, showTaskList, watchAllProject, getEmail, showNoticeList, removeNotice,
-  userReleaseDocLock
+  userReleaseDocLock, readNotice, getDiffString
 } from "@/api/user"
 import axios from "axios"
 import AllTask from "@/views/user/projectPlanning/allTask.vue"
@@ -526,7 +594,7 @@ export default {
     console.log('setting interval...')
     setInterval(() => {
       this.updateNoticeList();
-    }, 5000)
+    }, 50000)
   },
   components: {
     AllTask,
@@ -556,6 +624,7 @@ export default {
       selectedItem: null,
       dialog: false,
       clockDialog: false,
+      noteDialog:false,
       editClockDialog: false,
       form: {
         name: "",
@@ -566,7 +635,9 @@ export default {
       tasks: [],
       scrollUp: true,
       clockList: [],
-      noticeList: [],
+      noticeList: [],  //存alarm
+      noticeList2: [], //存通知
+      existUnreadNote: false,
       arr: [],
       whatisclicked: null,
     };
@@ -623,10 +694,18 @@ export default {
     },
     updateNoticeList() {
       console.log("updating NoticeList...")
-      showNoticeList({projectId: this.proj.projectId}).then(
+      showNoticeList({
+        projectId: this.proj.projectId,
+        // user_id:this.user.id,
+      }).then(
           res => {
+            this.existUnreadNote = false;
             this.noticeList = res['data']['data']
             this.noticeList.forEach(item => {
+
+              if(item.type === "A" && !item.seen )
+                this.existUnreadNote = true;
+
               // 如果两个时间小于5秒，就弹出提醒
               if (Math.abs(new Date(item.deadline) - new Date()) < 5000) {
                 console.log(Math.abs(new Date(item.deadline) - new Date()))
@@ -653,9 +732,17 @@ export default {
     },
     checkClock() {
       this.clockDialog = true;
-      showNoticeList({projectId: this.proj.projectId}).then(
+      showNoticeList({
+        projectId: this.proj.projectId,
+        // user_id:this.user.id,
+      }).then(
           res => {
-            this.noticeList = res['data']['data'];
+            var allNotice = res['data']['data'];
+            var tmpNoticeList = [];
+            for (let i = 0; i < allNotice.length; i++)
+              if(allNotice[i].type === "B")
+                tmpNoticeList.push(allNotice[i]);
+            this.noticeList = tmpNoticeList;
             console.log(this.noticeList);
           }
       )
@@ -756,8 +843,8 @@ export default {
       return Cookies.get("manager");
     },
     existUser() {
-      console.log("111111")
-      console.log(Cookies.get("user"))
+      // console.log("111111")
+      // console.log(Cookies.get("user"))
       if (Cookies.get("user") === undefined) {
         return false;
       }
@@ -890,10 +977,17 @@ export default {
           .then(() => {
             removeNotice({noticeId: noticeId}).then(
                 res => {
-                  showNoticeList({projectId: this.proj.projectId}).then(
+                  showNoticeList({
+                    projectId: this.proj.projectId,
+                    // user_id:this.user.id,
+                  }).then(
                       res => {
-                        this.noticeList = res['data']['data'];
-                        console.log(this.noticeList);
+                        var allNotice = res['data']['data'];
+                        var tmpNoticeList = [];
+                        for (let i = 0; i < allNotice.length; i++)
+                          if(allNotice[i].type === "B")
+                            tmpNoticeList.push(allNotice[i]);
+                        this.noticeList = tmpNoticeList;
                       }
                   )
                 }
@@ -902,6 +996,55 @@ export default {
           .catch(() => {
           });
     },
+
+    handleReadNotice(noticeId) {
+      readNotice({id: noticeId}).then(
+          res => {
+            showNoticeList({
+              projectId: this.proj.projectId,
+              // user_id:this.user.id,
+            }).then(
+                res => {
+                  var allNotice = res['data']['data'];
+                  var tmpNoticeList = [];
+                  for (let i = 0; i < allNotice.length; i++)
+                    if(allNotice[i].type === "A" && allNotice[i].user_id === this.user.id)
+                      tmpNoticeList.push(allNotice[i]);
+                  this.noticeList2 = tmpNoticeList;
+                }
+            )
+          }
+      )
+    },
+
+    handleNoticeDetail(notice){
+
+      getDiffString({
+        user_id: Cookies.get("user").id,
+        remote_path: Cookies.get("selectedRepo").user+'/'+Cookies.get("selectedRepo").repo,
+        project_id: this.proj.id,
+        ghpr_id:notice.ghpr_id,
+      }).then(
+          res =>{
+            console.log(res);
+            this.$message({
+              type: 'success',
+              message: '正在进入！'
+            });
+            console.log("cbycby2" + res['data']['diff_output']);
+            localStorage.setItem("diffString", res['data']['diff_output']);
+            localStorage.setItem("comment", res['data']['comment']);
+            // Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
+            console.log("cbycby3" + res['data']['diff_output']);
+            Cookies.set("PrToAudit_ReadOnly", true);
+
+            this.$router.push({ name: 'audit' });
+          }
+      )
+
+
+    },
+
     changeSelectedProj(proj) {
       this.selectedProj = proj;
     },
@@ -946,6 +1089,33 @@ export default {
         }
       }
     },
+
+    checkNote(){
+      this.noteDialog = true;
+      showNoticeList({
+        projectId: this.proj.projectId,
+        // user_id:this.user.id,
+      }).then(
+          res => {
+            var allNotice = res['data']['data'];
+            var tmpNoticeList = [];
+            for (let i = 0; i < allNotice.length; i++)
+              if(allNotice[i].type === "A" && allNotice[i].user_id === this.user.id)
+                tmpNoticeList.push(allNotice[i]);
+            this.noticeList2 = tmpNoticeList;
+            return true;
+          }
+      )
+
+    },
+    getColor(state){
+      return state ? "green" : "red";
+    },
+
+
+
+
+
     getTopicColor: topicSetting.getColor,
     getDarkColor: topicSetting.getDarkColor,
     getLinearGradient: topicSetting.getLinearGradient,
@@ -954,10 +1124,18 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 #username {
   font-size: 1.2em;
   line-height: 1.2em;
+}
+
+html,
+body,
+.main_page{
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 </style>

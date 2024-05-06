@@ -42,6 +42,7 @@ export default {
             bindRepos: computed(() => this.bindRepos),
             bindReposBusy: computed (() => this.bindReposBusy),
             updateBindRepos: this.updateBindRepos,
+
         }
     },
     methods: {
@@ -111,12 +112,13 @@ export default {
                 </v-col>
                 <v-divider vertical></v-divider>
                 <v-col cols="6">
-                    <h2>或者绑定一个新的代码存储库</h2>
+
+                    <h2>创建或者绑定一个新的代码存储库</h2>
                     <bindGithubRepo />
                 </v-col>
             </v-row>
 
-            <v-row>
+            <v-row >
                 <repoView />
             </v-row>
         </v-container>
