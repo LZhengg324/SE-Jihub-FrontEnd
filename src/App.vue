@@ -595,7 +595,7 @@ export default {
     console.log('setting interval...')
     setInterval(() => {
       this.updateNoticeList();
-    }, 50000)
+    }, 5000)
   },
   components: {
     AllTask,
@@ -701,29 +701,29 @@ export default {
       }).then(
           res => {
             this.existUnreadNote = false;
-            this.noticeList = res['data']['data']
-            this.noticeList.forEach(item => {
+            res['data']['data'].forEach(item => {
+              if(item.user_id === this.user.id) {
+                if (item.type === "A" && !item.seen)
+                  this.existUnreadNote = true;
 
-              if(item.type === "A" && !item.seen )
-                this.existUnreadNote = true;
-
-              // 如果两个时间小于5秒，就弹出提醒
-              if (Math.abs(new Date(item.deadline) - new Date()) < 5000) {
-                console.log(Math.abs(new Date(item.deadline) - new Date()))
-                this.$message({
-                  showClose: true,
-                  message: "有到期的截止日期！",
-                  type: "warning",
-                  duration: 0,
-                });
-                if ("Notification" in window) {
-                  Notification.requestPermission().then(function (permission) {
-                    if (permission === "granted") {
-                      let notification = new Notification("有到期的截止日期！", {
-                        body: "请及时处理！"
-                      });
-                    }
+                // 如果两个时间小于5秒，就弹出提醒
+                if (Math.abs(new Date(item.deadline) - new Date()) < 5000) {
+                  console.log(Math.abs(new Date(item.deadline) - new Date()))
+                  this.$message({
+                    showClose: true,
+                    message: "有到期的截止日期！",
+                    type: "warning",
+                    duration: 0,
                   });
+                  if ("Notification" in window) {
+                    Notification.requestPermission().then(function (permission) {
+                      if (permission === "granted") {
+                        let notification = new Notification("有到期的截止日期！", {
+                          body: "请及时处理！"
+                        });
+                      }
+                    });
+                  }
                 }
               }
             })
@@ -741,7 +741,7 @@ export default {
             var allNotice = res['data']['data'];
             var tmpNoticeList = [];
             for (let i = 0; i < allNotice.length; i++)
-              if(allNotice[i].type === "B")
+              if(allNotice[i].type === "B" && allNotice[i].user_id === this.user.id)
                 tmpNoticeList.push(allNotice[i]);
             this.noticeList = tmpNoticeList;
             console.log(this.noticeList);
@@ -978,6 +978,7 @@ export default {
           .then(() => {
             removeNotice({noticeId: noticeId}).then(
                 res => {
+                  // this.updateNoticeList();
                   showNoticeList({
                     projectId: this.proj.projectId,
                     // user_id:this.user.id,
@@ -986,9 +987,9 @@ export default {
                         var allNotice = res['data']['data'];
                         var tmpNoticeList = [];
                         for (let i = 0; i < allNotice.length; i++)
-                          if(allNotice[i].type === "B")
+                          if(allNotice[i].user_id === this.user.id && allNotice[i].type === "A")
                             tmpNoticeList.push(allNotice[i]);
-                        this.noticeList = tmpNoticeList;
+                        this.noticeList2 = tmpNoticeList;
                       }
                   )
                 }
@@ -999,8 +1000,10 @@ export default {
     },
 
     handleReadNotice(noticeId) {
+      // this.updateNoticeList()
       readNotice({id: noticeId}).then(
           res => {
+            // this.updateNoticeList();
             showNoticeList({
               projectId: this.proj.projectId,
               // user_id:this.user.id,
@@ -1008,9 +1011,16 @@ export default {
                 res => {
                   var allNotice = res['data']['data'];
                   var tmpNoticeList = [];
+                  this.existUnreadNote = false;
                   for (let i = 0; i < allNotice.length; i++)
                     if(allNotice[i].type === "A" && allNotice[i].user_id === this.user.id)
+                    {
                       tmpNoticeList.push(allNotice[i]);
+                      if(!allNotice[i].seen){
+                        this.existUnreadNote = true;
+                      }
+                    }
+
                   this.noticeList2 = tmpNoticeList;
                 }
             )
@@ -1019,12 +1029,11 @@ export default {
     },
 
     handleNoticeDetail(notice){
-
       getDiffString({
-        user_id: Cookies.get("user").id,
-        remote_path: Cookies.get("selectedRepo").user+'/'+Cookies.get("selectedRepo").repo,
-        project_id: this.proj.id,
-        ghpr_id:notice.ghpr_id,
+        user_id: JSON.parse(Cookies.get("user")).id,
+        remote_path: notice.remote_path,
+        project_id: this.proj.projectId,
+        ghpr_id: notice.ghpr_id,
       }).then(
           res =>{
             console.log(res);
@@ -1032,13 +1041,14 @@ export default {
               type: 'success',
               message: '正在进入！'
             });
-            console.log("cbycby2" + res['data']['diff_output']);
             localStorage.setItem("diffString", res['data']['diff_output']);
             localStorage.setItem("comment", res['data']['comment']);
+            localStorage.setItem("title", res['data']['title']);
+            localStorage.setItem("description",res['data']['description']);
             // Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
             console.log("cbycby3" + res['data']['diff_output']);
             Cookies.set("PrToAudit_ReadOnly", true);
-
+            this.noteDialog = false;
             this.$router.push({ name: 'audit' });
           }
       )
@@ -1102,7 +1112,12 @@ export default {
             var tmpNoticeList = [];
             for (let i = 0; i < allNotice.length; i++)
               if(allNotice[i].type === "A" && allNotice[i].user_id === this.user.id)
+              {
+                if(!allNotice[i].seen)
+                  this.existUnreadNote = true;
                 tmpNoticeList.push(allNotice[i]);
+              }
+
             this.noticeList2 = tmpNoticeList;
             return true;
           }

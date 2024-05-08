@@ -227,3 +227,9 @@ export const initRepo = (data) =>{
 export const readNotice =(data) =>{
   return request.post("api/plan/seenNotice", data)
 }
+
+export const getActivations = (data) =>{
+  return request.post("api/develop/getActivations", data);
+}
+
+
