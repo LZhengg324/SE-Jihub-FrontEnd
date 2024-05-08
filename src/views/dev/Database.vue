@@ -1,6 +1,7 @@
 <script>
 import topicSetting from "@/utils/topic-setting";
 import axios from "axios";
+import Vue from "vue";
 
 export default {
   name: 'Database',
@@ -8,6 +9,7 @@ export default {
   data () {
     return {
       entries: {},
+      fileNamePair: {},
       uploadDialog: false,
       fileInput: null,
       fileNameInput: '',
@@ -24,7 +26,7 @@ export default {
       uploading: false,
       uploadProgressBannerContent: 'Uploading...',
 
-      removing: false
+      removing: false,
     }
   },
   methods: {
@@ -39,9 +41,11 @@ export default {
       console.log(new Date().getTime())
       console.log(`${this.fileNameInput}-${new Date().getTime()}-${this.fileMajorInput}-${this.fileMinorInput}-${this.filePatchInput}.${this.fileExtInput}`)
       this.fileInput = new File([this.fileInput], `${this.fileNameInput}-${new Date().getTime()}-${this.fileMajorInput}-${this.fileMinorInput}-${this.filePatchInput}.${this.fileExtInput}`, {type: this.fileInput.type})
+      //this.fileInput = new File([this.fileInput], `${this.fileNameInput}.${this.fileExtInput}`, {type: this.fileInput.type})
       let data = new FormData()
       data.append('projectId', this.proj.projectId)
       data.append('file', this.fileInput)
+      console.log(data)
       let config =  {
         method: 'post',
         maxBodyLength: Infinity,
@@ -66,21 +70,31 @@ export default {
         })
     },
     removeFile(entry, name) {
-      axios.post("/api/file/removefile", {
-        userid: this.user.userid,
+      axios.post("/api/file/deleteFile", {
+        userId: this.user.id,
         projectId: this.proj.projectId,
-        fileName: name
+        fileName: this.fileNamePair[name]
       }).then((res) => {
-        if (res.data.code === 0) {
-          this.entries.remove(entry);
-          this.updateDatabase();
-        } else if (res.data.code === 1) {
+        if (res.data.errcode === 2) {
+          // this.entries[entry] = undefined;
+          // this.fileNamePair[entry] = undefined;
+          const index = Object.keys(this.entries).indexOf(entry);
+          if (index !== -1) {
+            // 从对象中移除相应的条目
+            Vue.delete(this.entries, entry);
+          }
+          // 可选：同时移除 fileNamePair 中的对应条目
+          delete this.fileNamePair[entry];
+          this.$message.success('删除成功！')
+        } else if (res.data.errcode === 1) {
           this.$message.error('您不是项目负责人或项目管理员，删除失败')
         } else {
           this.$message.error('删除失败')
         }
       }).finally(() => {
+        this.updateDatabase();
         this.removing = false;
+        window.location.reload()
       })
     },
     downloadProgressChanged(progressiveEvent) {
@@ -150,17 +164,23 @@ export default {
         console.log(res)
         if (res.data.errcode !== 0) { throw new Error() }
         let tempEntries = {}
+        let tempFileNamePair = {}
         res.data.data.forEach((item) => {
           let entry = this.mapFileToEntry(item.name)
           if (entry !== null) {
             if (tempEntries[entry.name + entry.ext] === undefined) {
               tempEntries[entry.name + entry.ext] = { expand: false, files: [] }
               tempEntries[entry.name + entry.ext].files.push(entry)
+              tempFileNamePair[entry.name + entry.ext] = item.name;
             } else {
               tempEntries[entry.name + entry.ext].files.push(entry)
+              tempFileNamePair[entry.name + entry.ext] = item.name;
             }
           }
         })
+        this.fileNamePair = tempFileNamePair
+        console.log("files")
+        console.log(tempFileNamePair)
         this.entries = tempEntries
       }).catch(err => {
         this.$message.error('获取文件列表失败')
@@ -254,11 +274,16 @@ export default {
               <v-card-actions>
                 <v-btn plain @click="() => initUploadDialog(entry, name)">上传新版本</v-btn>
                 <v-btn plain @click="() => download(entry.files[entry.files.length - 1])">下载最新版本</v-btn>
-                <v-btn color="error" @click="() => this.removing = true">删除文件</v-btn>
-                  <v-dialog v-if="this.removing" v-model="removing" max-width="400">
-                    <v-card title="删除文件" text="您要删除该文件吗？">
-                      <v-btn @click="this.removing = false">取消</v-btn>
-                      <v-btn @click=this.removeFile(entry,name)>确定</v-btn>
+                <v-btn plain color="error" @click="() => removing = true">删除文件</v-btn>
+                  <v-dialog v-if="removing" v-model="removing" max-width="400" max-height="500">
+                    <v-card text="您要删除该文件吗？">
+                      <v-card-title>删除文件</v-card-title>
+                      <v-card-text>您要删除{{ name }}吗？</v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn @click="removing = false">取消</v-btn>
+                        <v-btn @click=removeFile(entry,name)>确定</v-btn>
+                      </v-card-actions>
                     </v-card>
                   </v-dialog>
                 <v-btn plain @click="entry.expand = !entry.expand">{{ entry.expand ? '收回' : '展开' }}</v-btn>
