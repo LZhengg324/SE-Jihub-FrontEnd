@@ -367,8 +367,10 @@ export default {
         return 'orange';
       } else if (role == 'B') {
         return 'green';
-      } else {
+      } else if (role == 'C') {
         return 'blue';
+      } else {
+        return 'red';
       }
     },
     classify(role) {
@@ -378,6 +380,10 @@ export default {
         return '管理员'
       } else if (role == 'C') {
         return '项目经理'
+      } else if (role == 'E') {
+        return '禁用'
+      } else {
+        return '未知'
       }
     },
     getTopicColor: topicSetting.getColor
