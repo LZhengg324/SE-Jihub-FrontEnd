@@ -367,14 +367,10 @@ export default {
     },
     // 关闭修改用户状态窗口
     closeChangeUserStatusDialog() {
-      if (user.status === 'C') {
         this.showChangeUserStatus = false
         console.log("close change user status dialog")
         this.userStatusDialogMessage = ''
         this.selectedStatus = ''
-      } else {
-        this.$message.error("你不是超级管理员，没有权限")
-      }
     },
     // 修改用户状态
     changeStatus() {
