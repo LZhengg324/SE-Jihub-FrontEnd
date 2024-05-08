@@ -9,15 +9,18 @@
       ></iframe>
     </div>
     <div style="height: 80vh; flex: 3">
-      <h1>审核意见</h1>
+      <h3>审核意见: {{this.prtitle}}</h3>
+      <p1>
+        {{this.prdescription}}
+      </p1>
       <el-form :model="form" ref="form">
         <el-form-item >
-          <el-input v-model="form.comment" type="textarea" ></el-input>
+          <el-input v-model="form.comment" type="textarea" :disabled="PrToAudit_ReadOnly"></el-input>
         </el-form-item>
       </el-form>
-      <el-button  @click="turnBack">取 消</el-button>
-      <el-button  type="primary" @click="createNewComment()">不通过</el-button>
-      <el-button  type="primary" @click="approvePr()">通过</el-button>
+      <el-button v-if="!PrToAudit_ReadOnly"  @click="turnBack" >取 消</el-button>
+      <el-button v-if="!PrToAudit_ReadOnly" type="primary" @click="createNewComment()">不通过</el-button>
+      <el-button v-if="!PrToAudit_ReadOnly" type="primary" @click="approvePr()">通过</el-button>
     </div>
   </div>
 
@@ -39,6 +42,8 @@ export default {
       PrToAudit: {},
       selectedRepo:{},
       PrToAudit_ReadOnly: false,
+      prtitle:"",
+      prdescription:"",
     }
   },
   inject: {
@@ -49,14 +54,16 @@ export default {
   mounted() {
   },
   created() {
-    this.PrToAudit_ReadOnly = Cookies.get('PrToAudit_ReadOnly');
-    this.PrToAudit_ReadOnly = this.user.id === this.user.managerId ? this.PrToAudit_ReadOnly : true ;
+    this.PrToAudit_ReadOnly = this.user.id !== this.proj.managerId ;
     this.form.comment = localStorage.getItem('comment');
-
-    if(this.PrToAudit_ReadOnly)
+    this.prtitle = localStorage.getItem('title');
+    this.prdescription = localStorage.getItem("description");
+    if(!this.PrToAudit_ReadOnly)
       this.PrToAudit = JSON.parse(Cookies.get("PrToAudit"));
-
     this.selectedRepo = JSON.parse(Cookies.get("selectedRepo"));
+
+    if(!this.PrToAudit.isOpen)
+      this.PrToAudit_ReadOnly = true;
   },
   methods: {
     sendDataToIframe() {

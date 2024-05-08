@@ -33,7 +33,7 @@
 <script>
 import * as echarts from "echarts";
 import topicSetting from "@/utils/topic-setting";
-import {showPersonList, showTaskList} from "@/api/user";
+import {getActivations, showPersonList, showTaskList} from "@/api/user";
 
 export default {
 
@@ -55,6 +55,7 @@ export default {
         nodes: [],
         links: [],
       },
+      act:{},
     };
   },
   mounted() {
@@ -390,6 +391,13 @@ export default {
       });
     },
     drawC() {
+
+      getActivations({project_id: this.selectedProj.projectId}).then(
+          res=>{
+            console.log("fff" + JSON.stringify(res['data']));
+
+      })
+
       var dom = this.$refs.chartC1;
       var myChart = echarts.init(dom, null, {
         renderer: 'canvas',
@@ -409,7 +417,7 @@ export default {
                   for (let i = 0; i < this.allPeople.length; i++) {
                     names.push(this.allPeople[i].peopleName);
                     this.webkitDep.nodes.push({
-                      name: this.allPeople[i].peopleName,
+                      name: "项目成员\n" + this.allPeople[i].peopleName + "\n活跃度为：50",
                       value: 1,
                       category: 0,
                       symbolSize: 70,
@@ -420,7 +428,7 @@ export default {
                   for (let i = 0; i < this.tasks.length; i++) {
                     this.webkitDep.categories.push(this.tasks[i].taskName);
                     this.webkitDep.nodes.push({
-                      name: this.tasks[i].taskName,
+                      name: "冲刺名称：" + this.tasks[i].taskName,
                       value: 10,
                       category: i+1,
                       symbolSize: 100,
@@ -428,7 +436,7 @@ export default {
                     const targetIndex = this.webkitDep.nodes.length - 1;
                     for (let j = 0; j < this.tasks[i].subTaskList.length; j++) {
                       this.webkitDep.nodes.push({
-                        name: this.tasks[i].subTaskList[j].subTaskName,
+                        name: "任务" + this.tasks[i].subTaskList[j].subTaskName,
                         value: 1,
                         category: i+1,
                         symbolSize: 50,
@@ -465,6 +473,7 @@ export default {
                         type: 'graph',
                         layout: 'force',
                         animation: false,
+                        roam: true,
                         label: {
                           show: true,
                         },

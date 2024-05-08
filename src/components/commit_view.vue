@@ -78,12 +78,24 @@ export default {
         tasks: taskIdList,
       }).then(
           res => {
-            this.$message({
-              type: 'success',
-              message: '提交成功!'
-            });
+            if (res.data.errcode === 2) {
+              this.$message({
+                type: 'fail',
+                message: '提交失败!'
+              })
+            } else if (res.data.errcode === 0) {
+              this.$message({
+                type: 'success',
+                message: '提交成功!'
+              });
+            } else if (res.data.errcode === 4) {
+              this.$message({
+                type: 'fail',
+                message: '您无法对项目进行提交！'
+              })
+            }
           }
-      );
+      )
       this.createNewPR = false;
     },
     handleClose(done) {
