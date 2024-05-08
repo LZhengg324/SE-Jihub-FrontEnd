@@ -51,7 +51,7 @@
                 <v-icon>mdi-account-tie</v-icon>
               </v-btn>
             </template>
-            <span>设置项目小管理员</span>
+            <span>设置项目管理员</span>
           </v-tooltip>
         </template>
 

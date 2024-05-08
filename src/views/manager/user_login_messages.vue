@@ -44,7 +44,7 @@ export default {
         },
         { text: '邮箱', value: 'email' },
         { text: '最近一次登录时间', value: 'loginTime' },
-        { text: '最近一次登录ip', value: 'ip' }
+        { text: '最近一次登录ip', value: 'IP' }
       ],
       loginMessages: [
         // {

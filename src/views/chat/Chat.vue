@@ -20,7 +20,7 @@
         <!--历史聊天室 -->
         <div class="chatroom">
           <v-list style="overflow-y: auto;">
-            <v-list-item-group  v-model="selectedRoom">
+            <v-list-item-group  v-model="selectedRoom" >
               <v-list-item two-line v-for="item in chatRooms" :key="item.id" @click="selectToRoom(item)">
                 <v-list-item-content>
                   <v-list-item-title style="font-weight: bold">
@@ -46,7 +46,7 @@
       <v-col cols="6">
           <!-- 聊天窗口 -->
         <v-card class="chatroom_" v-if="this.chatRooms.length !== 0 & this.selectedRoom !== null">
-          <v-card-title>
+          <v-card-title :style="getLinearGradient(user.topic)">
             {{ roomNow.title }}
           </v-card-title>
           <!-- 聊天内容区域 -->
@@ -60,6 +60,8 @@
                 <v-list-item-content>
                   <v-list-item-title >
                     {{ message.from }}
+                    <span class="float-end"> {{ message.time | formatDate(message.time)}}</span>
+
                   </v-list-item-title>
                   <v-list-item-subtitle style="overflow: visible; white-space: normal;">
                     {{ message.content }}
@@ -238,12 +240,24 @@ export default {
     user: {default: null},
     proj: {default: null}
   },
+  filters: {
+    formatDate: function (value) {
+      const date = new Date(value);
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+  },
 
   created() {
     this.getProjectMember()
     this.updateChatRooms()
     //this.initWS(1)
   },
+
   data() {
 
     return {
