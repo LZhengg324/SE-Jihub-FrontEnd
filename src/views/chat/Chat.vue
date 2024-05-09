@@ -961,11 +961,8 @@ export default {
 
     },
 
-
-
     openShowConfirmDeleteRoom() {
       this.showConfirmDeleteRoom = true
-
     },
 
     closeShowConfirmDeleteRoom() {
@@ -1012,10 +1009,9 @@ export default {
       console.log("open invite member")
       console.log(this.roomNow)
       this.showInviteMember = true
-
       this.tempSelectedMember = ''
-      this.inRoomMember = this.roomNow.users
 
+      this.inRoomMember = this.roomNow.users
       let allProjectMember = this.projectMembers.map((item, index) => {
         return {
           userId: item.peopleId,
@@ -1023,26 +1019,10 @@ export default {
         }
       })
       this.notInRoomMember = allProjectMember.filter(member => {
-        // 检查当前成员是否在 selectedMembers 中
         return !this.inRoomMember.some(selectedMember => selectedMember.userId === member.userId);
       })
       console.log(this.notInRoomMember)
       console.log(this.tempSelectedMember)
-      // this.inRoomMember = this.roomNow.users
-      // this.deselectedMembers = this.projectMembers
-      // // let allProjectMembers = this.projectMembers.map((item, index) => {
-      //   return {
-      //     userId: item.id,
-      //     userName: item.name
-      //   }
-      // })
-      // console.log(allProjectMembers)
-      // let temp = this.roomNow.users
-      // console.log(temp)
-      //
-      // this.selectedMembers = temp
-
-
     },
 
     selectInviteMember(item) {
@@ -1069,11 +1049,9 @@ export default {
             type: 3,
           }))
         }
-
       }).catch((err) => {
         console.error(err)
       })
-
       this.showInviteMember = false
     },
 
