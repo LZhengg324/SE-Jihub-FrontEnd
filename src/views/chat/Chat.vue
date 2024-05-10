@@ -53,20 +53,25 @@
         <div class="messages">
           <v-card-text>
             <v-list dense>
-                <v-list-item v-for="message in messages" :key="message.id">
+                <v-list-item :class="message.type === 'A' ? 'message' : 'notifyMessage' "  v-for="message in messages" :key="message.id">
                   <v-list-item-avatar size="30px" style="align-self: flex-start;">
                     <v-img :src="getIdenticon(message.from, 50, 'user')"></v-img>
                   </v-list-item-avatar>
-                <v-list-item-content>
+                <v-list-item-content v-if="message.type === 'A'">
                   <v-list-item-title >
                     {{ message.from }}
                     <span class="float-end"> {{ message.time | formatDate(message.time)}}</span>
-
                   </v-list-item-title>
                   <v-list-item-subtitle style="overflow: visible; white-space: normal;">
                     {{ message.content }}
                   </v-list-item-subtitle>
                 </v-list-item-content>
+                    <v-list-item-content v-else>
+                      <v-list-item-subtitle >
+                        {{message.from}} {{message.content}}
+                        <span class="float-end"> {{ message.time | formatDate(message.time)}}</span>
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
               </v-list-item>
             </v-list>
           </v-card-text>
@@ -120,12 +125,12 @@
                 </div>
 
             </v-list-item>
-            <v-list-item v-if="this.roomNow.type==='PUB'" >
+            <v-list-item v-if="this.roomNow.type==='PUB' && user.id !== this.roomNow.admin.userId" >
               <v-btn block outlined color="red" @click="openShowConfirmLeaveRoom()" >
                 退出
               </v-btn>
             </v-list-item>
-            <v-list-item v-if="this.roomNow.type==='PUB'" >
+            <v-list-item v-if="this.roomNow.type==='PUB' && user.id===this.roomNow.admin.userId" >
               <v-btn block @click="openShowConfirmDeleteRoom()" >
                 解散群聊
               </v-btn>
@@ -193,7 +198,6 @@
           <v-btn v-else-if="selectedMembers.length > 1 " :color="getRadialGradient(user.topic)" block ripple @click="createChatRoom">创建群聊！</v-btn>
 
         </v-card-actions>
-
       </v-card>
 
     </v-dialog>
@@ -256,38 +260,15 @@
       </v-card>
     </v-dialog>
 
-
     <!--拉人 -->
     <v-dialog v-model="showInviteMember" width="390" height="20vh" scrollable>
       <v-card >
         <v-card-title>
           添加新的成员
         </v-card-title>
-
         <v-card-text >
-
-          <v-spacer></v-spacer>
-
-
-          <v-spacer></v-spacer>
-<!--          <span v-if="deselectedMembers.length !== 0">成员：</span>-->
-<!--          <span v-else>大家都在聊天室里了哦</span>-->
-
-<!--          <v-list max-height="80%" scrollable>-->
-<!--            <template v-for="item in deselectedMembers">-->
-<!--              <v-list-item>-->
-<!--                <v-chip v-if="" @click="() => {-->
-<!--                    selectedMembers.push(item)-->
-<!--                    deselectedMembers.splice(deselectedMembers.indexOf(item), 1)-->
-<!--                  }">-->
-<!--                  <v-avatar left><v-img :src="getIdenticon(item.peopleName, 50, 'user')" ></v-img></v-avatar>-->
-<!--                  {{ item.peopleName }}-->
-<!--                </v-chip >-->
-<!--              </v-list-item>-->
-<!--            </template>-->
-<!--          </v-list>-->
-
-          <span>请选择想要邀请的成员：</span>
+          <span v-if="this.notInRoomMember && this.notInRoomMember.length !== 0">请选择想要邀请的成员：</span>
+          <span v-else>大家都在聊天室里了哦</span>
           <v-list max-height="80%" scrollable>
             <template v-for="item in this.notInRoomMember">
                 <v-list-item>
@@ -298,8 +279,6 @@
                 </v-list-item>
             </template>
           </v-list>
-
-
         </v-card-text>
 
         <v-divider></v-divider>
@@ -314,9 +293,7 @@
           <v-spacer></v-spacer>
           <v-btn :color="getRadialGradient(user.topic)" ripple @click="inviteMember()">确定</v-btn>
         </v-card-actions>
-
       </v-card>
-
     </v-dialog>
 
   </v-container>
@@ -943,6 +920,8 @@ export default {
               message: '移除成功！'
             })
             //this.roomNow.users = this.chatRooms.find(room => room.id === this.roomNow.id).users
+            //try提示信息
+            //let message = "kick " + this.tempSelectedMember.userName
             this.ws.send(JSON.stringify( {
               type: 3,
             }))
@@ -1045,9 +1024,18 @@ export default {
             })
             //this.roomNow.users = this.chatRooms.find(room => room.id === this.roomNow.id).users
           })
-          this.ws.send(JSON.stringify( {
-            type: 3,
-          }))
+          //
+          let message = "邀请了" + this.tempSelectedMember.userName + "加入聊天室"
+          console.log('will send: ' + message)
+          this.ws.send(JSON.stringify({
+            roomId: this.roomNow.id,
+            type: 2,
+            mes: message,
+            mes_type: 'D' //通知消息
+          }));
+          // this.ws.send(JSON.stringify( {
+          //   type: 3,
+          // }))
         }
       }).catch((err) => {
         console.error(err)
@@ -1151,4 +1139,12 @@ export default {
   cursor: pointer;
 }
 
+.notifyMessage {
+  border-radius: 10px 25px;
+  background-color: #f0f0f0;
+}
+
+.message {
+  color:white ;
+}
 </style>
