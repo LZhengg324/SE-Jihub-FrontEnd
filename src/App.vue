@@ -161,16 +161,16 @@
     </v-app-bar>
 
     <v-navigation-drawer
-        v-model="drawer"
-        app
-        clipped
-        permanent
-        v-if="((user && proj && showLabel()) || (user && user.status === 'C')) && this.scrollUp"
+      v-model="drawer"
+      app
+      clipped
+      permanent
+      v-if="((user && proj && showLabel()) || (user && user.status === 'C') || (user && user.status === 'D'))  && this.scrollUp"
     >
       <!-- <div style="background-color: aqua;width: 100%;">
 
       </div> -->
-      <v-list v-if="user.status !== 'C'">
+      <v-list v-if="user.status !== 'C' & user.status !== 'D'">
         <v-list-item :style="getLinearGradient(user.topic)" two-line class="px-2">
           <v-list-item-avatar size="40" color="indigo">
             <!--            <span class="white&#45;&#45;text text-h5">{{ this.proj.projectName[0] }}</span>-->
@@ -182,7 +182,7 @@
               <strong :style="'color: ' + getDarkColor(user.topic)">{{ this.proj.projectName }}</strong>
             </v-list-item-title>
             <v-list-item-subtitle>
-              {{ this.proj.projectIntro == '' ? '暂无简介' : this.proj.projectIntro }}
+              {{ this.proj.projectIntro === '' ? '暂无简介' : this.proj.projectIntro }}
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -199,7 +199,8 @@
           </v-list-item-avatar>
         </v-list-item>
       </v-list>
-      <v-list subheader v-if="user.status !== 'C'">
+
+       <v-list subheader v-if="user.status !== 'C' & user.status !== 'D'">
 
           <v-subheader inset title="查看项目涉及的任务、人员和统计图">
             规划
@@ -301,7 +302,7 @@
         </v-list-item>
       </v-list>
 
-      <v-list subheader v-if="user.status === 'C'">
+      <v-list subheader v-if="user.status === 'C' || user.status === 'D'" >
         <v-list-item link to="/manager/home">
           <v-list-item-icon>
             <v-icon>mdi-home-outline</v-icon>
@@ -506,7 +507,8 @@ import topicSetting from "@/utils/topic-setting";
 
 let user = Cookies.get("user");
 let proj;
-console.log(user);
+console.log("user: :" + user);
+
 if (user === undefined) { // 用户未登录
   console.log("not logged in");
   if (window.location.pathname !== "/login") {
@@ -525,7 +527,7 @@ if (user === undefined) { // 用户未登录
   user = JSON.parse(user)
   proj = undefined;
   if (user !== undefined) {
-    if (user.status !== 'C') { // 普通用户
+    if (user.status !== 'C' && user.status !== 'D') { // 普通用户
       proj = Cookies.get("proj");
       console.log(proj)
       if (proj !== undefined) {
@@ -877,7 +879,7 @@ export default {
       }
     },
     showLabel() {
-      if (this.user === null || this.user === undefined || this.user.status === 'C') {
+      if (this.user === null || this.user === undefined || this.user.status === 'C' || this.user.status === 'D') {
         return false;
       }
       console.log("showLabel");
