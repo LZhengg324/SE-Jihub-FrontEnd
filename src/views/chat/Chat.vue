@@ -1,122 +1,123 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <v-container class="chatroom_">
-    <h1>聊天室</h1>
-    <!--主要页面-->
-    <v-row>
-      <v-col cols="3">
-        <v-toolbar>
-          <v-toolbar-title>历史聊天室</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <!--搜索聊天室 -->
-          <!--              <v-btn icon  small :color="getDarkColor(user.topic)">-->
-          <!--                <v-icon>mdi-magnify</v-icon>-->
-          <!--              </v-btn>-->
-          <!-- 创建新的聊天室 }}-->
-          <v-btn icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">
-            <v-icon>mdi-plus-circle</v-icon>
-          </v-btn>
-        </v-toolbar>
+  <div>
+    <v-container class="chatroom_">
+      <h1>聊天室</h1>
+      <!--主要页面-->
+      <v-row>
+        <v-col cols="3">
+          <v-toolbar>
+            <v-toolbar-title>历史聊天室</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <!--搜索聊天室 -->
+            <!--              <v-btn icon  small :color="getDarkColor(user.topic)">-->
+            <!--                <v-icon>mdi-magnify</v-icon>-->
+            <!--              </v-btn>-->
+            <!-- 创建新的聊天室 }}-->
+            <v-btn  id="v-step-0"  icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">
+              <v-icon >mdi-plus-circle</v-icon>
+            </v-btn>
+          </v-toolbar>
 
-        <!--历史聊天室 -->
-        <div class="chatroom">
-          <v-list style="overflow-y: auto;">
-            <v-list-item-group  v-model="selectedRoom" >
-              <v-list-item two-line v-for="item in chatRooms" :key="item.id" @click="selectToRoom(item)">
-                <v-list-item-content>
-                  <v-list-item-title style="font-weight: bold">
-                    <span :style="'color: ' + getDarkColor(user.topic) ">{{ item.title }}</span>
-                    <span class="float-end grey--text">{{item.desc}}</span>
-                  </v-list-item-title>
-                  <v-list-item-subtitle >
-                    <!--                    {{item.history.length === 0 ? ' ' : item.history[0].senderName + ' : ' }}-->
-                    <!--                    {{item.history[0].type === 'A' ? item.history[0].content :-->
-                    <!--                      item.history[0].type === 'B' ? '[PHOTO]' : '[FILE]'}}-->
-                    <!--                    {{' (' +  new Date(item.history[0].time).toLocaleTimeString() + ")"}}-->
-                    {{item.unread === 0 ? ' ' : '您有新的未读消息'}}
-                    <v-badge class="float-end" v-if="item.unread > 0" color="error" :content="item.unread" inline></v-badge>
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list-item-group>
-            <v-divider></v-divider>
-          </v-list>
-        </div>
-      </v-col>
+          <!--历史聊天室 -->
+          <div class="chatroom">
+            <v-list style="overflow-y: auto;">
+              <v-list-item-group  v-model="selectedRoom" >
+                <v-list-item two-line v-for="item in chatRooms" :key="item.id" @click="selectToRoom(item)">
+                  <v-list-item-content>
+                    <v-list-item-title style="font-weight: bold">
+                      <span :style="'color: ' + getDarkColor(user.topic) ">{{ item.title }}</span>
+                      <span class="float-end grey--text">{{item.desc}}</span>
+                    </v-list-item-title>
+                    <v-list-item-subtitle >
+                      <!--                    {{item.history.length === 0 ? ' ' : item.history[0].senderName + ' : ' }}-->
+                      <!--                    {{item.history[0].type === 'A' ? item.history[0].content :-->
+                      <!--                      item.history[0].type === 'B' ? '[PHOTO]' : '[FILE]'}}-->
+                      <!--                    {{' (' +  new Date(item.history[0].time).toLocaleTimeString() + ")"}}-->
+                      {{item.unread === 0 ? ' ' : '您有新的未读消息'}}
+                      <v-badge class="float-end" v-if="item.unread > 0" color="error" :content="item.unread" inline></v-badge>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list-item-group>
+              <v-divider></v-divider>
+            </v-list>
+          </div>
+        </v-col>
 
-      <v-col cols="6">
+        <v-col cols="6">
           <!-- 聊天窗口 -->
-        <v-card class="chatroom_" v-if="this.chatRooms.length !== 0 & this.selectedRoom !== null">
-          <v-card-title :style="getLinearGradient(user.topic)">
-            {{ roomNow.title }}
-          </v-card-title>
-          <!-- 聊天内容区域 -->
-        <div class="messages">
-          <v-card-text>
-            <v-list dense>
-                <v-list-item :class="message.type === 'A' ? 'message' : 'notifyMessage' "  v-for="message in messages" :key="message.id">
-                  <v-list-item-avatar size="30px" style="align-self: flex-start;">
-                    <v-img :src="getIdenticon(message.from, 50, 'user')"></v-img>
-                  </v-list-item-avatar>
-                <v-list-item-content v-if="message.type === 'A'">
-                  <v-list-item-title >
-                    {{ message.from }}
-                    <span class="float-end"> {{ message.time | formatDate(message.time)}}</span>
-                  </v-list-item-title>
-                  <v-list-item-subtitle style="overflow: visible; white-space: normal;">
-                    {{ message.content }}
-                  </v-list-item-subtitle>
-                </v-list-item-content>
+          <v-card class="chatroom_" v-if="this.chatRooms.length !== 0 & this.selectedRoom !== null">
+            <v-card-title :style="getLinearGradient(user.topic)">
+              {{ roomNow.title }}
+            </v-card-title>
+            <!-- 聊天内容区域 -->
+            <div class="messages">
+              <v-card-text>
+                <v-list dense>
+                  <v-list-item :class="message.type === 'A' ? 'message' : 'notifyMessage' "  v-for="message in messages" :key="message.id">
+                    <v-list-item-avatar size="30px" style="align-self: flex-start;">
+                      <v-img :src="getIdenticon(message.from, 50, 'user')"></v-img>
+                    </v-list-item-avatar>
+                    <v-list-item-content v-if="message.type === 'A'">
+                      <v-list-item-title >
+                        {{ message.from }}
+                        <span class="float-end"> {{ message.time | formatDate(message.time)}}</span>
+                      </v-list-item-title>
+                      <v-list-item-subtitle style="overflow: visible; white-space: normal;">
+                        {{ message.content }}
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
                     <v-list-item-content v-else>
                       <v-list-item-subtitle >
                         {{message.from}} {{message.content}}
                         <span class="float-end"> {{ message.time | formatDate(message.time)}}</span>
                       </v-list-item-subtitle>
                     </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </div>
-          <!-- 消息输入区域 -->
-        <div class="input">
-          <input v-model="messageInput" @keyup.enter="sendMessage" placeholder="Type your message here...">
-          <button @click="sendMessage">Send</button>
-        </div>
-        </v-card>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
+            </div>
+            <!-- 消息输入区域 -->
+            <div class="input">
+              <input v-model="messageInput" @keyup.enter="sendMessage" placeholder="Type your message here...">
+              <button @click="sendMessage">Send</button>
+            </div>
+          </v-card>
 
-        <!-- 没有聊天室时 -->
-        <v-card class="chatroom_" v-else>
-          <v-card-title>
-          </v-card-title>
-          <div class="messages">
-          </div>
-          <!-- 消息输入区域 -->
-          <div class="input">
-            <input :disabled = "true" v-model="messageInput" @keyup.enter="sendMessage" placeholder="Type your message here...">
-            <button :disabled="true" @click="sendMessage">Send</button>
-          </div>
-        </v-card>
+          <!-- 没有聊天室时 -->
+          <v-card class="chatroom_" v-else>
+            <v-card-title>
+            </v-card-title>
+            <div class="messages">
+            </div>
+            <!-- 消息输入区域 -->
+            <div class="input">
+              <input :disabled = "true" v-model="messageInput" @keyup.enter="sendMessage" placeholder="Type your message here...">
+              <button :disabled="true" @click="sendMessage">Send</button>
+            </div>
+          </v-card>
 
-      </v-col>
+        </v-col>
 
-      <!-- 聊天室成员-->
-      <v-col cols="3" class="chatroom_">
-        <div v-if="this.selectedRoom !== null">
-          <v-toolbar>
-            <v-toolbar-title>聊天室成员</v-toolbar-title>
-            <v-spacer></v-spacer>
-                <!--拉人按钮 -->
-            <v-btn v-if="this.roomNow.type === 'PUB'" icon ripple small :color="getDarkColor(user.topic)" @click="openShowInviteMember()">
-              <v-icon>mdi-plus-circle</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <v-list style="overflow-y: auto;">
+        <!-- 聊天室成员-->
+        <v-col cols="3" class="chatroom_">
+          <div v-if="this.selectedRoom !== null">
+            <v-toolbar>
+              <v-toolbar-title>聊天室成员</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <!--拉人按钮 -->
+              <v-btn v-if="this.roomNow.type === 'PUB'" icon ripple small :color="getDarkColor(user.topic)" @click="openShowInviteMember()">
+                <v-icon>mdi-plus-circle</v-icon>
+              </v-btn>
+            </v-toolbar>
+            <v-list style="overflow-y: auto;">
               <v-list-item v-for="item in roomNow.users">
-              <v-list-item-avatar>
-                    <v-img :src="getIdenticon(item.userName, 50, 'user')" ></v-img>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                {{ item.userName }}
-              </v-list-item-content>
+                <v-list-item-avatar>
+                  <v-img :src="getIdenticon(item.userName, 50, 'user')" ></v-img>
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  {{ item.userName }}
+                </v-list-item-content>
                 <!--踢人按钮 -->
                 <div v-if="roomNow.type === 'PUB' && user.id === roomNow.admin.userId">
                   <v-btn v-if="item.userId !== roomNow.admin.userId" icon ripple small color="red" @click="openShowConfirmDeleteMember(item)">
@@ -124,179 +125,185 @@
                   </v-btn>
                 </div>
 
-            </v-list-item>
-            <v-list-item v-if="this.roomNow.type==='PUB' && user.id !== this.roomNow.admin.userId" >
-              <v-btn block outlined color="red" @click="openShowConfirmLeaveRoom()" >
-                退出
-              </v-btn>
-            </v-list-item>
-            <v-list-item v-if="this.roomNow.type==='PUB' && user.id===this.roomNow.admin.userId" >
-              <v-btn block @click="openShowConfirmDeleteRoom()" >
-                解散群聊
-              </v-btn>
-            </v-list-item>
+              </v-list-item>
+              <v-list-item v-if="this.roomNow.type==='PUB' && user.id !== this.roomNow.admin.userId" >
+                <v-btn block outlined color="red" @click="openShowConfirmLeaveRoom()" >
+                  退出
+                </v-btn>
+              </v-list-item>
+              <v-list-item v-if="this.roomNow.type==='PUB' && user.id===this.roomNow.admin.userId" >
+                <v-btn block @click="openShowConfirmDeleteRoom()" >
+                  解散群聊
+                </v-btn>
+              </v-list-item>
 
-          </v-list>
-          <v-divider></v-divider>
-        </div>
-      </v-col>
-    </v-row>
+            </v-list>
+            <v-divider></v-divider>
+          </div>
+        </v-col>
+      </v-row>
 
 
-    <!--创建聊天室 -->
-    <v-dialog v-model="createNewChatSheet" width="390" height="20vh" scrollable>
-      <v-card >
-        <v-card-title>
-          选择成员
-        </v-card-title>
-        <v-card-subtitle v-if="selectedMembers.length > 1">
-          <v-row>
-            <v-col cols="6">
-              <v-text-field label="聊天室名称" v-model="createRoomName"></v-text-field>
-            </v-col>
-            <v-col cols="6">
-              <v-text-field label="聊天室简介" v-model="createRoomDesc"></v-text-field>
-            </v-col>
-          </v-row>
-        </v-card-subtitle>
+      <!--创建聊天室 -->
+      <v-dialog v-model="createNewChatSheet" width="390" height="20vh" scrollable>
+        <v-card >
+          <v-card-title>
+            选择成员
+          </v-card-title>
+          <v-card-subtitle v-if="selectedMembers.length > 1">
+            <v-row>
+              <v-col cols="6">
+                <v-text-field label="聊天室名称" v-model="createRoomName"></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-text-field label="聊天室简介" v-model="createRoomDesc"></v-text-field>
+              </v-col>
+            </v-row>
+          </v-card-subtitle>
 
-        <v-card-text>
-          <span v-if="selectedMembers.length !== 0">已选择的成员：</span>
-          <v-spacer></v-spacer>
-          <v-chip v-for="item in selectedMembers" class="ma-2 accent-1" color="green" :key="item.peopleId"
-                  @click="() => {
+          <v-card-text>
+            <span v-if="selectedMembers.length !== 0">已选择的成员：</span>
+            <v-spacer></v-spacer>
+            <v-chip v-for="item in selectedMembers" class="ma-2 accent-1" color="green" :key="item.peopleId"
+                    @click="() => {
                               deselectedMembers.push(item)
                               selectedMembers.splice(selectedMembers.indexOf(item), 1)
                             }"
-          >
-            <v-avatar left><v-img :src="getIdenticon(item.peopleName, 50, 'user')" ></v-img></v-avatar>
-            {{ item.peopleName }}
-          </v-chip>
+            >
+              <v-avatar left><v-img :src="getIdenticon(item.peopleName, 50, 'user')" ></v-img></v-avatar>
+              {{ item.peopleName }}
+            </v-chip>
 
-          <v-spacer></v-spacer>
-          <span v-if="deselectedMembers.length !== 0">成员：</span>
-          <span v-else>大家都在聊天室里了哦</span>
+            <v-spacer></v-spacer>
+            <span v-if="deselectedMembers.length !== 0">成员：</span>
+            <span v-else>大家都在聊天室里了哦</span>
 
-          <v-list max-height="80%" scrollable>
-            <template v-for="item in deselectedMembers">
-              <v-list-item>
-                <v-chip @click="() => {
+            <v-list max-height="80%" scrollable>
+              <template v-for="item in deselectedMembers">
+                <v-list-item>
+                  <v-chip @click="() => {
                     selectedMembers.push(item)
                     deselectedMembers.splice(deselectedMembers.indexOf(item), 1)
                   }">
-                  <v-avatar left><v-img :src="getIdenticon(item.peopleName, 50, 'user')" ></v-img></v-avatar>
-                  {{ item.peopleName }}
-                </v-chip >
-              </v-list-item>
-            </template>
-          </v-list>
-        </v-card-text>
+                    <v-avatar left><v-img :src="getIdenticon(item.peopleName, 50, 'user')" ></v-img></v-avatar>
+                    {{ item.peopleName }}
+                  </v-chip >
+                </v-list-item>
+              </template>
+            </v-list>
+          </v-card-text>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn v-if="selectedMembers.length === 1 " :color="getRadialGradient(user.topic)" block ripple @click="createChatRoom">创建私聊！</v-btn>
-          <v-btn v-else-if="selectedMembers.length > 1 " :color="getRadialGradient(user.topic)" block ripple @click="createChatRoom">创建群聊！</v-btn>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn v-if="selectedMembers.length === 1 " :color="getRadialGradient(user.topic)" block ripple @click="createChatRoom">创建私聊！</v-btn>
+            <v-btn v-else-if="selectedMembers.length > 1 " :color="getRadialGradient(user.topic)" block ripple @click="createChatRoom">创建群聊！</v-btn>
 
-        </v-card-actions>
-      </v-card>
+          </v-card-actions>
+        </v-card>
 
-    </v-dialog>
+      </v-dialog>
 
-    <!-- 确认移除成员-->
-    <v-dialog v-model="showConfirmDeleteMember" max-width="300" persistent>
-      <v-card>
-        <v-card-title> 确认移除成员
-          <div v-if="this.tempSelectedMember">
-            <v-chip class="ma-2 accent-1">
-              <v-avatar left><v-img :src="getIdenticon(this.tempSelectedMember.userName, 50, 'user')" ></v-img></v-avatar>
-              {{ this.tempSelectedMember.userName }}
-            </v-chip>
-          </div>
-        </v-card-title>
-        <v-card-text> 警告！这样做会导致成员 {{this.tempSelectedMember.userName}} 无法访问聊天室 </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="green" class="white--text" @click="closeShowConfirmDeleteMember">
-            再想想
-          </v-btn>
-          <v-btn color="red" class="white--text" @click="deleteMember()">
-            确定
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      <!-- 确认移除成员-->
+      <v-dialog v-model="showConfirmDeleteMember" max-width="300" persistent>
+        <v-card>
+          <v-card-title> 确认移除成员
+            <div v-if="this.tempSelectedMember">
+              <v-chip class="ma-2 accent-1">
+                <v-avatar left><v-img :src="getIdenticon(this.tempSelectedMember.userName, 50, 'user')" ></v-img></v-avatar>
+                {{ this.tempSelectedMember.userName }}
+              </v-chip>
+            </div>
+          </v-card-title>
+          <v-card-text> 警告！这样做会导致成员 {{this.tempSelectedMember.userName}} 无法访问聊天室 </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green" class="white--text" @click="closeShowConfirmDeleteMember">
+              再想想
+            </v-btn>
+            <v-btn color="red" class="white--text" @click="deleteMember()">
+              确定
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
-    <!-- 确认解散群聊-->
-    <v-dialog v-if="this.roomNow !== null" v-model="showConfirmDeleteRoom" max-width="300" persistent>
-      <v-card>
-        <v-card-title> 解散群聊{{ this.roomNow.title }}？</v-card-title>
-        <v-card-text> 所有聊天记录都会消失哦 </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="green" class="white--text" @click="closeShowConfirmDeleteRoom()">
-            取消
-          </v-btn>
-          <v-btn color="red" class="white--text" @click="deleteRoom()">
-            确定
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      <!-- 确认解散群聊-->
+      <v-dialog v-if="this.roomNow !== null" v-model="showConfirmDeleteRoom" max-width="300" persistent>
+        <v-card>
+          <v-card-title> 解散群聊{{ this.roomNow.title }}？</v-card-title>
+          <v-card-text> 所有聊天记录都会消失哦 </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green" class="white--text" @click="closeShowConfirmDeleteRoom()">
+              取消
+            </v-btn>
+            <v-btn color="red" class="white--text" @click="deleteRoom()">
+              确定
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
-    <!-- 确认退出群聊-->
-    <v-dialog v-if="this.roomNow !== null" v-model="showConfirmLeaveRoom" max-width="300" persistent>
-      <v-card>
-        <v-card-title> 确认退出聊天室 </v-card-title>
-        <v-card-text> 退出后将无法访问聊天室哦 </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="green" class="white--text" @click="closeShowConfirmLeaveRoom()">
-            取消
-          </v-btn>
-          <v-btn color="red" class="white--text" @click="leaveRoom()">
-            确定
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      <!-- 确认退出群聊-->
+      <v-dialog v-if="this.roomNow !== null" v-model="showConfirmLeaveRoom" max-width="300" persistent>
+        <v-card>
+          <v-card-title> 确认退出聊天室 </v-card-title>
+          <v-card-text> 退出后将无法访问聊天室哦 </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green" class="white--text" @click="closeShowConfirmLeaveRoom()">
+              取消
+            </v-btn>
+            <v-btn color="red" class="white--text" @click="leaveRoom()">
+              确定
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
-    <!--拉人 -->
-    <v-dialog v-model="showInviteMember" width="390" height="20vh" scrollable>
-      <v-card >
-        <v-card-title>
-          添加新的成员
-        </v-card-title>
-        <v-card-text >
-          <span v-if="this.notInRoomMember && this.notInRoomMember.length !== 0">请选择想要邀请的成员：</span>
-          <span v-else>大家都在聊天室里了哦</span>
-          <v-list max-height="80%" scrollable>
-            <template v-for="item in this.notInRoomMember">
+      <!--拉人 -->
+      <v-dialog v-model="showInviteMember" width="390" height="20vh" scrollable>
+        <v-card >
+          <v-card-title>
+            添加新的成员
+          </v-card-title>
+          <v-card-text >
+            <span v-if="this.notInRoomMember && this.notInRoomMember.length !== 0">请选择想要邀请的成员：</span>
+            <span v-else>大家都在聊天室里了哦</span>
+            <v-list max-height="80%" scrollable>
+              <template v-for="item in this.notInRoomMember">
                 <v-list-item>
                   <v-chip @click="selectInviteMember(item)">
                     <v-avatar left><v-img :src="getIdenticon(item.userName, 50, 'user')" ></v-img></v-avatar>
                     {{ item.userName }}
                   </v-chip >
                 </v-list-item>
-            </template>
-          </v-list>
-        </v-card-text>
+              </template>
+            </v-list>
+          </v-card-text>
 
-        <v-divider></v-divider>
-        <v-card-actions v-if="this.tempSelectedMember">
-          <span>确认邀请成员</span>
-          <div v-if="this.tempSelectedMember">
-            <v-chip class="ma-2 accent-1" color="green">
-              <v-avatar left><v-img :src="getIdenticon(this.tempSelectedMember.userName, 50, 'user')" ></v-img></v-avatar>
-              {{ this.tempSelectedMember.userName }}
-            </v-chip>
-          </div>
-          <v-spacer></v-spacer>
-          <v-btn :color="getRadialGradient(user.topic)" ripple @click="inviteMember()">确定</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-divider></v-divider>
+          <v-card-actions v-if="this.tempSelectedMember">
+            <span>确认邀请成员</span>
+            <div v-if="this.tempSelectedMember">
+              <v-chip class="ma-2 accent-1" color="green">
+                <v-avatar left><v-img :src="getIdenticon(this.tempSelectedMember.userName, 50, 'user')" ></v-img></v-avatar>
+                {{ this.tempSelectedMember.userName }}
+              </v-chip>
+            </div>
+            <v-spacer></v-spacer>
+            <v-btn :color="getRadialGradient(user.topic)" ripple @click="inviteMember()">确定</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
-  </v-container>
+    </v-container>
+    <v-tour name="myTour" :steps="steps"></v-tour>
+  </div>
+
+
+
+
 </template>
 
 <script>
@@ -335,6 +342,16 @@ export default {
   data() {
 
     return {
+      steps:[
+        {
+          target: '#v-step-0',
+          content: 'Created a Chat!'
+        },
+        {
+          target: '#v-step-1',
+          content: 'GOOd!'
+        }
+      ],
 
       selectedRoomIndex:0,
       selectedRoom:null,
@@ -369,6 +386,10 @@ export default {
 
     };
   },
+  mounted: function () {
+    this.$tours['myTour'].start()
+  },
+
   methods: {
     getIdenticon,
 
@@ -1088,13 +1109,13 @@ export default {
 
 <style>
 .chatroom_ {
-  height: 80vh;
+  height: 75vh;
   display: flex;
   flex-direction: column;
 }
 
 .chatroom {
-  height: 72vh;
+  height: 67vh;
   display: flex;
   flex-direction: column;
 }

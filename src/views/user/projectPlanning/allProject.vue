@@ -22,7 +22,7 @@
           <img src="../../../assets/search.png" height="150px" width="150px"/>
         </div>
         <div style="font-size:20px;font-weight: bold">
-          没有找到数据
+          项目空空如也？创建一个，开启高效管理！
         </div>
      <!-- <v-img
       max-height="30%"
