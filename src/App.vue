@@ -199,27 +199,31 @@
           </v-list-item-avatar>
         </v-list-item>
       </v-list>
-      <v-list subheader v-if="user.status !== 'C' & user.status !== 'D'">
-      <v-subheader inset>规划</v-subheader>
-      <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/allTask'">
-        <v-list-item-avatar>
-          <v-icon :color="getDarkColor(user.topic)">mdi-ballot-outline</v-icon>
-        </v-list-item-avatar>
+
+       <v-list subheader v-if="user.status !== 'C' & user.status !== 'D'">
+
+          <v-subheader inset title="查看项目涉及的任务、人员和统计图">
+            规划
+          </v-subheader>
+
+        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/allTask'" title="查看或管理项目涉及的任务" >
+          <v-list-item-avatar>
+            <v-icon :color="getDarkColor(user.topic)">mdi-ballot-outline</v-icon>
+          </v-list-item-avatar>
 
           <v-list-item-content>
             <v-list-item-title>任务列表</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/allPerson'">
+        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/allPerson'" title="查看或管理项目涉及的人员">
           <v-list-item-avatar>
             <v-icon :color="getDarkColor(user.topic)">mdi-account-outline</v-icon>
           </v-list-item-avatar>
-
           <v-list-item-content>
             <v-list-item-title>人员列表</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" @click="gotoPic">
+        <v-list-item :style="'color: ' + getDarkColor(user.topic)" @click="gotoPic" title="查看项目统计图">
           <v-list-item-avatar>
             <v-icon :color="getDarkColor(user.topic)">mdi-align-vertical-bottom</v-icon>
           </v-list-item-avatar>
@@ -229,8 +233,8 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-subheader inset>开发</v-subheader>
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/dev'">
+        <v-subheader inset title="项目开发涉及功能">开发</v-subheader>
+        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/dev'" title="管理项目涉及的代码，提交pr并完成任务">
           <v-list-item-avatar>
             <v-icon :color="getDarkColor(user.topic)">mdi-align-vertical-center</v-icon>
           </v-list-item-avatar>
@@ -1151,6 +1155,16 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+.description {
+  word-break:normal;
+  width:auto;
+  display:block;
+  white-space:pre-wrap;
+  word-wrap : break-word ;
+  overflow: hidden ;
+  line-height: 1.5rem;
 }
 
 </style>

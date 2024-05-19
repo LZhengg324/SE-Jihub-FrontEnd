@@ -233,3 +233,12 @@ export const getActivations = (data) =>{
 }
 
 
+export const doAuthenticate =(data) =>{
+  return request.post('api/develop/inviteCollaborator', data);
+}
+
+export const checkIsCollaborator =(data) =>{
+  return request.post('api/develop/checkIsCollaborator',data);
+}
+
+
