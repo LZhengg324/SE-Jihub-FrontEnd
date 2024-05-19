@@ -121,27 +121,27 @@ export default {
 <div>
 <!--  <p>I am branch view, I am aware that my proj = {{ proj }}, and that my selected repo = {{ selectedRepo }}</p>-->
 <v-row>
-  <v-col cols="3">
+  <v-col cols="4">
     <v-card-title>
       <v-form>
         <v-row class="justify-center">分支列表</v-row>
-        <v-row class="justify-center">
-          <v-col  class="mb-3">
-            <v-btn :color="getTopicColor(user.topic)"
-                   class="white--text"
-                   block
-                   @click="creatingNewBranch = true">
-              创建新的分支
-            </v-btn>
-          </v-col>
-        </v-row>
+        <!--<v-row class="justify-center">-->
+        <!--  <v-col  class="mb-3">-->
+        <!--    <v-btn :color="getTopicColor(user.topic)"-->
+        <!--           class="white&#45;&#45;text"-->
+        <!--           block-->
+        <!--           @click="creatingNewBranch = true">-->
+        <!--      创建新的分支-->
+        <!--    </v-btn>-->
+        <!--  </v-col>-->
+        <!--</v-row>-->
       </v-form>
     </v-card-title>
     <div v-if="branchBusy">
         <v-card-title><v-progress-circular indeterminate></v-progress-circular>正在与服务器同步分支</v-card-title>
     </div>
-    <v-list outlined shaped v-if="!branchBusy" class="overflow-y-auto">
-      <v-list-item-group v-model="selectedBranchIndex" mandatory>
+    <v-list outlined shaped v-if="!branchBusy" class="overflow-y-auto" max-height="750px"  >
+      <v-list-item-group v-model="selectedBranchIndex" mandatory >
         <v-list-item v-for="branch in branches" :key="branch.id" two-line>
           <v-list-item-content>
             <v-list-item-title>
@@ -159,30 +159,30 @@ export default {
 
   <v-divider vertical></v-divider>
 
-  <v-col cols="9">
+  <v-col cols="8">
     <commit_view v-if="!branchBusy"/>
     <v-skeleton-loader v-else type="text@3, table"></v-skeleton-loader>
   </v-col>
 </v-row>
 
-  <el-dialog
-      title="创建新的分支"
-      :visible.sync="creatingNewBranch"
-      width="50%"
-      :before-close="handleClose">
-    <el-form label-position="labelPosition"
-             label-iwdth="80px"
-             :model="newBranchForm"
-             ref="newBranchForm">
-      <el-form-item label="Branch name">
-        <el-input type="textarea" v-model="newBranchForm.branchName" ></el-input>
-      </el-form-item>
-    </el-form>
-    <span slot="footer" class="dialog-footer">
-    <el-button @click="creatingNewBranch = false">取 消</el-button>
-    <el-button type="primary" @click="createNewBranch">确 定</el-button>
-    </span>
-  </el-dialog>
+  <!--<el-dialog-->
+  <!--    title="创建新的分支"-->
+  <!--    :visible.sync="creatingNewBranch"-->
+  <!--    width="50%"-->
+  <!--    :before-close="handleClose">-->
+  <!--  <el-form label-position="labelPosition"-->
+  <!--           label-iwdth="80px"-->
+  <!--           :model="newBranchForm"-->
+  <!--           ref="newBranchForm">-->
+  <!--    <el-form-item label="Branch name">-->
+  <!--      <el-input type="textarea" v-model="newBranchForm.branchName" ></el-input>-->
+  <!--    </el-form-item>-->
+  <!--  </el-form>-->
+  <!--  <span slot="footer" class="dialog-footer">-->
+  <!--  <el-button @click="creatingNewBranch = false">取 消</el-button>-->
+  <!--  <el-button type="primary" @click="createNewBranch">确 定</el-button>-->
+  <!--  </span>-->
+  <!--</el-dialog>-->
 </div>
 </template>
 
