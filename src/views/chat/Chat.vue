@@ -13,7 +13,7 @@
             <!--                <v-icon>mdi-magnify</v-icon>-->
             <!--              </v-btn>-->
             <!-- 创建新的聊天室 }}-->
-            <v-btn  id="v-step-0"  icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">
+            <v-btn  icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">
               <v-icon >mdi-plus-circle</v-icon>
             </v-btn>
           </v-toolbar>
@@ -344,11 +344,11 @@ export default {
     return {
       steps:[
         {
-          target: '#v-step-0',
+          target: '#v-step2',
           content: 'Created a Chat!'
         },
         {
-          target: '#v-step-1',
+          target: '#v-step3',
           content: 'GOOd!'
         }
       ],
@@ -686,7 +686,7 @@ export default {
         console.log('socket opened')
       }
 
-      const onmessage = (fromName, fromId, content, time) => {
+      const onmessage = (fromName, fromId, content, time,type) => {
         this.updateChatRooms()
         console.log(this.roomNow)
         if (this.roomNow === undefined) {
@@ -694,9 +694,9 @@ export default {
         } else {
           this.roomNow.history.push({
             from: fromName,
-            type: 'group',
+            type: type,
             content: content,
-            time: time
+            time: time,
           })
           console.log("显示聊天记录")
           console.log(this.messages)
@@ -715,7 +715,7 @@ export default {
         console.log('Message from server ', event.data);
         var data = JSON.parse(event.data)
         if (data.type === 1) {
-          onmessage(data.senderName, data.senderId, data.mes, data.time)
+          onmessage(data.senderName, data.senderId, data.mes, data.time, data.mes_type)
         } else if (data.type === 2) {
           onmessage_remind()
         }
