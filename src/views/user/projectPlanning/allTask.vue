@@ -2,7 +2,7 @@
   <div v-if="this.selectedProj == null" style="width: 100%; height: 100%;"></div>
   <div v-else style="width: 100%; height: 100%;">
     <div class="one">
-      <h1 style="position:absolute;left:5%;top:10%">任务列表</h1>
+      <h1 style="position:absolute;left:5%;top:10%">任务列表 {{ this.checkMyFlag ? "-我的任务" : "-全部任务" }}</h1>
     </div>
     <div class="three">
       <v-text-field
@@ -103,6 +103,7 @@
                 <v-data-table
                     :search="search"
                     :headers="headers"
+                    show-expand
                     :items="task.subTaskList"
                     :items-per-page="5"
                     class="elevation-1"
@@ -190,10 +191,10 @@
                         >
                           <v-btn text @click="switchAction('删除任务', item, task)">删除任务</v-btn>
                         </v-list-item>
-                        <v-list-item
-                        >
-                          <v-btn text @click="switchAction('完成任务', item, task)">完成任务</v-btn>
-                        </v-list-item>
+                        <!--<v-list-item-->
+                        <!--&gt;-->
+                        <!--  <v-btn text @click="switchAction('完成任务', item, task)">完成任务</v-btn>-->
+                        <!--</v-list-item>-->
                       </v-list>
                     </v-menu>
                   </template>
@@ -218,6 +219,16 @@
                     >
                       mdi-delete
                     </v-icon>
+                  </template>
+                  <template v-slot:expanded-item="{ headers, item }">
+                    <td :colspan="headers.length">
+
+                      <v-chip color="yellow" > 新添 </v-chip>
+                      <v-chip color="yellow" > 前端 </v-chip>
+                      <v-chip color="yellow" > vue </v-chip>
+                      这是软工作业的讨论室板块前端制作任务，使用vue编写前端，从user.js中查找api
+                    </td>
+
                   </template>
                 </v-data-table>
               </v-card>
@@ -269,121 +280,170 @@
         <el-form-item label="子任务名称">
           <el-input v-model="newSonForm.name"></el-input>
         </el-form-item>
-        <el-form-item>
-          <p>开始时间</p>
-          <v-menu
-              v-model="menu5"
-              :close-on-content-click="false"
-              return-value.sync="sad"
-              transition="scale-transition"
-              offset-y
-              min-width="auto"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-combobox
+        <el-form-item label="子任务描述">
+          <el-input  type="textarea" v-model="newSonForm.msg"></el-input>
+        </el-form-item>
+        <v-row>
+          <v-col>
+            <p style="top:5%">创建标签</p>
+            <el-input v-model="customLabel">
+
+              <el-button slot="append" icon="el-icon-check" @click="newSonForm.labels.push(customLabel); subTaskLabels.push(customLabel)"></el-button>
+            </el-input>
+          </v-col>
+
+          <v-col>
+            <p style="top:5%">推荐标签</p>
+            <v-select
+                outlined
+                chips
+                multiple
+                v-model="newSonForm.labels"
+                :items="subTaskLabels"
+            >
+              <template v-slot:item="{ item }">
+                <div style="position: relative;background-color: aliceblue; ">
+                  <v-avatar size="25" color="indigo">
+                    <v-icon class="mr-2" :color="getTopicColor(user.topic)">
+                      mdi-bullseye-arrow
+                    </v-icon>
+                  </v-avatar>
+                  <span style="position:absolute;left: 120%; width: 500px">
+              {{ item }}
+            </span>
+                </div>
+              </template>
+            </v-select>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="6"><el-form-item>
+            <p>开始时间</p>
+            <v-menu
+                v-model="menu5"
+                :close-on-content-click="false"
+                return-value.sync="sad"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-combobox
+                    v-model="newSonForm.startTime"
+                    chips
+                    small-chips
+                    label="请选择日期"
+                    prepend-icon="mdi-calendar"
+                    readonly
+                    v-bind="attrs"
+                    v-on="on"
+                ></v-combobox>
+              </template>
+              <v-date-picker
                   v-model="newSonForm.startTime"
-                  chips
-                  small-chips
-                  label="请选择日期"
-                  prepend-icon="mdi-calendar"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-              ></v-combobox>
-            </template>
-            <v-date-picker
-                v-model="newSonForm.startTime"
-                no-title
-                scrollabel
+                  no-title
+                  scrollabel
+              >
+                <v-spacer></v-spacer>
+                <v-btn
+                    text
+                    :color="getTopicColor(user.topic)"
+                    @click="menu5 = false"
+                >
+                  取消
+                </v-btn>
+                <v-btn
+                    text
+                    :color="getTopicColor(user.topic)"
+                    @click="menu5 = false"
+                >
+                  确定
+                </v-btn>
+              </v-date-picker>
+            </v-menu>
+          </el-form-item></v-col>
+          <v-col cols="6"><el-form-item>
+            <p>预计完成时间</p>
+            <v-menu
+                v-model="menu6"
+                :close-on-content-click="false"
+                return-value.sync="sad"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
             >
-              <v-spacer></v-spacer>
-              <v-btn
-                  text
-                  :color="getTopicColor(user.topic)"
-                  @click="menu5 = false"
-              >
-                取消
-              </v-btn>
-              <v-btn
-                  text
-                  :color="getTopicColor(user.topic)"
-                  @click="menu5 = false"
-              >
-                确定
-              </v-btn>
-            </v-date-picker>
-          </v-menu>
-        </el-form-item>
-        <el-form-item>
-          <p>预计完成时间</p>
-          <v-menu
-              v-model="menu6"
-              :close-on-content-click="false"
-              return-value.sync="sad"
-              transition="scale-transition"
-              offset-y
-              min-width="auto"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-combobox
+              <template v-slot:activator="{ on, attrs }">
+                <v-combobox
+                    v-model="newSonForm.endTime"
+                    chips
+                    small-chips
+                    label="请选择日期"
+                    prepend-icon="mdi-calendar"
+                    readonly
+                    v-bind="attrs"
+                    v-on="on"
+                ></v-combobox>
+              </template>
+              <v-date-picker
                   v-model="newSonForm.endTime"
-                  chips
-                  small-chips
-                  label="请选择日期"
-                  prepend-icon="mdi-calendar"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-              ></v-combobox>
-            </template>
-            <v-date-picker
-                v-model="newSonForm.endTime"
-                no-title
-                scrollabel
+                  no-title
+                  scrollabel
+              >
+                <v-spacer></v-spacer>
+                <v-btn
+                    text
+                    :color="getTopicColor(user.topic)"
+                    @click="menu6 = false"
+                >
+                  Cancel
+                </v-btn>
+                <v-btn
+                    text
+                    :color="getTopicColor(user.topic)"
+                    @click="menu6 = false"
+                >
+                  OK
+                </v-btn>
+              </v-date-picker>
+            </v-menu>
+          </el-form-item></v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="6">
+            <p style="top:5%">贡献程度</p>
+            <el-form-item>
+              <v-slider
+                  int="Im a hint"
+                  max="100"
+                  min="0"
+                  step="1"
+                  thumb-label
+                  v-model="newSonForm.contribute"
+                  style="position:relative;bottom:-5px"
+              ></v-slider>
+            </el-form-item>
+          </v-col>
+          <v-col cols="6">
+            <p style="top:5%">负责人</p>
+            <v-select
+                v-model="newSonForm.managerName"
+                :items="personNameList"
             >
-              <v-spacer></v-spacer>
-              <v-btn
-                  text
-                  :color="getTopicColor(user.topic)"
-                  @click="menu6 = false"
-              >
-                Cancel
-              </v-btn>
-              <v-btn
-                  text
-                  :color="getTopicColor(user.topic)"
-                  @click="menu6 = false"
-              >
-                OK
-              </v-btn>
-            </v-date-picker>
-          </v-menu>
-        </el-form-item>
-        <el-form-item label="贡献程度">
-          <v-slider
-              int="Im a hint"
-              max="100"
-              min="0"
-              step="1"
-              thumb-label
-              v-model="newSonForm.contribute"
-              style="position:relative;bottom:-5px"
-          ></v-slider>
-        </el-form-item>
-        <p style="top:5%">负责人</p>
-        <v-select
-            v-model="newSonForm.managerName"
-            :items="personNameList"
-        >
-          <template v-slot:item="{ item }">
-            <div style="position: relative;background-color: aliceblue;">
-              <v-avatar size="25" color="indigo">
-                <v-img :src="getIdenticon(item, 25, 'user')"></v-img>
-              </v-avatar>
-              <span style="position:absolute;left: 120%;">{{ item }}</span>
-            </div>
-          </template>
-        </v-select>
+              <template v-slot:item="{ item }">
+                <div style="position: relative;background-color: aliceblue;">
+                  <v-avatar size="25" color="indigo">
+                    <v-img :src="getIdenticon(item, 25, 'user')"></v-img>
+                  </v-avatar>
+                  <span style="position:absolute;left: 120%;">{{ item }}</span>
+                </div>
+              </template>
+            </v-select>
+          </v-col>
+        </v-row>
+
+
+
+
       </el-form>
       <span slot="footer" class="dialog-footer">
     <el-button @click="cancelNewSon">取 消</el-button>
@@ -503,107 +563,127 @@
         <el-form-item label="子任务名称">
           <el-input v-model="editSonForm.name"></el-input>
         </el-form-item>
-        <el-form-item>
-          <p>开始时间</p>
-          <v-menu
-              v-model="menu3"
-              :close-on-content-click="false"
-              return-value.sync="sad"
-              transition="scale-transition"
-              offset-y
-              min-width="auto"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-combobox
-                  v-model="editSonForm.startTime"
-                  chips
-                  small-chips
-                  label="请选择日期"
-                  prepend-icon="mdi-calendar"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-              ></v-combobox>
-            </template>
-            <v-date-picker
-                v-model="editSonForm.startTime"
-                no-title
-                scrollabel
-            >
-              <v-spacer></v-spacer>
-              <v-btn
-                  text
-                  :color="getTopicColor(user.topic)"
-                  @click="menu3 = false"
+        <el-form-item label="子任务描述">
+          <el-input  type="textarea" v-model="editSonForm.msg"></el-input>
+        </el-form-item>
+        <v-row>
+          <v-col cols="6">
+            <el-form-item>
+              <p>开始时间</p>
+              <v-menu
+                  v-model="menu3"
+                  :close-on-content-click="false"
+                  return-value.sync="sad"
+                  transition="scale-transition"
+                  offset-y
+                  min-width="auto"
               >
-                确定
-              </v-btn>
-            </v-date-picker>
-          </v-menu>
-        </el-form-item>
-        <el-form-item>
-          <p>预计完成时间</p>
-          <v-menu
-              v-model="menu4"
-              :close-on-content-click="false"
-              return-value.sync="sad"
-              transition="scale-transition"
-              offset-y
-              min-width="auto"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-combobox
-                  v-model="editSonForm.endTime"
-                  chips
-                  small-chips
-                  label="请选择日期"
-                  prepend-icon="mdi-calendar"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-              ></v-combobox>
-            </template>
-            <v-date-picker
-                v-model="editSonForm.endTime"
-                no-title
-                scrollabel
-            >
-              <v-spacer></v-spacer>
-              <v-btn
-                  text
-                  :color="getTopicColor(user.topic)"
-                  @click="menu4 = false"
+                <template v-slot:activator="{ on, attrs }">
+                  <v-combobox
+                      v-model="editSonForm.startTime"
+                      chips
+                      small-chips
+                      label="请选择日期"
+                      prepend-icon="mdi-calendar"
+                      readonly
+                      v-bind="attrs"
+                      v-on="on"
+                  ></v-combobox>
+                </template>
+                <v-date-picker
+                    v-model="editSonForm.startTime"
+                    no-title
+                    scrollabel
+                >
+                  <v-spacer></v-spacer>
+                  <v-btn
+                      text
+                      :color="getTopicColor(user.topic)"
+                      @click="menu3 = false"
+                  >
+                    确定
+                  </v-btn>
+                </v-date-picker>
+              </v-menu>
+            </el-form-item>
+          </v-col>
+
+          <v-col cols="6">
+            <el-form-item>
+              <p>预计完成时间</p>
+              <v-menu
+                  v-model="menu4"
+                  :close-on-content-click="false"
+                  return-value.sync="sad"
+                  transition="scale-transition"
+                  offset-y
+                  min-width="auto"
               >
-                确定
-              </v-btn>
-            </v-date-picker>
-          </v-menu>
-        </el-form-item>
-        <el-form-item label="贡献程度">
-          <v-slider
-              int="Im a hint"
-              max="100"
-              min="0"
-              step="1"
-              thumb-label
-              v-model="editSonForm.contribute"
-              style="position:relative;bottom:-5px"
-          ></v-slider>
-        </el-form-item>
-        <p style="top:5%">负责人</p>
-        <v-select
-            v-model="editSonForm.managerName"
-            :items="personNameList"
-        >
-          <template v-slot:item="{ item }">
-            <div style="position: relative;background-color: aliceblue;">
-              <v-avatar size="25" color="indigo">
-                <v-img :src="getIdenticon(item, 25, 'user')"></v-img>
-              </v-avatar>
-              <span style="position:absolute;left: 120%;">{{ item }}</span>
-            </div>
-          </template>
-        </v-select>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-combobox
+                      v-model="editSonForm.endTime"
+                      chips
+                      small-chips
+                      label="请选择日期"
+                      prepend-icon="mdi-calendar"
+                      readonly
+                      v-bind="attrs"
+                      v-on="on"
+                  ></v-combobox>
+                </template>
+                <v-date-picker
+                    v-model="editSonForm.endTime"
+                    no-title
+                    scrollabel
+                >
+                  <v-spacer></v-spacer>
+                  <v-btn
+                      text
+                      :color="getTopicColor(user.topic)"
+                      @click="menu4 = false"
+                  >
+                    确定
+                  </v-btn>
+                </v-date-picker>
+              </v-menu>
+            </el-form-item>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col cols="6">
+            <p style="top:5%">贡献程度</p>
+            <el-form-item >
+              <v-slider
+                  int="Im a hint"
+                  max="100"
+                  min="0"
+                  step="1"
+                  thumb-label
+                  v-model="editSonForm.contribute"
+                  style="position:relative;bottom:-5px"
+              ></v-slider>
+            </el-form-item>
+          </v-col>
+          <v-col cols="6">
+            <p style="top:5%">负责人</p>
+            <v-select
+                v-model="editSonForm.managerName"
+                :items="personNameList"
+            >
+              <template v-slot:item="{ item }">
+                <div style="position: relative;background-color: aliceblue;">
+                  <v-avatar size="25" color="indigo">
+                    <v-img :src="getIdenticon(item, 25, 'user')"></v-img>
+                  </v-avatar>
+                  <span style="position:absolute;left: 120%;">{{ item }}</span>
+                </div>
+              </template>
+            </v-select>
+          </v-col>
+        </v-row>
+
+
       </el-form>
       <span slot="footer" class="dialog-footer">
     <el-button @click="editTask = false">取 消</el-button>
@@ -642,6 +722,7 @@ import {
   removeTask,
   showPersonList
 } from '@/api/user.js'
+import { format, parseISO } from 'date-fns'
 import getIdenticon from "@/utils/identicon";
 import topicSetting from "@/utils/topic-setting";
 
@@ -656,6 +737,7 @@ export default {
     } else {
       this.getTaskList();
       this.getPersonList();
+
     }
   },
   inject: {
@@ -663,6 +745,8 @@ export default {
     'selectedProj': {default: null}
   },
   data: () => ({
+    customLabel:'',
+    subTaskLabels:["新添","删除","修改","前端","后端","vue","django"],
     personNameList: [],
     personIdList: [],
     checkMyFlag: false,
@@ -710,7 +794,9 @@ export default {
       endTime: '',
       contribute: '',
       managerName: '',
-      fatherTaskId: ''
+      fatherTaskId: '',
+      msg:'',
+      labels:[],
     },
     newSonForm: {
       name: '',
@@ -718,7 +804,9 @@ export default {
       endTime: '',
       contribute: '',
       managerName: '',
-      fatherTaskId: ''
+      fatherTaskId: '',
+      msg: '',
+      labels:[],
     },
     newAlarmForm: {
       taskId: '',
@@ -743,10 +831,14 @@ export default {
       {text: '状态', value: 'status'},
       {text: '负责人', value: 'managerId'},
       {text: '', value: "alarm", sortable: false},
-      {text: '', value: 'action', sortable: false}
+      {text: '', value: 'action', sortable: false},
+      {text: "", value: "data-table-expand"},
     ],
     tasks: []
   }),
+  mounted() {
+    this.checkMyTask();
+  },
   methods: {
     getIdenticon,
     upTask(item) {
@@ -961,6 +1053,7 @@ export default {
       });
     },
     setupNewSon(item) {
+      this.newSonForm.startTime = format(parseISO(new Date().toISOString()), 'yyyy-MM-dd');
       this.setupSon = true;
       this.newSonForm.fatherTaskId = item.taskId;
     },
@@ -1056,7 +1149,8 @@ export default {
         managerId: managerId,
         fatherTaskId: this.newSonForm.fatherTaskId,
         projectId: this.selectedProj.projectId,
-        subTaskName: this.newSonForm.name
+        subTaskName: this.newSonForm.name,
+        description: this.newSonForm.msg,
       }).then(
           res => {
             console.log(res);
@@ -1111,7 +1205,7 @@ export default {
         taskId: this.newAlarmForm.taskId,
         deadline: this.newAlarmForm.date + '-' + this.newAlarmForm.time.replace(':', '-'),
         project_id: this.selectedProj.projectId,
-        user_id:this.user.id,
+        user_id: this.user.id,
       }).then(
           res => {
             console.log(res);

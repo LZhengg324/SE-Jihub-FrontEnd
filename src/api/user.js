@@ -241,4 +241,17 @@ export const checkIsCollaborator =(data) =>{
   return request.post('api/develop/checkIsCollaborator',data);
 }
 
+export const getCommentsList =(data) =>{
+  return request.post('api/develop/getCommentsList',data);
+}
+
+export const makeComment = (data) =>{
+  return request.post('api/develop/comment',data);
+}
+
+export const markTask =(data)=>{
+  return request.post('api/develop/markTaskSolved',data);
+}
+
+
 
