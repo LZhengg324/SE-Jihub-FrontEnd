@@ -95,7 +95,8 @@ export default {
       loginData: {
         userNameOrEmail: '',
         password: '',
-        noEncrypt: false
+        noEncrypt: false,
+        ip: ''
       },
       registerData: {
         username: '',
@@ -178,7 +179,8 @@ export default {
       // console.log("cbycbycbycby")
       axios.post("/api/login", {
         userNameOrEmail: this.loginData.userNameOrEmail,
-        password: secretPassword
+        password: secretPassword,
+        ip: this.loginData.ip
       })
           .then((response) => {
             console.log(response.data)
@@ -204,7 +206,7 @@ export default {
                 message: "登录成功"
               });
               console.log(response.data.data)
-              if (response.data.data.status === 'C') { // 管理员
+              if (response.data.data.status === 'C' || response.data.data.status === 'D') { // 管理员
                 window.location.href = '/manager/home'
               } else { // 用户
                 window.location.href = '/allProject'
@@ -282,6 +284,9 @@ export default {
         .catch((err) => {
           console.error(err);
         })
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(json => this.loginData.ip = json.ip);
   }
 }
 </script>

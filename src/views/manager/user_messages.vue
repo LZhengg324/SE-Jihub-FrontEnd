@@ -2,22 +2,52 @@
   <v-container>
     <v-card>
       <v-card-title>
-        <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            label="搜索"
-            single-line
-            hide-details
-        ></v-text-field>
+        <v-container fluid>
+          <v-row>
+            <v-col cols="4">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                  <v-select
+                      v-model="filterStatus"
+                      :items="filterStatusList"
+                      item-value="value"
+                      item-text="label"
+                      label="状态"
+                      single-line
+                      hide-details
+                      v-on="on"
+                  ></v-select>
+                </template>
+                <span>过滤显示状态</span>
+              </v-tooltip>
+            </v-col>
+              <v-col cols="8">
+              <v-text-field
+                  v-model="search"
+                  append-icon="mdi-magnify"
+                  label="搜索"
+                  single-line
+                  hide-details
+                  title="状态"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-container>
+
       </v-card-title>
+
+
       <v-data-table
           :headers="headers"
-          :items="userMessages"
+          :items="filteredUserMessages"
           :search="search"
+
+
       >
         <template #item.status="{item}">
           <v-chip :color="getColor(item.status)" dark @click="openChangeUserStatusDialog(item)">
-            {{ transform(item.status) }}
+            {{
+              transform(item.status) }}
 <!--            <v-text v-if="item.status==='A'"> 正常 </v-text>-->
 <!--            <v-text v-if="item.status==='B'"> 禁用 </v-text>-->
           </v-chip>
@@ -106,6 +136,8 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import util from "@/views/util";
+
+let user = Cookies.get("user")
 export default {
   inject: {
     user: { default: null },
@@ -115,6 +147,7 @@ export default {
     return {
       msg: null,
       search: '',
+      filterStatus: 'ALL',
       headers: [
         {
           text: '用户名',
@@ -147,27 +180,27 @@ export default {
         },
       ],
       userMessages: [
-        // {
-        //   name: 'user1',
-        //   id: '1',
-        //   email: '123@qq.com',
-        //   registerTime: '2023.1.1',
-        //   status: 'A',
-        // },
-        // {
-        //   name: 'faskfl',
-        //   id: '2',
-        //   email: 'gers@qq.com',
-        //   registerTime: '2023.2.1',
-        //   status: 'B',
-        // },
-        // {
-        //   name: 'saga',
-        //   id: '3',
-        //   email: '53@qq.com',
-        //   registerTime: '2023.3.1',
-        //   status: 'A',
-        // },
+         {
+           name: 'user1',
+           id: '1',
+           email: '123@qq.com',
+           registerTime: '2023.1.1',
+           status: 'A',
+         },
+         {
+           name: 'faskfl',
+           id: '2',
+           email: 'gers@qq.com',
+           registerTime: '2023.2.1',
+           status: 'B',
+         },
+         {
+           name: 'saga',
+           id: '3',
+           email: '53@qq.com',
+           registerTime: '2023.3.1',
+           status: 'A',
+         },
       ],
       // 重置用户密码dialog相关信息
       showResetPassword: false,
@@ -185,7 +218,30 @@ export default {
           label: '禁用',
           value: 'B'
         },
+        {
+          label: '项目管理员',
+          value: 'D'
+        },
       ],
+      filterStatusList: [
+        {
+          label: '全部',
+          value: 'ALL',
+        },
+        {
+          label: '正常',
+          value: 'A'
+        },
+        {
+          label: '禁用',
+          value: 'B'
+        },
+        {
+          label: '项目管理员',
+          value: 'D'
+        },
+      ],
+
       // 用户个人信息dialog相关信息
       showUserProfile: false,
       userProfileDialogMessage: '',
@@ -195,6 +251,23 @@ export default {
   },
   created() {
     this.showUserMessages()
+  },
+  computed: {
+    filteredUserMessages() {
+      // 先根据搜索关键词过滤
+      let filtered = this.userMessages.filter(message => {
+        return message.name.toLowerCase().includes(this.search.toLowerCase());
+      });
+
+      // 再根据状态过滤
+      if (this.filterStatus !== 'ALL') {
+        filtered = filtered.filter(message => {
+          return message.status === this.filterStatus;
+        });
+      }
+
+      return filtered;
+    }
   },
   // TODO：传给后端管理员id，如果报错，不显示信息而显示弹窗
   methods: {
@@ -212,8 +285,12 @@ export default {
                 type: 'error',
                 message: "您没有权限"
               });
+            } else if (this.user.status === 'D') {
+              //过滤掉小管理员
+              this.userMessages = response.data.users.filter(user => user.status !== 'D')
             } else {
               this.userMessages = response.data.users
+
             }
           })
           .catch((err) => {
@@ -223,6 +300,13 @@ export default {
     },
     // 打开重置用户密码窗口
     openResetPasswordDialog(item) {
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
+      }
       this.userResetPasswordDialogMessage = item
       console.log("open reset password dialog")
       console.log(this.userResetPasswordDialogMessage)
@@ -230,37 +314,52 @@ export default {
     },
     // 关闭重置用户密码窗口
     closeResetPasswordDialog() {
-      this.showResetPassword = false
-      console.log("close reset password dialog")
-      this.userResetPasswordDialogMessage = ''
+      if (user.status === 'C') {
+        this.showResetPassword = false
+        console.log("close reset password dialog")
+        this.userResetPasswordDialogMessage = ''
+      } else {
+        this.$message.error("您不是超级管理员，没有权限")
+      }
     },
     // 重置用户密码
     resetPassword() {
-      let userId = this.userResetPasswordDialogMessage.id
-      axios.post("/api/management/resetUserPassword", {managerId: this.user.id, userId: userId})
-          .then((response) => {
-            console.log(response.data)
-            if (response.data.errcode === 1) {
-              this.$message({
-                type: 'error',
-                message: "您没有该权限"
-              });
-            } else {
-              this.$message({
-                type: 'success',
-                message: "成功将用户" + response.data.name + "的密码修改为" + response.data.resetPassword
-              });
-            }
-          })
-          .catch((err) => {
-            console.error(err);
-          })
-      this.showResetPassword = false
-      this.userResetPasswordDialogMessage = ''
+      if (user.status === 'C') {
+        let userId = this.userResetPasswordDialogMessage.id
+        axios.post("/api/management/resetUserPassword", {managerId: this.user.id, userId: userId})
+            .then((response) => {
+              console.log(response.data)
+              if (response.data.errcode === 1) {
+                this.$message({
+                  type: 'error',
+                  message: "您没有该权限"
+                });
+              } else {
+                this.$message({
+                  type: 'success',
+                  message: "成功将用户" + response.data.name + "的密码修改为" + response.data.resetPassword
+                });
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+            })
+        this.showResetPassword = false
+        this.userResetPasswordDialogMessage = ''
+      } else {
+        this.$message.error("你不是超级管理员，没有权限")
+      }
     },
     // 打开修改用户状态窗口，并显示当前状态
     openChangeUserStatusDialog(item) {
       console.log(item)
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
+      }
       console.log("open change user status dialog")
       this.userStatusDialogMessage = item
       this.selectedStatus = item.status
@@ -268,10 +367,10 @@ export default {
     },
     // 关闭修改用户状态窗口
     closeChangeUserStatusDialog() {
-      this.showChangeUserStatus = false
-      console.log("close change user status dialog")
-      this.userStatusDialogMessage = ''
-      this.selectedStatus = ''
+        this.showChangeUserStatus = false
+        console.log("close change user status dialog")
+        this.userStatusDialogMessage = ''
+        this.selectedStatus = ''
     },
     // 修改用户状态
     changeStatus() {
@@ -295,25 +394,39 @@ export default {
               let showStatus;
               if (this.selectedStatus === 'A') {
                 showStatus = "正常"
-              } else {
+              } else if (this.selectedStatus === 'B'){
                 showStatus = "禁用"
+              } else if (this.selectedStatus === 'D'){
+                showStatus = "小管理员"
               }
               this.$message({
                 type: 'info',
                 message: "用户" + this.userStatusDialogMessage.name + "的状态已为" + showStatus
               });
+            } else if (response.data.errcode === 3) {
+              console.log(response.data)
+              this.$message({
+                type: 'info',
+                message: "用户" + this.userStatusDialogMessage.name + "不能设置为项目管理员"
+              })
             } else {
               if (this.selectedStatus === 'A') {
                 this.$message({
                   type: 'success',
                   message: "成功将用户" + this.userStatusDialogMessage.name + "的状态恢复为正常"
                 });
-              } else {
+              } else if (this.selectedStatus === 'B'){
                 this.$message({
                   type: 'success',
                   message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为禁用"
                 });
-              }
+              } else if (this.selectedStatus === 'D'){
+              this.$message({
+                type: 'success',
+                message: "成功将用户" + this.userStatusDialogMessage.name + "的状态修改为项目管理员"
+              });
+
+            }
             }
             this.userStatusDialogMessage = ''
             this.selectedStatus = ''
@@ -328,14 +441,22 @@ export default {
     },
     // 打开用户个人信息窗口
     openUserProfileDialog(item) {
-      console.log(item)
-      this.userProfileDialogMessage = item
-      this.showUserProfile = true
+      if (user.status === 'C') {
+        console.log(item)
+        this.userProfileDialogMessage = item
+        this.showUserProfile = true
+      } else {
+        this.$message.error("你不是超级管理员，没有权限")
+      }
     },
     // 关闭用户个人信息窗口
-    closeUserProfileDialog(item) {
-      this.showUserProfile = false
-      this.userProfileDialogMessage = ''
+    closeUserProfileDialog() {
+      if (user.status === 'C') {
+        this.showUserProfile = false
+        this.userProfileDialogMessage = ''
+      } else {
+        this.$message.error("你不是超级管理员，没有权限")
+      }
     },
     // 保存用户个人信息的修改
     saveProfile() { // TODO
@@ -343,6 +464,13 @@ export default {
     },
     // 跳转到用户端页面
     gotoUserPage(item) {
+      if (this.user.status === 'D') {
+        this.$message({
+          type: 'error',
+          message: "您没有权限"
+        });
+        return
+      }
       console.log("232534")
       Cookies.set('manager', Cookies.get('user'))
       console.log(Cookies.get('manager'))
@@ -376,6 +504,8 @@ export default {
         return "green";
       } else if (status === "B") {
         return "red";
+      } else if (status === "D") {
+        return "orange";
       }
     },
     transform(status) {
@@ -383,6 +513,8 @@ export default {
         return "正常";
       } else if (status === "B") {
         return "禁用";
+      } else if (status === "D") {
+        return "小管理员";
       }
     },
   },
