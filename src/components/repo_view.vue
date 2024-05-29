@@ -52,22 +52,21 @@ export default {
 <template>
   <v-col cols="12" class="px-1">
     <h2 v-if="bindReposBusy">代码存储库</h2>
-    <h2 v-else-if="bindRepos.length > 0">代码存储库 - {{ bindRepos[selectedRepo].user }} /
-      {{ bindRepos[selectedRepo].repo }}</h2>
+    <h2 v-else-if="bindRepos.length > 0">代码存储库 &nbsp; &nbsp;{{ (bindRepos[selectedRepo].repo).replace(/_[0-9]+$/, '') }}</h2>
     <h2 v-else>代码存储库</h2>
 
     <v-skeleton-loader v-if="bindReposBusy" type="card"></v-skeleton-loader>
-    <div v-else-if="bindRepos.length > 0">
-      <v-tabs :color="getDarkColor(user.topic)" v-model="selectedRepo">
-        <v-tab v-for="repository in bindRepos" :key="repository.id">{{ repository.repo }}</v-tab>
+    <div v-else-if="bindRepos.length > 0" >
+      <v-tabs :background-color="getTopicColor(user.topic)" center-active dark show-arrows v-model="selectedRepo">
+        <v-tab class="" v-for="repository in bindRepos" :key="repository.id">{{ (repository.repo).replace(/_[0-9]+$/, '') }}</v-tab>
       </v-tabs>
       <v-tabs-items v-model="selectedRepo">
         <v-tab-item v-for="repository in bindRepos" :key="repository.id">
-          <p v-if="bindRepos[selectedRepo].intro !== ''">代码存储库介绍：{{ bindRepos[selectedRepo].intro }}</p>
-          <p v-else>这个代码存储库没有介绍哦</p>
+
+          <p>仓库ssh:&nbsp;git@github.com:{{ bindRepos[selectedRepo].user}}/{{ bindRepos[selectedRepo].repo}}.git</p>
           <v-row>
             <v-col class="ma-1">
-              <v-card :style="getRadialGradient(user.topic)" raised class="pa-2">
+              <v-card :style="getRadialGradient(user.topic)" raised class="pa-2"  max-height="100%" >
                 <branchView/>
               </v-card>
             </v-col>
@@ -84,7 +83,7 @@ export default {
           <!--</v-row>-->
           <v-row>
             <v-col class="ma-1">
-              <v-card  :style="getRadialGradient(user.topic)" raised class="pa-2 overflow-y-auto">
+              <v-card  :style="getRadialGradient(user.topic)" raised class="pa-2 overflow-y-auto" max-height="100%" >
                 <v-card-title>和并请求</v-card-title>
                 <v-card-text>
                   <pr_view/>

@@ -74,6 +74,7 @@ export default {
           });
     },
     changeToAuditView(PrToAudit){
+      Cookies.set("PrToAudit_ReadOnly", false);
       getDiffString({
         user_id: this.user.id,
         remote_path: this.selectedRepo.user+'/'+this.selectedRepo.repo,
@@ -90,6 +91,8 @@ export default {
             console.log("cbycby2" + res['data']['diff_output']);
             localStorage.setItem("diffString", res['data']['diff_output']);
             localStorage.setItem("comment", res['data']['comment']);
+            localStorage.setItem("title", res['data']['title']);
+            localStorage.setItem("description",res['data']['description']);
             // Cookies.set("diffString",JSON.stringify(res['data']['diff_output']));
             console.log("cbycby3" + res['data']['diff_output']);
             Cookies.set("selectedRepo", JSON.stringify(this.selectedRepo));

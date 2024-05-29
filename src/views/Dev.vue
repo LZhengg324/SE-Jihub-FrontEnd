@@ -103,17 +103,17 @@ export default {
 <!--                <p>bindRepos = {{bindRepos}}</p>-->
 <!--            </v-row>-->
             <v-row>
-                <h1>开发 - {{ selectedProj.projectName }}</h1>
+                <h1>项目&nbsp;&nbsp;{{ selectedProj.projectName }}&nbsp;&nbsp;绑定的代码仓库</h1>
             </v-row>
 
-            <v-row>
+            <v-row >
                 <v-col cols="6">
                     <bindedGithubRepos />
                 </v-col>
                 <v-divider vertical></v-divider>
-                <v-col cols="6">
+                <v-col cols="6" r>
 
-                    <h2>创建或者绑定一个新的代码存储库</h2>
+                    <h2>创建一个新的代码存储库</h2>
                     <bindGithubRepo />
                 </v-col>
             </v-row>

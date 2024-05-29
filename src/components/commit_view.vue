@@ -95,7 +95,7 @@ export default {
               })
             }
           }
-      );
+      )
       this.createNewPR = false;
     },
     handleClose(done) {
@@ -190,7 +190,7 @@ export default {
       {{ commitHistory.length }} 条提交记录。最新的提交记录：</p>
     <p v-else>正在与服务器同步分支{{ selectedBranch.name }}上的最新提交记录...</p>
     <div v-if="!commitHistoryBusy">
-      <v-simple-table dense>
+      <v-simple-table dense height="200px" >
         <thead>
         <tr>
           <th class="committer">committer</th>
@@ -200,7 +200,7 @@ export default {
         </tr>
         </thead>
         <tbody>
-        <tr v-for="commit in commitHistory.slice(0, 5)" :key="commit.id">
+        <tr v-for="commit in commitHistory" :key="commit.id">
           <td class="need-mono">{{ commit.committer }}</td>
           <td>{{ commit.message }}</td>
           <td class="need-mono">

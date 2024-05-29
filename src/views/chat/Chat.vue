@@ -53,20 +53,25 @@
         <div class="messages">
           <v-card-text>
             <v-list dense>
-                <v-list-item v-for="message in messages" :key="message.id">
+                <v-list-item :class="message.type === 'A' ? 'message' : 'notifyMessage' "  v-for="message in messages" :key="message.id">
                   <v-list-item-avatar size="30px" style="align-self: flex-start;">
                     <v-img :src="getIdenticon(message.from, 50, 'user')"></v-img>
                   </v-list-item-avatar>
-                <v-list-item-content>
+                <v-list-item-content v-if="message.type === 'A'">
                   <v-list-item-title >
                     {{ message.from }}
                     <span class="float-end"> {{ message.time | formatDate(message.time)}}</span>
-
                   </v-list-item-title>
                   <v-list-item-subtitle style="overflow: visible; white-space: normal;">
                     {{ message.content }}
                   </v-list-item-subtitle>
                 </v-list-item-content>
+                    <v-list-item-content v-else>
+                      <v-list-item-subtitle >
+                        {{message.from}} {{message.content}}
+                        <span class="float-end"> {{ message.time | formatDate(message.time)}}</span>
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
               </v-list-item>
             </v-list>
           </v-card-text>
@@ -100,9 +105,9 @@
             <v-toolbar-title>聊天室成员</v-toolbar-title>
             <v-spacer></v-spacer>
                 <!--拉人按钮 -->
-<!--            <v-btn icon ripple small :color="getDarkColor(user.topic)" @click="openSelectMemberDialog">-->
-<!--              <v-icon>mdi-plus-circle</v-icon>-->
-<!--            </v-btn>-->
+            <v-btn v-if="this.roomNow.type === 'PUB'" icon ripple small :color="getDarkColor(user.topic)" @click="openShowInviteMember()">
+              <v-icon>mdi-plus-circle</v-icon>
+            </v-btn>
           </v-toolbar>
           <v-list style="overflow-y: auto;">
               <v-list-item v-for="item in roomNow.users">
@@ -113,15 +118,24 @@
                 {{ item.userName }}
               </v-list-item-content>
                 <!--踢人按钮 -->
-<!--              <v-btn icon ripple small color="red" @click="openShowConfirmDeleteMember()">-->
-<!--                <v-icon>mdi-minus-circle-outline</v-icon>-->
-<!--              </v-btn>-->
+                <div v-if="roomNow.type === 'PUB' && user.id === roomNow.admin.userId">
+                  <v-btn v-if="item.userId !== roomNow.admin.userId" icon ripple small color="red" @click="openShowConfirmDeleteMember(item)">
+                    <v-icon>mdi-minus-circle-outline</v-icon>
+                  </v-btn>
+                </div>
+
             </v-list-item>
-            <v-list-item v-if="this.roomNow.type==='PUB'" >
+            <v-list-item v-if="this.roomNow.type==='PUB' && user.id !== this.roomNow.admin.userId" >
+              <v-btn block outlined color="red" @click="openShowConfirmLeaveRoom()" >
+                退出
+              </v-btn>
+            </v-list-item>
+            <v-list-item v-if="this.roomNow.type==='PUB' && user.id===this.roomNow.admin.userId" >
               <v-btn block @click="openShowConfirmDeleteRoom()" >
                 解散群聊
               </v-btn>
             </v-list-item>
+
           </v-list>
           <v-divider></v-divider>
         </div>
@@ -184,7 +198,6 @@
           <v-btn v-else-if="selectedMembers.length > 1 " :color="getRadialGradient(user.topic)" block ripple @click="createChatRoom">创建群聊！</v-btn>
 
         </v-card-actions>
-
       </v-card>
 
     </v-dialog>
@@ -192,11 +205,19 @@
     <!-- 确认移除成员-->
     <v-dialog v-model="showConfirmDeleteMember" max-width="300" persistent>
       <v-card>
-        <v-card-title> 删除成员{{}}？</v-card-title>
+        <v-card-title> 确认移除成员
+          <div v-if="this.tempSelectedMember">
+            <v-chip class="ma-2 accent-1">
+              <v-avatar left><v-img :src="getIdenticon(this.tempSelectedMember.userName, 50, 'user')" ></v-img></v-avatar>
+              {{ this.tempSelectedMember.userName }}
+            </v-chip>
+          </div>
+        </v-card-title>
+        <v-card-text> 警告！这样做会导致成员 {{this.tempSelectedMember.userName}} 无法访问聊天室 </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="green" class="white--text" @click="closeShowConfirmDeleteMember">
-            取消
+            再想想
           </v-btn>
           <v-btn color="red" class="white--text" @click="deleteMember()">
             确定
@@ -218,6 +239,59 @@
           <v-btn color="red" class="white--text" @click="deleteRoom()">
             确定
           </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 确认退出群聊-->
+    <v-dialog v-if="this.roomNow !== null" v-model="showConfirmLeaveRoom" max-width="300" persistent>
+      <v-card>
+        <v-card-title> 确认退出聊天室 </v-card-title>
+        <v-card-text> 退出后将无法访问聊天室哦 </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green" class="white--text" @click="closeShowConfirmLeaveRoom()">
+            取消
+          </v-btn>
+          <v-btn color="red" class="white--text" @click="leaveRoom()">
+            确定
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!--拉人 -->
+    <v-dialog v-model="showInviteMember" width="390" height="20vh" scrollable>
+      <v-card >
+        <v-card-title>
+          添加新的成员
+        </v-card-title>
+        <v-card-text >
+          <span v-if="this.notInRoomMember && this.notInRoomMember.length !== 0">请选择想要邀请的成员：</span>
+          <span v-else>大家都在聊天室里了哦</span>
+          <v-list max-height="80%" scrollable>
+            <template v-for="item in this.notInRoomMember">
+                <v-list-item>
+                  <v-chip @click="selectInviteMember(item)">
+                    <v-avatar left><v-img :src="getIdenticon(item.userName, 50, 'user')" ></v-img></v-avatar>
+                    {{ item.userName }}
+                  </v-chip >
+                </v-list-item>
+            </template>
+          </v-list>
+        </v-card-text>
+
+        <v-divider></v-divider>
+        <v-card-actions v-if="this.tempSelectedMember">
+          <span>确认邀请成员</span>
+          <div v-if="this.tempSelectedMember">
+            <v-chip class="ma-2 accent-1" color="green">
+              <v-avatar left><v-img :src="getIdenticon(this.tempSelectedMember.userName, 50, 'user')" ></v-img></v-avatar>
+              {{ this.tempSelectedMember.userName }}
+            </v-chip>
+          </div>
+          <v-spacer></v-spacer>
+          <v-btn :color="getRadialGradient(user.topic)" ripple @click="inviteMember()">确定</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -280,8 +354,17 @@ export default {
       roomNow:null,
       ws:null,
 
+
+      tempSelectedMember:'',
       showConfirmDeleteMember: false,
       showConfirmDeleteRoom: false,
+
+
+      showInviteMember: false,
+      inRoomMember:[],
+      notInRoomMember:[],
+
+      showConfirmLeaveRoom: false,
 
 
     };
@@ -319,7 +402,7 @@ export default {
             return {
               id: item.roomId,
               title: item.roomName,
-              desc: item.outline,
+              desc: item.outline || '私聊',
               users: item.users,
               history: [],
               unread: item.unReadNums,
@@ -352,6 +435,8 @@ export default {
         if (this.roomNow != null && !this.chatRooms.find(room => room.id === this.roomNow.id)) {
           this.roomNow = null
           this.selectedRoom = null
+        } else if (this.roomNow != null) {
+          this.roomNow.users = this.chatRooms.find(room => room.id === this.roomNow.id).users
         }
         //this.scrollToTop()
         //this.scrollToItem()
@@ -810,8 +895,9 @@ export default {
     getLinearGradient: topicSetting.getLinearGradient,
     getRadialGradient: topicSetting.getRadialGradient,
 
-    openShowConfirmDeleteMember() {
+    openShowConfirmDeleteMember(item) {
       this.showConfirmDeleteMember = true
+      this.tempSelectedMember = item
     },
 
     closeShowConfirmDeleteMember() {
@@ -819,9 +905,40 @@ export default {
     },
 
     deleteMember() {
+      console.log("delete member")
+      console.log(this.tempSelectedMember)
+      axios.post('/api/chat/deletePerson', {
+        currentUserId: this.user.id,
+        targetUserId: this.tempSelectedMember.userId,
+        roomId: this.roomNow.id
+      }).then((res) => {
+        if (res.data.errcode === 0) {
+          console.log(res)
+          this.updateChatRooms().then(() => {
+            this.$message({
+              type: 'success',
+              message: '移除成功！'
+            })
+            //this.roomNow.users = this.chatRooms.find(room => room.id === this.roomNow.id).users
+            //try提示信息
+            //let message = "kick " + this.tempSelectedMember.userName
+            this.ws.send(JSON.stringify( {
+              type: 3,
+            }))
+          })
+        } else {
+          this.$message({
+            type:'error',
+            message:'移除失败！'
+          })
+        }
+      }).catch((err) => {
+        console.error(err)
+      })
+      this.tempSelectedMember = ''
+      this.showConfirmDeleteMember = false
 
     },
-
 
     openShowConfirmDeleteRoom() {
       this.showConfirmDeleteRoom = true
@@ -864,6 +981,105 @@ export default {
       })
 
       this.showConfirmDeleteRoom = false
+
+    },
+
+    openShowInviteMember() {
+      console.log("open invite member")
+      console.log(this.roomNow)
+      this.showInviteMember = true
+      this.tempSelectedMember = ''
+
+      this.inRoomMember = this.roomNow.users
+      let allProjectMember = this.projectMembers.map((item, index) => {
+        return {
+          userId: item.peopleId,
+          userName: item.peopleName
+        }
+      })
+      this.notInRoomMember = allProjectMember.filter(member => {
+        return !this.inRoomMember.some(selectedMember => selectedMember.userId === member.userId);
+      })
+      console.log(this.notInRoomMember)
+      console.log(this.tempSelectedMember)
+    },
+
+    selectInviteMember(item) {
+      this.tempSelectedMember = item
+    },
+
+    inviteMember() {
+      console.log("inviting member")
+      console.log(this.tempSelectedMember)
+
+      axios.post('/api/chat/addPerson', {
+        targetUserId: this.tempSelectedMember.userId,
+        roomId: this.roomNow.id
+      }).then((res) => {
+        if (res.data.errcode === 0) {
+          this.updateChatRooms().then(() => {
+            this.$message({
+              type: 'success',
+              message: '邀请成功！'
+            })
+            //this.roomNow.users = this.chatRooms.find(room => room.id === this.roomNow.id).users
+          })
+          //
+          let message = "邀请了" + this.tempSelectedMember.userName + "加入聊天室"
+          console.log('will send: ' + message)
+          this.ws.send(JSON.stringify({
+            roomId: this.roomNow.id,
+            type: 2,
+            mes: message,
+            mes_type: 'D' //通知消息
+          }));
+          // this.ws.send(JSON.stringify( {
+          //   type: 3,
+          // }))
+        }
+      }).catch((err) => {
+        console.error(err)
+      })
+      this.showInviteMember = false
+    },
+
+    openShowConfirmLeaveRoom() {
+      this.showConfirmLeaveRoom = true
+    },
+
+    closeShowConfirmLeaveRoom() {
+      this.showConfirmLeaveRoom = false
+    },
+
+    leaveRoom() {
+      console.log("leave room")
+      axios.post('/api/chat/exitRoom', {
+        currentUserId: this.user.id,
+        roomId: this.roomNow.id
+      }).then((res) => {
+        console.log(res)
+        if (res.data.errcode === 1) {
+          this.$message({
+            type: 'error',
+            message: '您是群主，无法退出群聊！'
+          })
+        } else if (res.data.errcode === 0) {
+          this.selectedRoom = null
+          this.roomNow = null
+          this.updateChatRooms().then(() => {
+            this.$message({
+              type: 'success',
+              message: "已退出群聊！"
+            });
+            this.ws.send(JSON.stringify({
+              type: 3,
+            }));
+          })
+        }
+      }).catch((err) => {
+        console.error(err)
+      })
+      this.showConfirmLeaveRoom = false
 
     }
   }
@@ -923,4 +1139,12 @@ export default {
   cursor: pointer;
 }
 
+.notifyMessage {
+  border-radius: 10px 25px;
+  background-color: #f0f0f0;
+}
+
+.message {
+  color:white ;
+}
 </style>
