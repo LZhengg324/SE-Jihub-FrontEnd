@@ -292,6 +292,8 @@ export default {
         </el-form-item>
         <p style="top:5%">对应任务</p>
         <v-select
+            outlined
+            chips
             multiple
             v-model="newPRForm.taskList"
             :items="taskNames"

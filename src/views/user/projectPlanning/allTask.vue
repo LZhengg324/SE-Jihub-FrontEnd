@@ -223,9 +223,9 @@
                   <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
 
-                      <v-chip color="yellow" > 新添 </v-chip>
-                      <v-chip color="yellow" > 前端 </v-chip>
-                      <v-chip color="yellow" > vue </v-chip>
+                      <v-chip :color="getTopicColor(user.topic)" > 新添 </v-chip>
+                      <v-chip :color="getTopicColor(user.topic)" > 前端 </v-chip>
+                      <v-chip :color="getTopicColor(user.topic)" > vue </v-chip>
                       这是软工作业的讨论室板块前端制作任务，使用vue编写前端，从user.js中查找api
                     </td>
 

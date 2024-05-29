@@ -141,7 +141,9 @@ export default {
                     代码仓库名:&nbsp;{{ repo.repo.replace(/_[0-9]+$/, '') }}
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <div class="description" >仓库ssh:&nbsp;git@github.com:{{repo.user}}/{{repo.repo}}.git</div>
+                  <div>
+                    <h4>仓库ssh:&nbsp;git@github.com:{{repo.user}}/{{repo.repo}}.git</h4>
+                  </div>
                         <!--<div class="description" v-if="repo.intro !== ''">{{ repo.intro }}</div>-->
                         <!--<div class="description" v-else>存储库的简介空空如也呢</div>-->
                   <br>
