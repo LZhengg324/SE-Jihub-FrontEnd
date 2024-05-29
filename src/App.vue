@@ -1,6 +1,6 @@
 <template>
   <v-app id="main_page">
-    <v-app-bar app clipped-left ref="appBar" color="white" dark extension-height="36" :absolute="true"
+    <v-app-bar elevate-on-scroll app clipped-left ref="appBar" color="white" dark extension-height="20" :absolute="true"
                :src=topic>
       <v-toolbar-title style="font-weight: bold">JiHub<span v-if="existManager()"> - Admin Override</span>
       </v-toolbar-title>
@@ -427,13 +427,7 @@
               已读
             </v-btn>
           </td>
-          <td style="width: 10%">
-            <v-btn :color="getTopicColor(user.topic)"
-                   class="white--text"
-                   @click="handleNoticeDetail(notice)">
-              详情
-            </v-btn>
-          </td>
+
         </tr>
         </tbody>
       </v-simple-table>
