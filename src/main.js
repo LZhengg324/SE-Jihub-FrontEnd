@@ -21,6 +21,9 @@ import '@kangc/v-md-editor/lib/style/base-editor.css';
 import vuepressTheme from '@kangc/v-md-editor/lib/theme/vuepress.js';
 import Prism from 'prismjs';
 
+import VueTour from 'vue-tour'
+import 'vue-tour/dist/vue-tour.css'
+
 VueMarkdownEditor.use(vuepressTheme);
 VueMarkdownEditor.use(createKatexPlugin());
 Vue.use(VueMarkdownEditor);
@@ -36,10 +39,21 @@ Vue.use(mavonEditor);
 Vue.config.productionTip = false
 Vue.component('AllTask', AllTask);
 Vue.component('AllFile', AllFile);
+Vue.use(VueTour)
 new Vue({
   router,
   vuetify,
   render: (h) => h(App)
 }).$mount('#app')
 
+
+
+// require('vue-tour/dist/vue-tour.css')
+
+
+//
+// new Vue({
+//   router,
+//   render: h => h(App)
+// }).$mount('#app')
 // cby git test

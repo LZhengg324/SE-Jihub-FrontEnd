@@ -1,6 +1,9 @@
 <template>
+  <div>
+
+
   <v-app id="main_page">
-    <v-app-bar elevate-on-scroll app clipped-left ref="appBar" color="white" dark extension-height="20" :absolute="true"
+    <v-app-bar app fixed clipped-left ref="appBar" color="white" dark extension-height="36"
                :src=topic>
       <v-toolbar-title style="font-weight: bold">JiHub<span v-if="existManager()"> - Admin Override</span>
       </v-toolbar-title>
@@ -8,7 +11,7 @@
       <v-spacer></v-spacer>
 
 
-      <v-icon v-if="!existUnreadNote" style="right: 1%" @click="checkNote">mdi-bell</v-icon>
+      <v-icon id="v-step-remind" v-if="!existUnreadNote" style="right: 1%" @click="checkNote">mdi-bell</v-icon>
       <v-icon v-else style="right: 1%" @click="checkNote">mdi-bell-badge</v-icon>
 
       <v-icon v-if="existUser()" @click="checkClock">mdi-clock-outline</v-icon>
@@ -29,16 +32,16 @@
         <span>管理端</span>
       </v-tooltip>
 
-      <v-menu offset-y :close-on-content-click="false">
+      <v-menu offset-y :close-on-content-click="true">
         <template v-slot:activator="{ on, attrs }">
-          <v-chip v-if="user" outlined v-bind="attrs" v-on="on">{{
-              user.name
-            }}
+
+          <v-chip v-if="user" outlined v-bind="attrs" v-on="on">
+            <v-icon v-if="user" v-bind="attrs" v-on="on">mdi-account</v-icon>
+            <v-icon v-else v-bind="attrs" v-on="on">mdi-account-remove</v-icon>
+            {{user.name}}
           </v-chip>
-          <v-icon v-if="user" v-bind="attrs" v-on="on">mdi-account</v-icon>
-          <v-icon v-else v-bind="attrs" v-on="on">mdi-account-remove</v-icon>
-        </template>
-        <v-card v-if="user" min-width="300px">
+          </template>
+        <v-card v-if="user" min-width="300px"  >
           <v-img
               gradient="transparent 0%, rgba(255, 255, 255, 80%) 80%, white 100%"
               :src="getIdenticon(user.name, 300, 'user')"
@@ -49,13 +52,30 @@
 
           <v-list>
             <v-list-item link to="/profile">
-              <v-list-item-title>个人信息</v-list-item-title>
+              <v-list-item-title class="menu_list">
+                <v-icon>mdi-smart-card-outline</v-icon>
+                个人信息
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="showLabel()" @click="startTour()">
+              <v-list-item-title  class="menu_list">
+                <v-icon>mdi-map-search-outline</v-icon>
+                打开新手指南
+              </v-list-item-title>
+<!--              <v-switch v-model="this.showTour" :label="'新手指南'"></v-switch>-->
             </v-list-item>
             <v-list-item link to="/topic">
-              <v-list-item-title>主题设置</v-list-item-title>
+              <v-list-item-title  class="menu_list">
+                <v-icon>mdi-looks</v-icon>
+                主题设置
+              </v-list-item-title>
             </v-list-item>
+            <v-divider></v-divider>
             <v-list-item link @click="logoff()">
-              <v-list-item-title>退出登录</v-list-item-title>
+              <v-list-item-title  class="menu_list">
+                <v-icon>mdi-logout</v-icon>
+                退出登录
+              </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-card>
@@ -165,13 +185,13 @@
       app
       clipped
       permanent
-      v-if="((user && proj && showLabel()) || (user && user.status === 'C') || (user && user.status === 'D'))  && this.scrollUp"
+      v-if="((user && proj && showLabel()) || (user && user.status === 'C') || (user && user.status === 'D'))"
     >
       <!-- <div style="background-color: aqua;width: 100%;">
 
       </div> -->
       <v-list v-if="user.status !== 'C' & user.status !== 'D'">
-        <v-list-item :style="getLinearGradient(user.topic)" two-line class="px-2">
+        <v-list-item id="v-step-quickStart" :style="getLinearGradient(user.topic)" two-line class="px-2">
           <v-list-item-avatar size="40" color="indigo">
             <!--            <span class="white&#45;&#45;text text-h5">{{ this.proj.projectName[0] }}</span>-->
             <v-img :src="getIdenticon(this.proj.projectName, 40, 'proj')"></v-img>
@@ -187,7 +207,7 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item link to="/profile" :style="getLinearGradient(user.topic)" two-line>
+        <v-list-item id="v-step-done" link to="/profile" :style="getLinearGradient(user.topic)" two-line>
           <v-list-item-content>
             <v-list-item-title class="text-h5">
               <strong :style="'color: ' + getDarkColor(user.topic)">{{ this.user.name }}</strong>
@@ -212,7 +232,7 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title>任务列表</v-list-item-title>
+            <v-list-item-title id="v-step-createTask" >任务列表</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/allPerson'" title="查看或管理项目涉及的人员">
@@ -220,7 +240,7 @@
             <v-icon :color="getDarkColor(user.topic)">mdi-account-outline</v-icon>
           </v-list-item-avatar>
           <v-list-item-content>
-            <v-list-item-title>人员列表</v-list-item-title>
+            <v-list-item-title id="v-step-inviteMember" >人员列表</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item :style="'color: ' + getDarkColor(user.topic)" @click="gotoPic" title="查看项目统计图">
@@ -229,7 +249,7 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title>图表展示</v-list-item-title>
+            <v-list-item-title id="v-step-showInsights">图表展示</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
@@ -240,38 +260,49 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title>代码</v-list-item-title>
+            <v-list-item-title id="v-step-createRepo">代码</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai/diagnosis'">
-          <v-list-item-avatar>
-            <v-icon :color="getDarkColor(user.topic)">mdi-atom-variant</v-icon>
-          </v-list-item-avatar>
+<!--        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai/diagnosis'">-->
+<!--          <v-list-item-avatar>-->
+<!--            <v-icon :color="getDarkColor(user.topic)">mdi-atom-variant</v-icon>-->
+<!--          </v-list-item-avatar>-->
 
-          <v-list-item-content>
-            <v-list-item-title>代码诊断</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai/testdata'">
-          <v-list-item-avatar>
-            <v-icon :color="getDarkColor(user.topic)">mdi-palette-outline</v-icon>
-          </v-list-item-avatar>
+<!--          <v-list-item-content>-->
+<!--            <v-list-item-title id="v-step-diagnosis">代码诊断</v-list-item-title>-->
+<!--          </v-list-item-content>-->
+<!--        </v-list-item>-->
+<!--        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai/testdata'">-->
+<!--          <v-list-item-avatar>-->
+<!--            <v-icon :color="getDarkColor(user.topic)">mdi-palette-outline</v-icon>-->
+<!--          </v-list-item-avatar>-->
 
-          <v-list-item-content>
-            <v-list-item-title>生成测试数据</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+<!--          <v-list-item-content>-->
+<!--            <v-list-item-title id="v-step-testData">生成测试数据</v-list-item-title>-->
+<!--          </v-list-item-content>-->
+<!--        </v-list-item>-->
 
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/database'">
+         <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai'">
+           <v-list-item-avatar>
+             <v-icon :color="getDarkColor(user.topic)">mdi-palette-swatch-variant</v-icon>
+           </v-list-item-avatar>
+
+           <v-list-item-content>
+             <v-list-item-title id="v-step-AI">AI 小助手</v-list-item-title>
+           </v-list-item-content>
+         </v-list-item>
+
+
+         <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/database'">
           <v-list-item-avatar>
             <v-icon :color="getDarkColor(user.topic)">mdi-database</v-icon>
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title>团队数据库</v-list-item-title>
+            <v-list-item-title id="v-step-database">团队数据库</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-subheader inset>沟通</v-subheader>
+        <v-subheader inset id="v-step-communicate">沟通</v-subheader>
         <v-dialog
             width="1300"
             v-model="dialog"
@@ -483,6 +514,8 @@
     </el-dialog>
 
   </v-app>
+    <v-tour v-if="showTour" name="myTour" :options="myOptions" :steps="steps" :callbacks="myCallbacks"></v-tour>
+  </div>
 </template>
 
 <script>
@@ -589,6 +622,12 @@ export default {
 
     this.getTaskList()
 
+    //设置tour
+    this.showTour = user.first_login
+    this.myCallbacks = {
+      onFinish: this.onTourFinish,
+    }
+
     console.log('setting interval...')
     setInterval(() => {
       this.updateNoticeList();
@@ -604,6 +643,12 @@ export default {
       this.showRouterView = false;
       this.$nextTick(() => (this.showRouterView = true));
     },
+  },
+  mounted: function () {
+    if (this.showTour) {
+      this.$tours['myTour'].start()
+      console.log("tour start")
+    }
   },
   data: () => {
     return {
@@ -638,6 +683,126 @@ export default {
       existUnreadNote: false,
       arr: [],
       whatisclicked: null,
+      //vue-tour
+      showTour: true,
+      myCallBacks:null,
+      myOptions: {
+        useKeyboardNavigation: true,
+        labels: {
+          buttonSkip: '跳过',
+          buttonPrevious: '上一步',
+          buttonNext: '下一步',
+          buttonStop: '完成'
+        }
+      },
+      steps:[
+      {
+        target: '#v-step-quickStart',
+        header: {
+          title:'Hi！'
+        },
+        content: '欢迎使用 JiHub <br> 我们将通过简单指引，帮助你快速熟悉核心功能',
+        params: {
+          placement: 'right',
+          class: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-inviteMember',
+        header: {
+          title:'团队成员'
+        },
+        content: '邀请成员加入项目，一起开启高效研发，在这里，可以查看所有人员列表和其工作量',
+        params: {
+          placement: 'right',
+          class: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-createRepo',
+        header: {
+          title:'代码管理'
+        },
+        content: '一键创建GitHub仓库，高效管理项目代码，无需切换到GitHub，即可查看所有分支和提交记录，并创建和处理PR请求',
+        params: {
+          placement: 'right',
+          classes: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-createTask',
+        header: {
+          title:'任务管理'
+        },
+        content: '创建和查看任务，轻松管理项目进度。',
+        params: {
+          placement: 'right',
+          classes: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-showInsights',
+        header: {
+          title:'查看图表'
+        },
+        content: '显示燃尽图、任务进度和协作关系图，全面了解项目进展和团队协作情况。',
+        params: {
+          placement: 'right',
+          classes: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-AI',
+        header: {
+          title:'AI代码助手'
+        },
+        content: '提供AI代码诊断和生成测试数据，提升工作效率并减少错误。',
+        params: {
+          placement: 'right',
+          classes: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-database',
+        header: {
+          title:'团队数据库'
+        },
+        content: '提供团队数据库，实现数据的高效利用和共享。',
+        params: {
+          placement: 'right',
+          classes: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-communicate',
+        header: {
+          title:'协作空间'
+        },
+        content: '提供共享文档和在线聊天室，促进团队协作，帮助团队成员高效共享信息和协作解决问题。',
+        params: {
+          placement: 'right',
+          classes: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-remind',
+        header: {
+          title:'通知与提醒'
+        },
+        content: '点击 <strong> 小铃铛 </strong> 聚合所有与自己相关的工作任务消息，及时了解最新工作任务；<br> 点击 <strong> 小时钟 </strong> 聚合所有相关任务的提醒，及时完成工作任务',
+        params: {
+          placement: 'bottom',
+          classes: 'no-arrow'
+        }
+      },
+      {
+        target: '#v-step-done',
+        content: ' 开启JiHub高效研发之旅！<br> <br>',
+        params: {
+          placement: 'right',
+        }
+      },
+      ],
     };
   },
   beforeUpdate() {
@@ -1125,9 +1290,24 @@ export default {
       return state ? "green" : "red";
     },
 
+    onTourFinish() {
+      console.log("tour finished")
+      if (this.user.first_login) {
+        this.user.first_login = false
+        Cookies.set('user', JSON.stringify(this.user))
+        console.log("set user's first_login to false")
+      }
+      this.showTour = false
+    },
 
-
-
+    startTour() {
+      this.showTour = true
+      this.$nextTick(() => {
+        if (this.$tours && this.$tours['myTour']) {
+          this.$tours['myTour'].start();
+        }
+      });
+    },
 
     getTopicColor: topicSetting.getColor,
     getDarkColor: topicSetting.getDarkColor,
@@ -1151,6 +1331,14 @@ body,
   padding: 0;
 }
 
+.menu_list {
+  display: flex;
+  align-items: center;
+
+}
+.menu_list .v-icon {
+  margin-right: 12px;
+}
 .description {
   word-break:normal;
   width:auto;
@@ -1160,5 +1348,31 @@ body,
   overflow: hidden ;
   line-height: 1.5rem;
 }
+
+.no-arrow .v-step__arrow {
+  display: none;
+}
+
+.start-class {
+  font-size: small;
+}
+
+.v-step__content {
+  width: 95%;
+  text-align: left;
+  font-size: small;
+}
+
+.v-step__button {
+  height: 180px ;
+}
+
+.v-step {
+  width: 220px;
+
+
+}
+
+
 
 </style>

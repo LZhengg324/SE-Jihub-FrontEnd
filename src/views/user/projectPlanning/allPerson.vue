@@ -292,6 +292,7 @@ export default {
                 message: '您没有权限！'
               })
             }
+            this.getPersonList()
           })}).catch(() => {
         this.$message({
           type: 'info',
@@ -317,6 +318,10 @@ export default {
             this.$message({
               type: 'error',
               message: '用户已经加入团队'});
+          }  else if (errorCode === 4) {
+            this.$message({
+              type: 'error',
+              message: '非法操作'});
           } else if (errorCode === 0) {
             this.$message({
               type: 'success',
