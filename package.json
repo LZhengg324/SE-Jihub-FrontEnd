@@ -22,6 +22,7 @@
     "@kangc/v-md-editor": "^1.1.0",
     "@vue/runtime-dom": "^3.4.21",
     "axios": "^1.6.7",
+    "date-fns": "^3.6.0",
     "element-ui": "^2.15.14",
     "identicon.js": "^2.3.3",
     "js-cookie": "^3.0.5",
@@ -32,6 +33,7 @@
     "vue": "^2.7.16",
     "vue-axios": "^3.5.2",
     "vue-router": "^3.6.5",
+    "vue-tour": "^2.0.0",
     "vuetify": "^2.7.2"
   }
 }
