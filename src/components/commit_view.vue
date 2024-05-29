@@ -279,6 +279,15 @@ export default {
           <el-input  v-model="newPRForm.title"></el-input>
         </el-form-item>
         <el-form-item label="PR message">
+          <v-row>
+            <v-col cols="6">
+              <v-btn block :color="getTopicColor(user.topic)" :href="`https://github.com/`"
+                     target="_blank" >
+                <v-icon>mdi-message</v-icon>
+                不想写了，帮我写一下
+              </v-btn>
+            </v-col>
+          </v-row>
           <el-input type="textarea" v-model="newPRForm.msg"></el-input>
         </el-form-item>
         <p style="top:5%">对应任务</p>

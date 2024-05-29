@@ -41,9 +41,11 @@
       >
       <template v-slot:[`item.name`] = "{item}" >
         <v-icon>mdi-text-box-outline</v-icon>
-         <a @click="enterPad(item.token)" style="position:relative;left:2%;top:3%;">{{ item.name }}</a>
+         <a @click="openMd(item)" style="position:relative;left:2%;top:3%;">{{ item.name }}</a>
       </template>
-
+      <template v-slot:[`item.updateTime`] = "{item}" >
+        {{ item.updateTime.slice(0, 10) + "-" + item.updateTime.slice(11, 19) }}
+      </template>
       <template v-slot:expanded-item="{ headers, item }">
         {{ item.outline}}
     </template>
@@ -82,10 +84,10 @@
           </div>
         </template>
         <template v-slot:[`item.collect`]="{item}">
-          <v-icon @click="favorPad(item)" v-if="!isInFavor(item)">mdi-star-outline</v-icon>
-          <v-icon @click="unFavorPad(item)" v-else>mdi-star</v-icon>
+          <v-icon @click="addCollect(item)" v-if="!item.isCollect">mdi-star-outline</v-icon>
+          <v-icon @click="cancelCollect(item)" v-else>mdi-star</v-icon>
           <v-icon @click="editStart(item)">mdi-pencil-outline</v-icon>
-          <v-icon @click="deletePad(item.token)">mdi-delete-outline</v-icon>
+          <v-icon @click="handleDelete(item)">mdi-delete-outline</v-icon>
         </template>
         <template v-slot:[`item.limit`]="{item}">
           <v-icon v-if="item.limit !== 'only read'">mdi-check-bold</v-icon>
@@ -93,11 +95,11 @@
       </v-data-table>
 
       <v-dialog v-model="dialog1" hide-overlay width="1000px">
-        <v-card
+        <v-card    
         width="1000px"
         style="position: relative;"
         >
-
+        
         <v-card-title>
           共享文档
         </v-card-title>
@@ -113,12 +115,7 @@
             style="width:80%;position: relative;left:2%"
             prepend-icon="mdi-map-marker"
           ></v-text-field>
-          <v-textarea
-              v-model="newDocumentForm.intro"
-              label="文档简介"
-              style="width:80%;position: relative;left:2%"
-              prepend-icon="mdi-comment"
-          ></v-textarea>
+
         </v-form>
       </v-card-text>
        <v-card-actions style="position:absolute;right:0%;bottom: 0%;">
@@ -135,12 +132,12 @@
       </v-dialog>
 
     <v-dialog v-model="dialog2" hide-overlay width="1000px" style="height: 600px;">
-        <v-card
+        <v-card    
         width="1000px"
         height="600px"
         style="position: relative;"
         >
-
+        
         <v-card-title>
           共享文档
         </v-card-title>
@@ -193,7 +190,7 @@
           </v-list-item-content>
           <v-list-item-action>
             <span v-if="user.id === people.peopleId"></span>
-          <v-checkbox
+          <v-checkbox 
                   v-else
                   :input-value="active"
                   color="deep-purple accent-4"
@@ -253,7 +250,7 @@
             </v-list-item-subtitle>
           </v-list-item-content>
           <v-list-item-action>
-          <v-checkbox
+          <v-checkbox 
                   :input-value="active"
                   color="deep-purple accent-4"
                 ></v-checkbox>
@@ -276,18 +273,18 @@
                 :color="getTopicColor(user.topic)"
                 width="70px"
                 style="float: right"
-                @click="dialog2 = false;dialog1 = false;createPad()"
+                @click="dialog2 = false;dialog1 = false;addDoc()"
               >确认</v-btn>
             </v-card-actions>
         </v-card>
       </v-dialog>
 
       <v-dialog v-model="editDialog1" hide-overlay width="1000px">
-        <v-card
+        <v-card    
         width="1000px"
         style="position: relative;"
         >
-
+        
         <v-card-title>
           共享文档
         </v-card-title>
@@ -296,19 +293,13 @@
 
         <v-card-text>
         <v-form>
-          <v-text-field
-            v-model="editDocumentForm.name"
-            :counter="10"
-            label="文档名称"
-            style="width:80%;position: relative;left:2%"
-            prepend-icon="mdi-map-marker"
-          ></v-text-field>
-          <v-textarea
-              v-model="newDocumentForm.intro"
-              label="文档简介"
-              style="width:80%;position: relative;left:2%"
-              prepend-icon="mdi-comment"
-          ></v-textarea>
+    <v-text-field
+      v-model="editDocumentForm.name"
+      :counter="10"
+      label="文档名称"
+      style="width:80%;position: relative;left:2%"
+      prepend-icon="mdi-map-marker"
+    ></v-text-field>
         </v-form>
       </v-card-text>
        <v-card-actions style="position:absolute;right:0%;bottom: 0%;">
@@ -325,12 +316,12 @@
       </v-dialog>
 
       <v-dialog v-model="editDialog2" hide-overlay width="1000px" style="height: 600px;">
-        <v-card
+        <v-card    
         width="1000px"
         height="600px"
         style="position: relative;"
         >
-
+        
         <v-card-title>
           共享文档
         </v-card-title>
@@ -432,7 +423,7 @@
             <v-avatar active-class="deep-purple--text text--accent-4" color="indigo">
 <!--             <span class="white&#45;&#45;text text-h5">{{ people.name[0] }}</span>-->
               <v-img :src="getIdenticon(people.peopleName, 48, 'user')"></v-img>
-            </v-avatar>
+            </v-avatar> 
           </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title>
@@ -466,21 +457,35 @@
                 :color="getTopicColor(user.topic)"
                 width="70px"
                 style="float: right"
-                @click="editDialog2 = false;editDialog1 = false"
+                @click="editDialog2 = false;editDialog1 = false;edit()"
               >确认</v-btn>
             </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="dialog3">
+        <v-card>
+          <v-card-title>{{doc.name}}</v-card-title>
+          <v-card-subtitle>{{doc.outline === '' ? '暂无简介' : doc.outline}}</v-card-subtitle>
+          <v-card-text>
+            <v-md-editor v-model="textList[doc.id]" height="400px" left-toolbar="undo redo | image"
+                         :disabled-menus="[]" @upload-image="handleUploadImage" @save="save()" @blur="blur()"></v-md-editor>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn :color="getDarkColor(user.topic)" text @click="save()">保存</v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
       </v-card>
 </template>
 
 <script>
-import {showPersonList, userDocList, userCollectDocList, addDocToCollect, delDocFromCollect, userCreateDoc,
+import {showPersonList, userDocList, userCollectDocList, addDocToCollect, delDocFromCollect, userCreateDoc, 
        userEditDocOther, userDelDoc, userEditDocContent, userReleaseDocLock, userGetDocLock, isDocLocked} from "@/api/user"
 import getIdenticon from "@/utils/identicon";
 import topicSetting from "@/utils/topic-setting";
 import Cookies from "js-cookie"
-import axios from "axios";
 
   export default {
     inject: {'user': {default: null},
@@ -488,7 +493,7 @@ import axios from "axios";
          },
     data() {
       return {
-      isCollect: false,
+      isCollect: false,  
       doc: '',
       textList: {},
       expanded: [],
@@ -500,6 +505,7 @@ import axios from "axios";
       dialog2: false,
       editDialog1: false,
       editDialog2: false,
+      dialog3: false,
       value: '',
       tab: '',
       searchNot: '',
@@ -512,8 +518,8 @@ import axios from "axios";
           sortable: false,
           value: "name",
         },
-        { text: "所有者", value: "creatorName", sortable:false},
-        //{ text: "最近更改时间", value: "updateTime"},
+        { text: "所有者", value: "ownerName", sortable:false},
+        { text: "最近更改时间", value: "updateTime"},
         { text: "", value: "collect", sortable:false},
       ],
       html:"",
@@ -530,7 +536,7 @@ import axios from "axios";
           'limit': 'can write',
           'changeTime': '2023-5-14',
           'collect': false,
-          'intro': "blalalala",
+          'intro': "blalalala"
         },
         {
           'documentId': '2',
@@ -628,7 +634,7 @@ import axios from "axios";
       }
     },
     created() {
-      this.getPad()
+      this.getDocumentData();
       showPersonList({projectId: this.selectedProj.projectId, userId: this.user.id}).then(
         res => {
           console.log(res);
@@ -647,26 +653,59 @@ import axios from "axios";
     },
     methods:{
       getIdenticon,
-      enterPad(token) {
-        axios.post("api/pad/enterPad", {
-          userId: this.user.id,
-          token: token
-        }).then((res) => {
-          if (res.data.errcode === 0) {
-            let routeUrl = this.$router.resolve({
-              path: res.data.data.padUrl,
-            });
-            window.open(routeUrl.href.substring(1, routeUrl.href.length), '_blank');
+      blur() {
+        console.log("123");
+      },
+      edit() {
+        let arr = [];
+        for (let i=0;i < this.peopleCanWrite.length;i++) {
+          arr.push(this.peopleCanWrite[i].peopleId);
+        }
+        console.log("edit");
+        console.log(arr);
+        userEditDocOther({userId: this.user.id, projectId:this.selectedProj.projectId, docId: this.editDocumentForm.id,
+        name: this.editDocumentForm.name, accessUserId: arr}).then(
+        res => {
+          console.log("userEditDocOther");
+          console.log(res);
+          this.getDocumentData();
+        }
+      )
+      },
+      openMd(item) {
+        this.doc = item;
+        let lock = false;
+        isDocLocked({docId: item.id}).then(
+          res => {
+            console.log("isDocLocked");
+            console.log(res);
+            lock = res['data']['isLocked'];
+            if (lock) {
+          this.$message({
+                type: 'error',
+                message: '该文档正在被编辑！'
+              })
+        } else {
+          Cookies.set('doc', JSON.stringify(this.doc));
+          userGetDocLock({userId: this.user.id, projectId: this.selectedProj.projectId, docId: item.id}).then(
+          res => {
+            console.log("userGetDocLock");
+            console.log(res);
+            this.getDocumentData();
+            this.dialog3 = true;
           }
-        })
+        )
+        }
+          }
+        )
       },
       gotoCollect() {
         this.isCollect = true;
-        this.getFavorPads();
+        this.getCollectList();
       },
       gotoAll() {
         this.isCollect = false;
-        this.getPad()
+        this.getDocumentData();
       },
       checkNameIntro() {
         console.log("check");
@@ -676,10 +715,6 @@ import axios from "axios";
               message: "共享文档名称不能为空！",
             });
         } else {
-          if (this.documentData === undefined) {
-            this.dialog1 = false;this.dialog2 = true;
-            return
-          }
           for (let i=0;i < this.documentData.length;i++) {
             if (this.documentData[i].name.trim() === this.newDocumentForm.name.trim()) {
               this.$message({
@@ -701,12 +736,10 @@ import axios from "axios";
         console.log(this.allPeople);
         for (let i=0;i < this.allPeople.length;i++) {
           let flag = false;
-          if (this.item.accessuser !== undefined) {
-            for (let j = 0; j < this.item.accessUser.length; j++) {
-              if (this.item.accessUser[j].id === this.allPeople[i].peopleId) {
-                flag = true;
-                break;
-              }
+          for (let j=0;j < this.item.accessUser.length;j++) {
+            if (this.item.accessUser[j].id === this.allPeople[i].peopleId) {
+              flag = true;
+              break;
             }
           }
           if (flag) {
@@ -736,45 +769,29 @@ import axios from "axios";
         console.log(this.peopleCanNotWrite);
         console.log(this.peopleCanWrite);
       },
-      isInFavor(item) {
-        return this.collectDocList.indexOf(item) !== -1
+      getCollectList () {
+        userCollectDocList({userId: this.user.id, projectId: this.selectedProj.projectId}).then(
+          res => {
+             console.log("userCollectDocLis");
+             console.log(res);
+             this.collectDocList = res['data']['data'];
+             console.log(this.collectDocList);
+             console.log("finishGetCollectList");
+            console.log(this.collectDocList);
+            this.documentData = this.collectDocList;
+           }
+      )
       },
-      favorPad(item) {
-        axios.post("api/pad/favorPad", {
-          userId: this.user.id,
-          token: item.token
-        }).then((res) => {
-          if (res.data.errcode === 0) {
-            this.$message.success("收藏成功！")
-            this.getPad()
-            this.getFavorPads()
-          } else {
-            this.$message.error("收藏失败")
+      isInCollect(item) {
+        if (this.collectDocList === undefined) {
+          return false;
+        }
+        for (let i=0;i < this.collectDocList.length;i++) {
+          if (this.collectDocList[i].id === item.id) {
+            return true;
           }
-        })
-      },
-      unFavorPad(item) {
-        axios.post("api/pad/unFavorPad", {
-          userId: this.user.id,
-          token: item.token
-        }).then((res) => {
-          if (res.data.errcode === 0) {
-            this.$message.success("取消收藏成功！")
-            this.getPad()
-            this.getFavorPads()
-          } else {
-            this.$message.error("取消收藏失败")
-          }
-        })
-      },
-      getFavorPads() {
-        axios.post("api/pad/getFavorPads", {
-          userId: this.user.id,
-          projectId: this.selectedProj.projectId
-        }).then((res) => {
-          this.collectDocList = res.data.data.pads
-          this.documentData = this.collectDocList
-        })
+        }
+        return false;
       },
       delPerson() {
         console.log(this.deleteGroup);
@@ -789,23 +806,42 @@ import axios from "axios";
         }
         this.peopleCanWrite = arr;
       },
-
-      createPad() {
-        axios.post("api/pad/createPad", {
-          userId: this.user.id,
-          projectId: this.selectedProj.projectId,
-          name: this.newDocumentForm.name,
-          info: this.newDocumentForm.intro,
-        }).then((res) => {
-          if (res.data.token !== null) {
-            this.$message.success("创建文档成功！")
-            this.getPad()
-          } else {
-            this.$message.error("创建文档失败")
-          }
-        })
-      },
-
+      addDoc() {
+        let accessUserId = [];
+        console.log(this.peopleCanWrite);
+        for (let i=0;i < this.peopleCanWrite.length;i++) {
+          accessUserId.push(this.peopleCanWrite[i].peopleId);
+        }
+        userCreateDoc({userId: this.user.id, projectId: this.selectedProj.projectId, name:this.newDocumentForm.name, 
+          outline: this.newDocumentForm.intro, content: "", accessUserId: accessUserId}).then(
+            res => {
+              console.log(res);
+              this.getDocumentData();
+            }
+          )
+        },
+        addCollect(item) {
+          console.log("123");
+          addDocToCollect({userId: this.user.id, projectId: this.selectedProj.projectId, docId: item.id}).then(
+            res => {
+              console.log("addDocToCollect");
+              console.log(res);
+              this.getDocumentData();
+            }
+          )
+        },
+        cancelCollect(item) {
+          delDocFromCollect({userId: this.user.id, projectId: this.selectedProj.projectId, docId: item.id}).then(
+            res => {
+              console.log(res);
+              if (this.isCollect) {
+                this.getCollectList();
+              } else {
+              this.getDocumentData();
+              }
+            }
+          )
+        },
       addPerson() {
         console.log(this.addGroup);
         for (let i=0;i < this.addGroup.length;i++) {
@@ -819,37 +855,60 @@ import axios from "axios";
         }
         this.peopleCanNotWrite = arr;
       },
-      getPad() {
-        axios.post("api/pad/getPads", {
-          projectId: this.selectedProj.projectId
-        }).then((res) => {
-          this.documentData = res.data.data.pads
-        })
+      getDocumentData() {
+        userDocList({userId: this.user.id, projectId: this.selectedProj.projectId}).then(
+          res => {
+            console.log("getDocumentData");
+            console.log(res);
+            this.documentData = res['data']['data'];
+            console.log(this.documentData);
+            for (let i=0;i < this.documentData.length;i++) {
+              this.textList[this.documentData[i].id] = this.documentData[i].content;
+            }
+          }
+        )
       },
-      //修改名称、简介、成员权限等
       editStart(item) {
         this.editDocumentForm.name = item.name;
         this.editDocumentForm.intro = item.outline;
         this.editDocumentForm.people = item.accessUser;
         this.editDocumentForm.id = item.id;
+        this.dialog3 = false;
         this.editDialog1 = true;
         this.item = item;
       },
-      deletePad(token) {
-        axios.post("api/pad/deletePad", {
-          token: token,
-          userId: this.user.id
-        }).then((res) => {
-          if (res.data.errcode === 0) {
-            this.$message.success("删除文档成功！")
-            this.getPad()
-          } else if (res.data.errcode === 1) {
-            this.$message.error("删除文档失败，您没有权限")
-          } else {
-            this.$message.error("删除失败，请联系管理员")
-          }
-        })
+      save() {
+        let accessUserId = [];
+        for (let key in this.doc.accessUser) {
+          accessUserId.push(key);
+        }
+        userEditDocContent({userId: this.user.id, projectId: this.selectedProj.projectId, docId: this.doc.id, 
+          content: this.textList[this.doc.id]}).then(
+            res => {
+              console.log("userEditDocContent");
+              console.log(res);
+              this.getDocumentData();
+              this.$message({
+                type: "success",
+                message: "保存成功!",
+              });
+            }
+           )
       },
+      handleDelete(row) {
+            userDelDoc({userId: this.user.id, projectId: this.selectedProj.projectId, docId: row.id}).then(
+              res => {
+                console.log("userDelDoc");
+                console.log(res);
+                this.getDocumentData();
+                this.open();
+              }
+            )
+            this.$message({
+              type: "success",
+              message: "删除成功!",
+            });
+          },
       filter(arr, search) {
         if (search === '') {
           return arr;
@@ -884,11 +943,57 @@ import axios from "axios";
             -1
       );
     },
+    //监听markdown变化
+  change(value, render) {
+    this.html = render;
+    this.blogInfo.blogMdContent = value;
+    this.blogInfo.blogContent = render;
+  },
+  //上传图片接口pos 表示第几个图片 
+   handleUploadImage(event,insertImage,files){
+    for(let i in files){
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        proxy.$axios.post(`${proxy.PATH}/uploadImg`,formData).then(
+            response => {
+                insertImage({
+                    url:response.data,
+                    desc: 'DESC',
+                })
+            },
+            error => {
+                console.log('请求失败了',error.message)
+            }
+        )
+    }
+},
+  handleEditorImgDel(){
+    console.log('handleEditorImgDel');    //我这里没做什么操作，后续我要写上接口，从七牛云CDN删除相应的图片
+  },
       getTopicColor: topicSetting.getColor,
       getDarkColor: topicSetting.getDarkColor,
       getLinearGradient: topicSetting.getLinearGradient,
       getRadialGradient: topicSetting.getRadialGradient,
       getUrl: topicSetting.getUrl
-    },
+},
+watch: {
+  dialog3: {
+    handler(newVal, oldVal) {
+      if (newVal == false) {
+        let doc = Cookies.get("doc");
+        if (doc !== undefined) {
+        doc = JSON.parse(doc);
+        userReleaseDocLock({userId: this.user.id, projectId: this.selectedProj.projectId, docId: doc.id}).then(
+          res => {
+            console.log("userReleaseDocLock");
+            console.log(res);
+          }
+        )
+        Cookies.set('doc', undefined);
+        }
+      } 
+    }
+  }
+}
   }
 </script>

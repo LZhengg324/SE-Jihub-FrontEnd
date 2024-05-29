@@ -458,13 +458,7 @@
               已读
             </v-btn>
           </td>
-          <td style="width: 10%">
-            <v-btn :color="getTopicColor(user.topic)"
-                   class="white--text"
-                   @click="handleNoticeDetail(notice)">
-              详情
-            </v-btn>
-          </td>
+
         </tr>
         </tbody>
       </v-simple-table>
