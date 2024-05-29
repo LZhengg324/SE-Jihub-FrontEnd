@@ -32,7 +32,7 @@
         <span>管理端</span>
       </v-tooltip>
 
-      <v-menu offset-y :close-on-content-click="false">
+      <v-menu offset-y :close-on-content-click="true">
         <template v-slot:activator="{ on, attrs }">
 
           <v-chip v-if="user" outlined v-bind="attrs" v-on="on">
@@ -52,13 +52,30 @@
 
           <v-list>
             <v-list-item link to="/profile">
-              <v-list-item-title>个人信息</v-list-item-title>
+              <v-list-item-title class="menu_list">
+                <v-icon>mdi-smart-card-outline</v-icon>
+                个人信息
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="showLabel()" @click="startTour()">
+              <v-list-item-title  class="menu_list">
+                <v-icon>mdi-map-search-outline</v-icon>
+                打开新手指南
+              </v-list-item-title>
+<!--              <v-switch v-model="this.showTour" :label="'新手指南'"></v-switch>-->
             </v-list-item>
             <v-list-item link to="/topic">
-              <v-list-item-title>主题设置</v-list-item-title>
+              <v-list-item-title  class="menu_list">
+                <v-icon>mdi-looks</v-icon>
+                主题设置
+              </v-list-item-title>
             </v-list-item>
+            <v-divider></v-divider>
             <v-list-item link @click="logoff()">
-              <v-list-item-title>退出登录</v-list-item-title>
+              <v-list-item-title  class="menu_list">
+                <v-icon>mdi-logout</v-icon>
+                退出登录
+              </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-card>
@@ -246,26 +263,37 @@
             <v-list-item-title id="v-step-createRepo">代码</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai/diagnosis'">
-          <v-list-item-avatar>
-            <v-icon :color="getDarkColor(user.topic)">mdi-atom-variant</v-icon>
-          </v-list-item-avatar>
+<!--        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai/diagnosis'">-->
+<!--          <v-list-item-avatar>-->
+<!--            <v-icon :color="getDarkColor(user.topic)">mdi-atom-variant</v-icon>-->
+<!--          </v-list-item-avatar>-->
 
-          <v-list-item-content>
-            <v-list-item-title id="v-step-diagnosis">代码诊断</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai/testdata'">
-          <v-list-item-avatar>
-            <v-icon :color="getDarkColor(user.topic)">mdi-palette-outline</v-icon>
-          </v-list-item-avatar>
+<!--          <v-list-item-content>-->
+<!--            <v-list-item-title id="v-step-diagnosis">代码诊断</v-list-item-title>-->
+<!--          </v-list-item-content>-->
+<!--        </v-list-item>-->
+<!--        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai/testdata'">-->
+<!--          <v-list-item-avatar>-->
+<!--            <v-icon :color="getDarkColor(user.topic)">mdi-palette-outline</v-icon>-->
+<!--          </v-list-item-avatar>-->
 
-          <v-list-item-content>
-            <v-list-item-title id="v-step-testData">生成测试数据</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+<!--          <v-list-item-content>-->
+<!--            <v-list-item-title id="v-step-testData">生成测试数据</v-list-item-title>-->
+<!--          </v-list-item-content>-->
+<!--        </v-list-item>-->
 
-        <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/database'">
+         <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/ai'">
+           <v-list-item-avatar>
+             <v-icon :color="getDarkColor(user.topic)">mdi-palette-swatch-variant</v-icon>
+           </v-list-item-avatar>
+
+           <v-list-item-content>
+             <v-list-item-title id="v-step-AI">AI 小助手</v-list-item-title>
+           </v-list-item-content>
+         </v-list-item>
+
+
+         <v-list-item :style="'color: ' + getDarkColor(user.topic)" link :to="'/user/database'">
           <v-list-item-avatar>
             <v-icon :color="getDarkColor(user.topic)">mdi-database</v-icon>
           </v-list-item-avatar>
@@ -492,7 +520,7 @@
     </el-dialog>
 
   </v-app>
-    <v-tour v-if="showTour" name="secondTour" :options="myOptions" :steps="steps"></v-tour>
+    <v-tour v-if="showTour" name="myTour" :options="myOptions" :steps="steps" :callbacks="myCallbacks"></v-tour>
   </div>
 </template>
 
@@ -600,6 +628,12 @@ export default {
 
     this.getTaskList()
 
+    //设置tour
+    this.showTour = user.first_login
+    this.myCallbacks = {
+      onFinish: this.onTourFinish,
+    }
+
     console.log('setting interval...')
     setInterval(() => {
       this.updateNoticeList();
@@ -617,7 +651,10 @@ export default {
     },
   },
   mounted: function () {
-    this.$tours['secondTour'].start()
+    if (this.showTour) {
+      this.$tours['myTour'].start()
+      console.log("tour start")
+    }
   },
   data: () => {
     return {
@@ -652,8 +689,11 @@ export default {
       existUnreadNote: false,
       arr: [],
       whatisclicked: null,
+      //vue-tour
+      showTour: true,
+      myCallBacks:null,
       myOptions: {
-        useKeyboardNavigation: false,
+        useKeyboardNavigation: true,
         labels: {
           buttonSkip: '跳过',
           buttonPrevious: '上一步',
@@ -661,7 +701,7 @@ export default {
           buttonStop: '完成'
         }
       },
-    steps:[
+      steps:[
       {
         target: '#v-step-quickStart',
         header: {
@@ -718,27 +758,16 @@ export default {
         }
       },
       {
-        target: '#v-step-diagnosis',
+        target: '#v-step-AI',
         header: {
-          title:'AI小助手'
+          title:'AI代码助手'
         },
-        content: '点击 <strong> 代码诊断 </strong>，让AI检查代码； <br> 点击<strong> 生成测试数据 </strong>，让AI测试代码。',
+        content: '提供AI代码诊断和生成测试数据，提升工作效率并减少错误。',
         params: {
           placement: 'right',
           classes: 'no-arrow'
         }
       },
-      // {
-      //   target: '#v-step-testData',
-      //   header: {
-      //     title:'AI测试代码'
-      //   },
-      //   content: '创建任务，查看任务',
-      //   params: {
-      //     placement: 'right',
-      //     classes: 'no-arrow'
-      //   }
-      // },
       {
         target: '#v-step-database',
         header: {
@@ -777,11 +806,9 @@ export default {
         content: ' 开启JiHub高效研发之旅！<br> <br>',
         params: {
           placement: 'right',
-          classes: 'no-arrow'
         }
       },
       ],
-      showTour: true,
     };
   },
   beforeUpdate() {
@@ -1269,9 +1296,24 @@ export default {
       return state ? "green" : "red";
     },
 
+    onTourFinish() {
+      console.log("tour finished")
+      if (this.user.first_login) {
+        this.user.first_login = false
+        Cookies.set('user', JSON.stringify(this.user))
+        console.log("set user's first_login to false")
+      }
+      this.showTour = false
+    },
 
-
-
+    startTour() {
+      this.showTour = true
+      this.$nextTick(() => {
+        if (this.$tours && this.$tours['myTour']) {
+          this.$tours['myTour'].start();
+        }
+      });
+    },
 
     getTopicColor: topicSetting.getColor,
     getDarkColor: topicSetting.getDarkColor,
@@ -1295,6 +1337,14 @@ body,
   padding: 0;
 }
 
+.menu_list {
+  display: flex;
+  align-items: center;
+
+}
+.menu_list .v-icon {
+  margin-right: 12px;
+}
 .description {
   word-break:normal;
   width:auto;

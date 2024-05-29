@@ -100,8 +100,8 @@
         </v-col>
 
         <!-- 聊天室成员-->
-        <v-col cols="3" class="chatroom_">
-          <div v-if="this.selectedRoom !== null">
+        <v-col cols="3">
+          <div v-if="this.selectedRoom !== null" >
             <v-toolbar>
               <v-toolbar-title>聊天室成员</v-toolbar-title>
               <v-spacer></v-spacer>
@@ -110,36 +110,42 @@
                 <v-icon>mdi-plus-circle</v-icon>
               </v-btn>
             </v-toolbar>
-            <v-list style="overflow-y: auto;">
-              <v-list-item v-for="item in roomNow.users">
-                <v-list-item-avatar>
-                  <v-img :src="getIdenticon(item.userName, 50, 'user')" ></v-img>
-                </v-list-item-avatar>
-                <v-list-item-content>
-                  {{ item.userName }}
-                </v-list-item-content>
-                <!--踢人按钮 -->
-                <div v-if="roomNow.type === 'PUB' && user.id === roomNow.admin.userId">
-                  <v-btn v-if="item.userId !== roomNow.admin.userId" icon ripple small color="red" @click="openShowConfirmDeleteMember(item)">
-                    <v-icon>mdi-minus-circle-outline</v-icon>
+
+
+              <v-list style="overflow-y: auto;" >
+                <div class="memberList">
+                <v-list-item v-for="item in roomNow.users">
+                  <v-list-item-avatar>
+                    <v-img :src="getIdenticon(item.userName, 50, 'user')" ></v-img>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    {{ item.userName }}
+                  </v-list-item-content>
+                  <!--踢人按钮 -->
+                  <div v-if="roomNow.type === 'PUB' && user.id === roomNow.admin.userId">
+                    <v-btn v-if="item.userId !== roomNow.admin.userId" icon ripple small color="red" @click="openShowConfirmDeleteMember(item)">
+                      <v-icon>mdi-minus-circle-outline</v-icon>
+                    </v-btn>
+                  </div>
+
+                </v-list-item>
+                  </div>
+                <v-list-item v-if="this.roomNow.type==='PUB' && user.id !== this.roomNow.admin.userId" >
+                  <v-btn block outlined color="red" @click="openShowConfirmLeaveRoom()" >
+                    退出
                   </v-btn>
-                </div>
+                </v-list-item>
+                <v-list-item v-if="this.roomNow.type==='PUB' && user.id===this.roomNow.admin.userId" >
+                  <v-btn block @click="openShowConfirmDeleteRoom()" >
+                    解散群聊
+                  </v-btn>
+                </v-list-item>
 
-              </v-list-item>
-              <v-list-item v-if="this.roomNow.type==='PUB' && user.id !== this.roomNow.admin.userId" >
-                <v-btn block outlined color="red" @click="openShowConfirmLeaveRoom()" >
-                  退出
-                </v-btn>
-              </v-list-item>
-              <v-list-item v-if="this.roomNow.type==='PUB' && user.id===this.roomNow.admin.userId" >
-                <v-btn block @click="openShowConfirmDeleteRoom()" >
-                  解散群聊
-                </v-btn>
-              </v-list-item>
+              </v-list>
+            </div>
 
-            </v-list>
             <v-divider></v-divider>
-          </div>
+
         </v-col>
       </v-row>
 
@@ -178,19 +184,16 @@
             <span v-if="deselectedMembers.length !== 0">成员：</span>
             <span v-else>大家都在聊天室里了哦</span>
 
-            <v-list max-height="80%" scrollable>
-              <template v-for="item in deselectedMembers">
-                <v-list-item>
-                  <v-chip @click="() => {
+            <v-spacer></v-spacer>
+            <v-chip  v-for="item in deselectedMembers" class="ma-2 accent-1"
+                     @click="() => {
                     selectedMembers.push(item)
                     deselectedMembers.splice(deselectedMembers.indexOf(item), 1)
                   }">
-                    <v-avatar left><v-img :src="getIdenticon(item.peopleName, 50, 'user')" ></v-img></v-avatar>
-                    {{ item.peopleName }}
-                  </v-chip >
-                </v-list-item>
-              </template>
-            </v-list>
+              <v-avatar left><v-img :src="getIdenticon(item.peopleName, 50, 'user')" ></v-img></v-avatar>
+              {{ item.peopleName }}
+            </v-chip >
+
           </v-card-text>
 
           <v-card-actions>
@@ -1118,6 +1121,12 @@ export default {
   height: 67vh;
   display: flex;
   flex-direction: column;
+}
+
+.memberList {
+  max-height: 60vh;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .messages {

@@ -115,15 +115,21 @@ const router = new VueRouter({
       component: () => import('../views/chat/Chat.vue')
     },
     {
-      path: '/user/ai/diagnosis',
-      name: 'diagnosis',
-      component: () => import('../views/user/AI/Diagnosis.vue')
+      path: '/user/ai',
+      name: 'ai',
+      component: () => import('../views/user/AI/AIPage.vue')
     },
+    // {
+    //   path: '/user/ai/diagnosis',
+    //   name: 'diagnosis',
+    //   component: () => import('../views/user/AI/Diagnosis.vue')
+    // },
+    // {
+    //   path: '/user/ai/testdata',
+    //   name: 'testdata',
+    //   component: () => import('../views/user/AI/TestData.vue')
+    // },
     {
-      path: '/user/ai/testdata',
-      name: 'testdata',
-      component: () => import('../views/user/AI/TestData.vue')
-    }, {
       path: '/user/database',
       name: 'database',
       component: () => import('../views/dev/Database.vue')

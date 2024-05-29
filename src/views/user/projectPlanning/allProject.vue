@@ -151,7 +151,7 @@
         <el-button type="primary" @click="editProject">确 定</el-button>
       </span>
     </el-dialog>
-    <v-tour v-if="showTour" name="myTour" :options="myOptions" :steps="steps"></v-tour>
+<!--    <v-tour v-if="showTour" name="myTour" :options="myOptions" :steps="steps"></v-tour>-->
 
   </div>
 
@@ -173,66 +173,70 @@ export default {
   // inject: ['user', 'selectedProj'],
   name: "AllProject",
   created() {
+    console.log(this.user)
     this.get_project();
+  //  this.showTour = this.user.first_login
   },
   inject: {
-    user: { defualt: null },
-    selectedProj: { defualt: null },
+    user: { default: null },
+    selectedProj: { default: null },
     updateUserProj: { default: null },
   },
-  mounted: function () {
-    this.$tours['myTour'].start()
-  },
+  // mounted: function () {
+  //   if (this.showTour) {
+  //     this.$tours['myTour'].start()
+  //   }
+  // },
   data() {
     return {
-      myOptions: {
-        useKeyboardNavigation: false,
-        labels: {
-          buttonSkip: '跳过',
-          buttonPrevious: '上一步',
-          buttonNext: '下一步',
-          buttonStop: '完成'
-        }
-      },
-      steps:[
-        {
-          target: '#v-step-selectProject',
-          header: {
-            title:'进入项目'
-          },
-          content: '点击项目，进入工作空间'
-        },
-        {
-          target: '#v-step-editStatus',
-          header: {
-            title:'项目状态'
-          },
-          content: '显示项目完成情况，点击可将项目设为已完成'
-        },
-        {
-          target: '#v-step-editProject',
-          header: {
-            title:'修改项目信息'
-          },
-          content: '点击修改项目信息'
-        },
-        {
-          target: '#v-step-deleteProject',
-          header: {
-            title:'删除项目'
-          },
-          content: '删除项目'
-        },
-        // {
-        //   target: '#v-step-showDetails',
-        //   header: {
-        //     title:'项目信息'
-        //   },
-        //   content: '显示项目信息'
-        // },
-
-      ],
-      showTour: true,
+      // myOptions: {
+      //   useKeyboardNavigation: false,
+      //   labels: {
+      //     buttonSkip: '跳过',
+      //     buttonPrevious: '上一步',
+      //     buttonNext: '下一步',
+      //     buttonStop: '完成'
+      //   }
+      // },
+      // steps:[
+      //   {
+      //     target: '#v-step-selectProject',
+      //     header: {
+      //       title:'进入项目'
+      //     },
+      //     content: '点击项目，进入工作空间'
+      //   },
+      //   {
+      //     target: '#v-step-editStatus',
+      //     header: {
+      //       title:'项目状态'
+      //     },
+      //     content: '显示项目完成情况，点击可将项目设为已完成'
+      //   },
+      //   {
+      //     target: '#v-step-editProject',
+      //     header: {
+      //       title:'修改项目信息'
+      //     },
+      //     content: '点击修改项目信息'
+      //   },
+      //   {
+      //     target: '#v-step-deleteProject',
+      //     header: {
+      //       title:'删除项目'
+      //     },
+      //     content: '删除项目'
+      //   },
+      //   // {
+      //   //   target: '#v-step-showDetails',
+      //   //   header: {
+      //   //     title:'项目信息'
+      //   //   },
+      //   //   content: '显示项目信息'
+      //   // },
+      //
+      // ],
+      // showTour: true,
       labelPosition: "left",
       headers: [
         {
@@ -504,6 +508,9 @@ export default {
       } else if (state === "B") {
         return "green";
       }
+    },
+    onTourFinish() {
+      this.showTour = false
     },
     getTopicColor: topicSetting.getColor
   },
