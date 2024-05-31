@@ -281,7 +281,7 @@
           <el-input v-model="newSonForm.name"></el-input>
         </el-form-item>
         <el-form-item label="子任务描述">
-          <el-input  type="textarea" v-model="newSonForm.msg"></el-input>
+          <el-input ref="inputForLabel" @blur="genLabels()" type="textarea" v-model="newSonForm.msg" ></el-input>
         </el-form-item>
         <v-row>
           <v-col>
@@ -432,7 +432,7 @@
               <template v-slot:item="{ item }">
                 <div style="position: relative;background-color: aliceblue;">
                   <v-avatar size="25" color="indigo">
-                    <v-img :src="getIdenticon(item, 25, 'user')"></v-img>
+                    <v-img :src="getIdenticon(item, 25, "user')"></v-img>
                   </v-avatar>
                   <span style="position:absolute;left: 120%;">{{ item }}</span>
                 </div>
@@ -524,8 +524,7 @@
           </template>
           <v-time-picker
               v-model="newAlarmForm.time"
-              :allowed-hours="allowedHours"
-              :allowed-minutes="allowedMinutes"
+
               class="mt-4"
               format="24hr"
               scrollabel
@@ -720,7 +719,7 @@ import {
   watchMyTask,
   completeTask,
   removeTask,
-  showPersonList
+  showPersonList, genLabel
 } from '@/api/user.js'
 import { format, parseISO } from 'date-fns'
 import getIdenticon from "@/utils/identicon";
@@ -838,8 +837,20 @@ export default {
   }),
   mounted() {
     this.checkMyTask();
+    this.$refs.inputForLabel.$el.addEventListener("blur", this.genLabels, true);
   },
   methods: {
+    genLabels(){
+      genLabel({
+        description:   this.newSonForm.msg,
+      //   使用vue编写前端，使用vuetify作为组件库，完成聊天室界面的编写
+      }).then((res)=>{
+          console.log("goodcby!"+res.data.data.content);
+          let content =  res.data.data.content + "";
+        this.subTaskLabels = content.split(',');
+        console.log(this.subTaskLabels)
+      });
+    },
     getIdenticon,
     upTask(item) {
       let up = item.taskId, down = "";
