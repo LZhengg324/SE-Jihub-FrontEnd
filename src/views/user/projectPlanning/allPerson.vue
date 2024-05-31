@@ -98,13 +98,13 @@
       </v-list-item>
   </template>
   <template v-slot:[`item.remove`] ="{item}" >
-     <v-btn v-if="item.peopleJob !== 'C'" depressed @click="handleDelete(item)" >
+     <v-btn class="float-end" v-if="item.peopleJob !== 'C'" depressed @click="handleDelete(item)" >
       移除用户
     </v-btn>
   </template>
 <!--  <template v-slot:[`item.change`] ="{item}" >-->
 <!--     <v-btn v-if="item.peopleJob !== 'C'" depressed @click="handleChange(item)">-->
-<!--      更改角色 -->
+<!--      更改角色-->
 <!--    </v-btn>-->
 <!--  </template>-->
 </v-data-table>
@@ -175,8 +175,8 @@ export default {
     this.getPersonList();
     }
   },   
-  inject: {'user': {defualt: null},
-               'selectedProj': {defualt: null},
+  inject: {'user': {default: null},
+               'selectedProj': {default: null},
          },
   data() {
     return {
@@ -252,7 +252,7 @@ export default {
         res => {
           console.log(res);
           this.personData = res['data']['data'];
-          this.updateP
+          // this.updateP
         }
       );
     },
@@ -291,17 +291,22 @@ export default {
                 type: 'error',
                 message: '您没有权限！'
               })
+            } else if (errcode == 0) {
+              this.$message({
+                type: 'success',
+                message: '移除用户成功！'
+              })
             }
             this.getPersonList()
           })}).catch(() => {
         this.$message({
           type: 'info',
-          message: '已取消删除'
+          message: '已取消移除'
         });          
       });
     },
     setupPerson() {
-      addMember({projectId: this.selectedProj.projectId, nameOrEmail: this.newPersonForm.nameOrEmail}).then(
+      addMember({projectId: this.selectedProj.projectId, nameOrEmail: this.newPersonForm.nameOrEmail, userId:this.user.id}).then(
         res => {
           console.log(res);
           var errorCode = res['data']['errcode'];
