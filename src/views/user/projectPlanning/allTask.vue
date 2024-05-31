@@ -12,6 +12,7 @@
       ></v-text-field>
       <v-btn
           depressed
+          outlined
           :color="getTopicColor(user.topic)"
           style="position:absolute;top:1%;right:30%;height:4%;width:10%;"
           @click="gotoPic"
@@ -24,6 +25,7 @@
       </v-btn>
       <v-btn
           depressed
+          outlined
           :color="getTopicColor(user.topic)"
           style="position:absolute;top:1%;right:17%;height:4%;width:11%;"
           @click="checkMyTask"
@@ -32,6 +34,7 @@
       </v-btn>
       <v-btn
           depressed
+          outlined
           :color="getTopicColor(user.topic)"
           style="position:absolute;top:1%;right:17%;height:4%;width:10%;"
           @click="checkAllTask"
@@ -41,9 +44,13 @@
       <v-btn
           depressed
           :color="getTopicColor(user.topic)"
-          style="position:absolute;top:1%;right:1%;height:4%;width:10%;"
+          style="position:absolute;top:-1%;right:0%;height:7%;width:13%;"
           @click="setupFather = true"
-      >创建新的冲刺
+          v-if="this.myRole === 'C'"
+      ><v-icon
+          left
+      > mdi-plus
+      </v-icon>创建冲刺
       </v-btn>
       <v-container fluid style="position:relative">
         <v-data-iterator
@@ -178,6 +185,7 @@
                             class="mr-2"
                             v-bind="attrs"
                             v-on=on
+                            v-if="myRole === 'C'"
                         >
                           mdi-dots-horizontal
                         </v-icon>
@@ -198,7 +206,7 @@
                       </v-list>
                     </v-menu>
                   </template>
-                  <template v-slot:foot="{item}">
+                  <template v-slot:foot="{item}" >
                     <!-- <v-text-field
                       v-model="calories"
                       type="number"
@@ -209,6 +217,7 @@
                         class="mr-2"
                         @click="setupNewSon(task)"
                         style="position:absolute;left:1%;bottom:4%;"
+                        v-if="myRole === 'C'"
                     >
                       mdi-plus-box
                     </v-icon>
@@ -216,6 +225,7 @@
                         large
                         style="position: absolute;left: 4%;bottom: 4%;"
                         @click="deleteTask(task)"
+                        v-if="myRole === 'C'"
                     >
                       mdi-delete
                     </v-icon>
@@ -432,7 +442,7 @@
               <template v-slot:item="{ item }">
                 <div style="position: relative;background-color: aliceblue;">
                   <v-avatar size="25" color="indigo">
-                    <v-img :src="getIdenticon(item, 25, "user')"></v-img>
+                    <v-img :src="getIdenticon(item, 25, 'user')"></v-img>
                   </v-avatar>
                   <span style="position:absolute;left: 120%;">{{ item }}</span>
                 </div>
@@ -744,6 +754,7 @@ export default {
     'selectedProj': {default: null}
   },
   data: () => ({
+    myRole:'',
     customLabel:'',
     subTaskLabels:["新添","删除","修改","前端","后端","vue","django"],
     personNameList: [],
@@ -910,7 +921,14 @@ export default {
             for (let i = 0; i < res['data']['data'].length; i++) {
               this.personIdList.push(res['data']['data'][i]['peopleId']);
               this.personNameList.push(res['data']['data'][i]['peopleName']);
+              if (res['data']['data'][i]['peopleId']===this.user.id) {
+                console.log("here")
+                console.log(res['data']['data'][i])
+                this.myRole = res['data']['data'][i]['peopleJob']
+                console.log(this.myRole)
+              }
             }
+
           }
       )
     },
