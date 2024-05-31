@@ -442,7 +442,7 @@
               <template v-slot:item="{ item }">
                 <div style="position: relative;background-color: aliceblue;">
                   <v-avatar size="25" color="indigo">
-                    <v-img :src="getIdenticon(item, 25, "user')"></v-img>
+                    <v-img :src="getIdenticon(item, 25, 'user')"></v-img>
                   </v-avatar>
                   <span style="position:absolute;left: 120%;">{{ item }}</span>
                 </div>
