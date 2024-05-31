@@ -1,12 +1,30 @@
 <script>
 import axios from "axios";
 import topicSetting from "@/utils/topic-setting";
-import {completeCreateNewPR, completeTask, watchMyTask} from "@/api/user";
+import {completeCreateNewPR, completeTask, getDiffString2, getPrDesc, watchMyTask} from "@/api/user";
 import Cookies from "js-cookie";
 
 export default {
   name: "commit_view",
   methods: {
+    getAiPr(){
+      getDiffString2({
+        user_id: this.user.id,
+        remote_path: this.selectedRepo.user+'/'+this.selectedRepo.repo,
+        project_id: this.proj.id,
+        source_branch: this.selectedBranch.name,
+      }).then((res) =>{
+        console.log(res.data.diff_output + "11111111111")
+        this.newPRForm.msg = "please wait ..."
+        getPrDesc({
+          diff: res.data.diff_output,
+        }).then((res)=>{
+          this.newPRForm.msg = res.data.data.content
+          console.log(res)
+        })
+      })
+
+    },
     updateCommitHistory() {
       this.commitHistoryBusy = true
       axios.post('/api/develop/getCommitHistory', {
@@ -281,8 +299,11 @@ export default {
         <el-form-item label="PR message">
           <v-row>
             <v-col cols="6">
-              <v-btn block :color="getTopicColor(user.topic)" :href="`https://github.com/`"
-                     target="_blank" >
+              <!--<v-btn block :color="getTopicColor(user.topic)" :href="`https://github.com/`"-->
+              <!--       target="_blank" >-->
+              <!--  <v-icon>mdi-message</v-icon>-->
+              <v-btn block :color="getTopicColor(user.topic)"
+                     @click="getAiPr()">
                 <v-icon>mdi-message</v-icon>
                 不想写了，帮我写一下
               </v-btn>
@@ -292,6 +313,8 @@ export default {
         </el-form-item>
         <p style="top:5%">对应任务</p>
         <v-select
+            outlined
+            chips
             multiple
             v-model="newPRForm.taskList"
             :items="taskNames"

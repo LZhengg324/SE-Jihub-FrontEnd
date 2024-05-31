@@ -394,9 +394,10 @@ export default {
 
       getActivations({project_id: this.selectedProj.projectId}).then(
           res=>{
-            console.log("fff" + JSON.stringify(res['data']));
+            console.log("fff" + JSON.stringify(res['data']))
+      var act = res.data.data;
 
-      })
+
 
       var dom = this.$refs.chartC1;
       var myChart = echarts.init(dom, null, {
@@ -417,10 +418,10 @@ export default {
                   for (let i = 0; i < this.allPeople.length; i++) {
                     names.push(this.allPeople[i].peopleName);
                     this.webkitDep.nodes.push({
-                      name: "项目成员\n" + this.allPeople[i].peopleName + "\n活跃度为：50",
+                      name: "项目成员\n" + this.allPeople[i].peopleName + "\n活跃度为：" + (act[this.allPeople[i].peopleId]!=null ? act[this.allPeople[i].peopleId] : 50),
                       value: 1,
                       category: 0,
-                      symbolSize: 70,
+                      symbolSize: (act[this.allPeople[i].peopleId]!=null ? act[this.allPeople[i].peopleId] : 50),
                     })
                   }
 
@@ -499,7 +500,9 @@ export default {
                 }
             );
           }
+
       );
+      })
 
 
     },
