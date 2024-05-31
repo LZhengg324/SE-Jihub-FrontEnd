@@ -12,6 +12,7 @@
       ></v-text-field>
       <v-btn
           depressed
+          outlined
           :color="getTopicColor(user.topic)"
           style="position:absolute;top:1%;right:30%;height:4%;width:10%;"
           @click="gotoPic"
@@ -24,6 +25,7 @@
       </v-btn>
       <v-btn
           depressed
+          outlined
           :color="getTopicColor(user.topic)"
           style="position:absolute;top:1%;right:17%;height:4%;width:11%;"
           @click="checkMyTask"
@@ -32,6 +34,7 @@
       </v-btn>
       <v-btn
           depressed
+          outlined
           :color="getTopicColor(user.topic)"
           style="position:absolute;top:1%;right:17%;height:4%;width:10%;"
           @click="checkAllTask"
@@ -41,9 +44,13 @@
       <v-btn
           depressed
           :color="getTopicColor(user.topic)"
-          style="position:absolute;top:1%;right:1%;height:4%;width:10%;"
+          style="position:absolute;top:-1%;right:0%;height:7%;width:13%;"
           @click="setupFather = true"
-      >创建新的冲刺
+          v-if="this.myRole === 'C'"
+      ><v-icon
+          left
+      > mdi-plus
+      </v-icon>创建冲刺
       </v-btn>
       <v-container fluid style="position:relative">
         <v-data-iterator
@@ -178,6 +185,7 @@
                             class="mr-2"
                             v-bind="attrs"
                             v-on=on
+                            v-if="myRole === 'C'"
                         >
                           mdi-dots-horizontal
                         </v-icon>
@@ -198,7 +206,7 @@
                       </v-list>
                     </v-menu>
                   </template>
-                  <template v-slot:foot="{item}">
+                  <template v-slot:foot="{item}" >
                     <!-- <v-text-field
                       v-model="calories"
                       type="number"
@@ -209,6 +217,7 @@
                         class="mr-2"
                         @click="setupNewSon(task)"
                         style="position:absolute;left:1%;bottom:4%;"
+                        v-if="myRole === 'C'"
                     >
                       mdi-plus-box
                     </v-icon>
@@ -216,6 +225,7 @@
                         large
                         style="position: absolute;left: 4%;bottom: 4%;"
                         @click="deleteTask(task)"
+                        v-if="myRole === 'C'"
                     >
                       mdi-delete
                     </v-icon>
@@ -223,9 +233,9 @@
                   <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
 
-                      <v-chip color="yellow" > 新添 </v-chip>
-                      <v-chip color="yellow" > 前端 </v-chip>
-                      <v-chip color="yellow" > vue </v-chip>
+                      <v-chip :color="getTopicColor(user.topic)" > 新添 </v-chip>
+                      <v-chip :color="getTopicColor(user.topic)" > 前端 </v-chip>
+                      <v-chip :color="getTopicColor(user.topic)" > vue </v-chip>
                       这是软工作业的讨论室板块前端制作任务，使用vue编写前端，从user.js中查找api
                     </td>
 
@@ -281,7 +291,7 @@
           <el-input v-model="newSonForm.name"></el-input>
         </el-form-item>
         <el-form-item label="子任务描述">
-          <el-input  type="textarea" v-model="newSonForm.msg"></el-input>
+          <el-input ref="inputForLabel" @blur="genLabels()" type="textarea" v-model="newSonForm.msg" ></el-input>
         </el-form-item>
         <v-row>
           <v-col>
@@ -524,8 +534,7 @@
           </template>
           <v-time-picker
               v-model="newAlarmForm.time"
-              :allowed-hours="allowedHours"
-              :allowed-minutes="allowedMinutes"
+
               class="mt-4"
               format="24hr"
               scrollabel
@@ -720,7 +729,7 @@ import {
   watchMyTask,
   completeTask,
   removeTask,
-  showPersonList
+  showPersonList, genLabel
 } from '@/api/user.js'
 import { format, parseISO } from 'date-fns'
 import getIdenticon from "@/utils/identicon";
@@ -745,6 +754,7 @@ export default {
     'selectedProj': {default: null}
   },
   data: () => ({
+    myRole:'',
     customLabel:'',
     subTaskLabels:["新添","删除","修改","前端","后端","vue","django"],
     personNameList: [],
@@ -838,8 +848,20 @@ export default {
   }),
   mounted() {
     this.checkMyTask();
+    this.$refs.inputForLabel.$el.addEventListener("blur", this.genLabels, true);
   },
   methods: {
+    genLabels(){
+      genLabel({
+        description:   this.newSonForm.msg,
+      //   使用vue编写前端，使用vuetify作为组件库，完成聊天室界面的编写
+      }).then((res)=>{
+          console.log("goodcby!"+res.data.data.content);
+          let content =  res.data.data.content + "";
+        this.subTaskLabels = content.split(',');
+        console.log(this.subTaskLabels)
+      });
+    },
     getIdenticon,
     upTask(item) {
       let up = item.taskId, down = "";
@@ -899,7 +921,14 @@ export default {
             for (let i = 0; i < res['data']['data'].length; i++) {
               this.personIdList.push(res['data']['data'][i]['peopleId']);
               this.personNameList.push(res['data']['data'][i]['peopleName']);
+              if (res['data']['data'][i]['peopleId']===this.user.id) {
+                console.log("here")
+                console.log(res['data']['data'][i])
+                this.myRole = res['data']['data'][i]['peopleJob']
+                console.log(this.myRole)
+              }
             }
+
           }
       )
     },
