@@ -84,7 +84,6 @@
         <template v-slot:[`item.collect`]="{item}">
           <v-icon @click="favorPad(item)" v-if="!isInFavor(item)">mdi-star-outline</v-icon>
           <v-icon @click="unFavorPad(item)" v-else>mdi-star</v-icon>
-          <v-icon @click="editStart(item)">mdi-pencil-outline</v-icon>
           <v-icon @click="deletePad(item.token)">mdi-delete-outline</v-icon>
         </template>
         <template v-slot:[`item.limit`]="{item}">
@@ -122,14 +121,20 @@
         </v-form>
       </v-card-text>
        <v-card-actions style="position:absolute;right:0%;bottom: 0%;">
-       <v-btn
-         text
-         :color="getTopicColor(user.topic)"
-         width="70px"
-         @click="initPeople();checkNameIntro()"
-         >
-        下一步
-      </v-btn>
+         <v-btn
+             text
+             color="primary"
+             width="70px"
+             style="float: right"
+             @click="dialog1 = false;"
+         >取消</v-btn>
+         <v-btn
+             text
+             :color="getTopicColor(user.topic)"
+             width="70px"
+             style="float: right"
+             @click="checkNameIntro()"
+         >确认</v-btn>
     </v-card-actions>
         </v-card>
       </v-dialog>
@@ -677,7 +682,7 @@ import axios from "axios";
             });
         } else {
           if (this.documentData === undefined) {
-            this.dialog1 = false;this.dialog2 = true;
+            this.dialog1 = false;
             return
           }
           for (let i=0;i < this.documentData.length;i++) {
@@ -689,7 +694,8 @@ import axios from "axios";
               return;
             }
         }
-          this.dialog1 = false;this.dialog2 = true;
+          this.dialog1 = false;
+          this.createPad()
         }
       },
       initEditPeople(item) {
