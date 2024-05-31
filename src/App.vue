@@ -443,7 +443,7 @@
             </v-chip>
           </td>
           <td>{{ new Date(notice.deadline).toLocaleString() }}</td>
-          <td>{{notice.content}}</td>
+          <td><h4>{{notice.content}}</h4></td>
           <td style="width: 10%">
             <v-btn :color="getTopicColor(user.topic)"
                    class="white--text"

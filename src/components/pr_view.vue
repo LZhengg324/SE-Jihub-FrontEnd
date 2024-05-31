@@ -119,13 +119,13 @@ export default {
 </script>
 
 <template>
-<div >
+<div>
 <!--  <p>This is pr view</p>-->
 
   <v-skeleton-loader v-if="this.prsBusy" type="button, table" />
   <v-row v-else-if="this.prs.length > 0">
     <v-col>
-      <v-simple-table dense>
+      <v-simple-table dense max-height="500px">
         <tbody>
         <tr v-for="pr in prs" :key="pr.id">
           <td>#{{pr.id}} ({{pr.isOpen ? '开启' : '已关闭'}})</td>

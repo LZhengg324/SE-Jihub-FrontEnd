@@ -83,9 +83,7 @@ export default {
 
   },
   mounted() {
-
-    this.PrToAudit_ReadOnly = this.user.id !== this.proj.managerId;
-
+    this.PrToAudit_ReadOnly = this.user.id !== this.proj.managerId || !JSON.parse(Cookies.get("PrToAudit")).isOpen;
   },
   created() {
 
@@ -243,14 +241,7 @@ export default {
               </v-app-bar>
               <v-container v-if="dataDetail.extend">
 
-              <v-text-field v-model="dataDetail.input" hide-details flat label="Press Enter to Send Msg..." solo
-                            @keydown.enter="comment(dataDetail.task_id, dataDetail.input); dataDetail.input = null">
-                <template v-slot:append>
-                  <v-btn class="mx-0" depressed @click="comment(dataDetail.task_id, dataDetail.input); dataDetail.input = null">
-                    Post
-                  </v-btn>
-                </template>
-              </v-text-field>
+
 
               <v-virtual-scroll :items="dataDetail.comments" height="500" item-height="100">
                 <template v-slot:default="{ item }">
@@ -295,6 +286,14 @@ export default {
                   <v-divider></v-divider>
                 </template>
               </v-virtual-scroll>
+              <v-text-field v-if="!dataDetail.solved"  v-model="dataDetail.input" hide-details flat label="Press Enter to Send Msg..." solo
+                            @keydown.enter="comment(dataDetail.task_id, dataDetail.input); dataDetail.input = null">
+                <template v-slot:append>
+                  <v-btn class="mx-0" depressed @click="comment(dataDetail.task_id, dataDetail.input); dataDetail.input = null">
+                    Post
+                  </v-btn>
+                </template>
+              </v-text-field>
               </v-container>
             </v-card>
           </v-row>

@@ -54,6 +54,7 @@ export default {
     <h2 v-if="bindReposBusy">代码存储库</h2>
     <h2 v-else-if="bindRepos.length > 0">代码存储库 &nbsp; &nbsp;{{ (bindRepos[selectedRepo].repo).replace(/_[0-9]+$/, '') }}</h2>
     <h2 v-else>代码存储库</h2>
+    <h4>该仓库ssh:&nbsp;git@github.com:{{ bindRepos[selectedRepo].user}}/{{ bindRepos[selectedRepo].repo}}.git</h4>
 
     <v-skeleton-loader v-if="bindReposBusy" type="card"></v-skeleton-loader>
     <div v-else-if="bindRepos.length > 0" >
@@ -63,7 +64,7 @@ export default {
       <v-tabs-items v-model="selectedRepo">
         <v-tab-item v-for="repository in bindRepos" :key="repository.id">
 
-          <p>仓库ssh:&nbsp;git@github.com:{{ bindRepos[selectedRepo].user}}/{{ bindRepos[selectedRepo].repo}}.git</p>
+          <!--<h4>仓库ssh:&nbsp;git@github.com:{{ bindRepos[selectedRepo].user}}/{{ bindRepos[selectedRepo].repo}}.git</h4>-->
           <v-row>
             <v-col class="ma-1">
               <v-card :style="getRadialGradient(user.topic)" raised class="pa-2"  max-height="100%" >
@@ -83,9 +84,9 @@ export default {
           <!--</v-row>-->
           <v-row>
             <v-col class="ma-1">
-              <v-card  :style="getRadialGradient(user.topic)" raised class="pa-2 overflow-y-auto" max-height="100%" >
+              <v-card  :style="getRadialGradient(user.topic)" raised class="pa-2 overflow-y-auto"  >
                 <v-card-title>和并请求</v-card-title>
-                <v-card-text>
+                <v-card-text >
                   <pr_view/>
                 </v-card-text>
               </v-card>
