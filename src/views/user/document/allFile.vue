@@ -653,15 +653,13 @@ import axios from "axios";
     methods:{
       getIdenticon,
       enterPad(token) {
-        axios.post("api/pad/enterPad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/enterPad" }).href;
+        axios.post(apiUrl, {
           userId: this.user.id,
           token: token
         }).then((res) => {
           if (res.data.errcode === 0) {
-            let routeUrl = this.$router.resolve({
-              path: res.data.data.padUrl,
-            });
-            window.open(routeUrl.href.substring(1, routeUrl.href.length), '_blank');
+            window.open(res.data.data.padUrl, '_blank');
           }
         })
       },
@@ -746,7 +744,8 @@ import axios from "axios";
         return this.collectDocList.indexOf(item) !== -1
       },
       favorPad(item) {
-        axios.post("api/pad/favorPad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/favorPad" }).href;
+        axios.post(apiUrl, {
           userId: this.user.id,
           token: item.token
         }).then((res) => {
@@ -760,7 +759,8 @@ import axios from "axios";
         })
       },
       unFavorPad(item) {
-        axios.post("api/pad/unFavorPad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/unFavorPad" }).href;
+        axios.post(apiUrl, {
           userId: this.user.id,
           token: item.token
         }).then((res) => {
@@ -774,7 +774,8 @@ import axios from "axios";
         })
       },
       getFavorPads() {
-        axios.post("api/pad/getFavorPads", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/getFavorPads" }).href;
+        axios.post(apiUrl, {
           userId: this.user.id,
           projectId: this.selectedProj.projectId
         }).then((res) => {
@@ -797,7 +798,8 @@ import axios from "axios";
       },
 
       createPad() {
-        axios.post("api/pad/createPad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/createPad" }).href;
+        axios.post(apiUrl, {
           userId: this.user.id,
           projectId: this.selectedProj.projectId,
           name: this.newDocumentForm.name,
@@ -826,7 +828,8 @@ import axios from "axios";
         this.peopleCanNotWrite = arr;
       },
       getPad() {
-        axios.post("api/pad/getPads", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/getPads" }).href;
+        axios.post(apiUrl, {
           projectId: this.selectedProj.projectId
         }).then((res) => {
           this.documentData = res.data.data.pads
@@ -842,7 +845,8 @@ import axios from "axios";
         this.item = item;
       },
       deletePad(token) {
-        axios.post("api/pad/deletePad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/deletePad" }).href;
+        axios.post(apiUrl, {
           token: token,
           userId: this.user.id
         }).then((res) => {
