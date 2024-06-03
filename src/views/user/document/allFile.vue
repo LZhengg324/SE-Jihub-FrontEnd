@@ -744,7 +744,15 @@ import axios from "axios";
         console.log(this.peopleCanWrite);
       },
       isInFavor(item) {
-        return this.collectDocList.indexOf(item) !== -1
+        console.log(this.collectDocList)
+        //return this.collectDocList.indexOf(item) !== -1
+        for (let i in this.collectDocList) {
+          console.log(i)
+          if (this.collectDocList[i].name === item.name) {
+            return true
+          }
+        }
+        return false
       },
       favorPad(item) {
         const apiUrl = this.$router.resolve({ path: "/api/pad/favorPad"}).href
@@ -754,8 +762,7 @@ import axios from "axios";
         }).then((res) => {
           if (res.data.errcode === 0) {
             this.$message.success("收藏成功！")
-            this.getPad()
-            this.getFavorPads()
+            this.collectDocList.push(item)
           } else {
             this.$message.error("收藏失败")
           }
@@ -769,8 +776,17 @@ import axios from "axios";
         }).then((res) => {
           if (res.data.errcode === 0) {
             this.$message.success("取消收藏成功！")
-            this.getPad()
-            this.getFavorPads()
+            let i = 0;
+            for (i in this.collectDocList) {
+              console.log(i)
+              if (this.collectDocList[i].name === item.name) {
+                break;
+              }
+            }
+            this.collectDocList.splice(i, 1)
+            if (this.isCollect) {
+              this.getFavorPads()
+            }
           } else {
             this.$message.error("取消收藏失败")
           }
