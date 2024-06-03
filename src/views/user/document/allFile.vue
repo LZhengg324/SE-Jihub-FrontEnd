@@ -653,7 +653,7 @@ import axios from "axios";
     methods:{
       getIdenticon,
       enterPad(token) {
-        const apiUrl = this.$router.resolve({ path: "/api/pad/enterPad" }).href;
+        const apiUrl = this.$router.resolve({ path: "/api/pad/enterPad"}).href
         axios.post(apiUrl, {
           userId: this.user.id,
           token: token
@@ -741,40 +741,56 @@ import axios from "axios";
         console.log(this.peopleCanWrite);
       },
       isInFavor(item) {
-        return this.collectDocList.indexOf(item) !== -1
+        console.log(this.collectDocList)
+        //return this.collectDocList.indexOf(item) !== -1
+        for (let i in this.collectDocList) {
+          console.log(i)
+          if (this.collectDocList[i].name === item.name) {
+            return true
+          }
+        }
+        return false
       },
       favorPad(item) {
-        const apiUrl = this.$router.resolve({ path: "/api/pad/favorPad" }).href;
+        const apiUrl = this.$router.resolve({ path: "/api/pad/favorPad"}).href
         axios.post(apiUrl, {
           userId: this.user.id,
           token: item.token
         }).then((res) => {
           if (res.data.errcode === 0) {
             this.$message.success("收藏成功！")
-            this.getPad()
-            this.getFavorPads()
+            this.collectDocList.push(item)
           } else {
             this.$message.error("收藏失败")
           }
         })
       },
       unFavorPad(item) {
-        const apiUrl = this.$router.resolve({ path: "/api/pad/unFavorPad" }).href;
+        const apiUrl = this.$router.resolve({ path: "/api/pad/unFavorPad"}).href
         axios.post(apiUrl, {
           userId: this.user.id,
           token: item.token
         }).then((res) => {
           if (res.data.errcode === 0) {
             this.$message.success("取消收藏成功！")
-            this.getPad()
-            this.getFavorPads()
+            let i = 0;
+            for (i in this.collectDocList) {
+              console.log(i)
+              if (this.collectDocList[i].name === item.name) {
+                break;
+              }
+            }
+            this.collectDocList.splice(i, 1)
+            if (this.isCollect) {
+              this.getFavorPads()
+            }
           } else {
             this.$message.error("取消收藏失败")
           }
         })
       },
       getFavorPads() {
-        const apiUrl = this.$router.resolve({ path: "/api/pad/getFavorPads" }).href;
+        const apiUrl = this.$router.resolve({ path: "/api/pad/getFavorPads"}).href
         axios.post(apiUrl, {
           userId: this.user.id,
           projectId: this.selectedProj.projectId
@@ -798,7 +814,7 @@ import axios from "axios";
       },
 
       createPad() {
-        const apiUrl = this.$router.resolve({ path: "/api/pad/createPad" }).href;
+        const apiUrl = this.$router.resolve({ path: "/api/pad/createPad"}).href
         axios.post(apiUrl, {
           userId: this.user.id,
           projectId: this.selectedProj.projectId,
@@ -828,7 +844,7 @@ import axios from "axios";
         this.peopleCanNotWrite = arr;
       },
       getPad() {
-        const apiUrl = this.$router.resolve({ path: "/api/pad/getPads" }).href;
+        const apiUrl = this.$router.resolve({ path: "/api/pad/getPads"}).href
         axios.post(apiUrl, {
           projectId: this.selectedProj.projectId
         }).then((res) => {
@@ -845,7 +861,7 @@ import axios from "axios";
         this.item = item;
       },
       deletePad(token) {
-        const apiUrl = this.$router.resolve({ path: "/api/pad/deletePad" }).href;
+        const apiUrl = this.$router.resolve({ path: "/api/pad/deletePad"}).href
         axios.post(apiUrl, {
           token: token,
           userId: this.user.id
