@@ -659,10 +659,7 @@ import axios from "axios";
           token: token
         }).then((res) => {
           if (res.data.errcode === 0) {
-            let routeUrl = this.$router.resolve({
-              path: res.data.data.padUrl,
-            });
-            window.open(routeUrl.href.substring(1, routeUrl.href.length), '_blank');
+            window.open(res.data.data.padUrl, '_blank');
           }
         })
       },
