@@ -18,6 +18,7 @@ const router = new VueRouter({
     {
       path: '/allFile',
       component: () => import('../views/user/document/allFile.vue')
+     // component: () => import('../views/user/document/file_view.vue')
     },
     {
       path:'/allPerson',

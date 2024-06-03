@@ -397,7 +397,7 @@ export default {
               } else if (this.selectedStatus === 'B'){
                 showStatus = "禁用"
               } else if (this.selectedStatus === 'D'){
-                showStatus = "小管理员"
+                showStatus = "项目管理员"
               }
               this.$message({
                 type: 'info',
@@ -514,7 +514,7 @@ export default {
       } else if (status === "B") {
         return "禁用";
       } else if (status === "D") {
-        return "小管理员";
+        return "项目管理员";
       }
     },
   },
