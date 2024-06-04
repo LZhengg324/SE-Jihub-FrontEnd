@@ -455,6 +455,7 @@
           <td>
             {{ new Date(notice.deadline).toLocaleString() }}
           </td>
+
           <td >
 
           </td>

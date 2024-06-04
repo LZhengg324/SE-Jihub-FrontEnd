@@ -208,6 +208,14 @@ export const getDiffString =(data) =>{
   return request.post("/api/develop/getDiff", data)
 }
 
+export const getDiffString2 =(data) =>{
+  return request.post("/api/develop/getDiff2", data)
+}
+
+export const getPrDesc = (data) =>{
+  return request.post("/api/ai/PrDescriptionGen",data)
+}
+
 export const createRepo =(data)=>{
   return request.post("/api/develop/CreateRepo",data)
 }
@@ -230,6 +238,10 @@ export const readNotice =(data) =>{
 
 export const getActivations = (data) =>{
   return request.post("api/develop/getActivations", data);
+}
+
+export const genLabel =(data) =>{
+  return request.post('api/ai/LabelGenerate',data);
 }
 
 

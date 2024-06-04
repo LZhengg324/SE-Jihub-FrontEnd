@@ -268,7 +268,6 @@ export default {
           value: 'peopleName',
         },
         { text: '邮箱', value: 'peopleEmail' },
-        { text: '活跃度', value: 'peopleActive' },
         {
           text: '状态',
           sortable: false,
@@ -551,7 +550,7 @@ export default {
           console.log("error")
           this.$message({
             type: 'warning',
-            message: "请选择至少一名小管理员！"
+            message: "请选择至少一名项目管理员！"
           })
         } else {
           this.selectedAssistant = this.assistantList.filter(i => i.checked)
@@ -574,7 +573,7 @@ export default {
               } else {
                 this.$message({
                   type: "success",
-                  message: "成功设置小管理员"
+                  message: "成功设置项目管理员"
                 })
                 this.showProjectMessages()
               }
@@ -681,7 +680,8 @@ export default {
       axios.post("/api/plan/modifyRole", {
         projectId: projectId,
         personId: memberId,
-        role: this.selectedStatus
+        role: this.selectedStatus,
+        userId: managerId
       })
           .then((response) => {
             this.showChangeMemberAccessDialog = false
@@ -724,60 +724,6 @@ export default {
             this.selectedAccess = ''
             this.changeMemberAccessMessage = ''
           })
-
-      // axios.post("/api/management/changeUserUploadAccess", {
-      //   managerId: managerId,
-      //   projectId: projectId,
-      //   userId: this.changeMemberAccessMessage.peopleId,
-      //   status: this.selectedAccess
-      // })
-      //     .then((response) => {
-      //       this.showChangeMemberAccessDialog = false
-      //       console.log(response.data)
-      //       if (response.data.errcode === 1) {
-      //         this.$message({
-      //           type: 'error',
-      //           message: "您没有权限"
-      //         });
-      //       } else if (response.data.errcode === 2) {
-      //         let showAccess;
-      //         if (this.selectedAccess === 'A') {
-      //           showAccess = "正常"
-      //         } else {
-      //           showAccess = "禁用"
-      //         }
-      //         this.$message({
-      //           type: 'success',
-      //           message: "用户" + this.changeMemberAccessMessage.peopleName + "的状态已为" + showAccess
-      //         });
-      //       } else {
-      //         if (this.selectedAccess === 'A') {
-      //           this.$message({
-      //             type: 'success',
-      //             message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态恢复为正常"
-      //           });
-      //         } else {
-      //           this.$message({
-      //             type: 'success',
-      //             message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为禁用"
-      //           });
-      //         }
-      //         this.showAllProjectMembers(this.showProjectMemberMessage)
-      //       }
-      //       this.selectedAccess = ''
-      //       this.changeMemberAccessMessage = ''
-      //     })
-
-//test
-//       this.showChangeMemberAccessDialog = false
-//       this.changeMemberAccessMessage.peopleAccess = this.selectedAccess
-//       this.$message({
-//         type: 'success',
-//         message: "成功将用户" +  this.changeMemberAccessMessage.peopleName + "的状态修改为" + this.selectedAccess
-//       });
-//       this.selectedAccess = ''
-//       this.changeMemberAccessMessage = ''
-
     }
   },
 }

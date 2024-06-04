@@ -14,82 +14,81 @@
           <v-toolbar-title>共享文档</v-toolbar-title>
         </v-toolbar>
 
-        <v-tabs
-          v-model="tab"
-          fixed-tabs
-          :color="getTopicColor(user.topic)"
-          :slider-color="getDarkColor(user.topic)"
-          align-with-title
-        >
-        <v-tab @click="gotoAll">
-          我的文档
-        </v-tab>
-        <v-tab @click="gotoCollect">
-          收藏夹
-        </v-tab>
-          <v-tabs-slider></v-tabs-slider>
-        </v-tabs>
 
         <v-data-table
         :headers="headers"
-        :items="documentData"
+        :items="showCollect ? collectDocList : documentData"
+        :single-expand="true"
         class="elevation-1"
-        item-key="id"
+        item-key="token"
         :search="search"
+        show-expand
+        :expanded.sync="expanded"
         :custom-filter="filterOnlyCapsText"
         style="position:absolute;left:3%;width:94%;height: 70%;top:14%"
       >
-      <template v-slot:[`item.name`] = "{item}" >
-        <v-icon>mdi-text-box-outline</v-icon>
-         <a @click="enterPad(item.token)" style="position:relative;left:2%;top:3%;">{{ item.name }}</a>
-      </template>
 
-      <template v-slot:expanded-item="{ headers, item }">
-        {{ item.outline}}
-    </template>
-      <template v-slot:no-data>
-        <div></div>
-     </template>
-      <template v-slot:no-results>
-        <div style="text-align: center;">
-          <img src="../../../assets/search.png" height="150px" width="150px"/>
-        </div>
-        <div style="font-size:20px;font-weight: bold">
-          没有找到数据
-        </div>
-      </template>
-        <template v-slot:top>
-          <div style="width: 100%; height: 10%; position: relative">
-            <v-text-field
-              v-model="search"
-              label="请输入文档名称进行查询"
-              class="mx-4"
-              style="width: 30%; display: inline-block"
-            ></v-text-field>
-            <v-btn
-              style="
+          <template v-slot:top>
+            <div style="width: 100%; height: 10%; position: relative; align-items: center;">
+              <v-text-field
+                  v-model="search"
+                  label="请输入文档名称进行查询"
+                  class="mx-4"
+                  append-icon="mdi-magnify"
+                  style="height:40px; width: 35%; display: inline-flex"
+              ></v-text-field>
+              <v-chip class="ma-2" v-if="!showCollect" text-color="blue" @click="showCollect=true"> 全部 </v-chip>
+              <v-chip class="ma-2" v-else @click="showCollect=false" > 全部 </v-chip>
+              <v-chip class="ma-2" v-if="!showCollect"  @click="showCollect=true"> 星标 </v-chip>
+              <v-chip class="ma-2" v-else text-color="blue" @click="showCollect=false"> 星标 </v-chip>
+
+              <v-btn
+                  style="
                 top: 20%;
                 right: 2%;
                 height: 60%;
                 width: 10%;
                 position: absolute;
               "
-              depressed
-              :color="getTopicColor(user.topic)"
-              @click="newDocumentForm.name = '';newDocumentForm.intro = '';dialog1 = true;"
-              ><strong>创建文档</strong></v-btn
-            >
-          </div>
-        </template>
-        <template v-slot:[`item.collect`]="{item}">
-          <v-icon @click="favorPad(item)" v-if="!isInFavor(item)">mdi-star-outline</v-icon>
-          <v-icon @click="unFavorPad(item)" v-else>mdi-star</v-icon>
-          <v-icon @click="editStart(item)">mdi-pencil-outline</v-icon>
-          <v-icon @click="deletePad(item.token)">mdi-delete-outline</v-icon>
-        </template>
-        <template v-slot:[`item.limit`]="{item}">
-          <v-icon v-if="item.limit !== 'only read'">mdi-check-bold</v-icon>
-        </template>
+                  depressed
+                  :color="getTopicColor(user.topic)"
+                  @click="newDocumentForm.name = '';newDocumentForm.intro = '';dialog1 = true;"
+              ><strong>创建文档</strong>
+              </v-btn>
+
+            </div>
+          </template>
+          <template v-slot:no-data>
+            <div></div>
+          </template>
+          <template v-slot:no-results>
+            <div style="text-align: center;">
+              <img src="../../../assets/search.png" height="150px" width="150px"/>
+            </div>
+            <div style="font-size:20px;font-weight: bold">
+              没有找到数据
+            </div>
+          </template>
+          <template v-slot:[`item.name`] = "{item}" >
+            <v-icon>mdi-text-box-outline</v-icon>
+            <a @click="enterPad(item.token)" style="position:relative;left:2%;top:3%;">{{ item.name }}</a>
+          </template>
+          <template v-slot:expanded-item="{ headers, item }">
+            <td :colspan="headers.length">
+              {{ item.info }}
+            </td>
+          </template>
+          <template v-slot:[`item.creatorName`]="{ item }">
+            <v-chip class="accent-1" color="white">
+              <v-avatar left><v-img :src="getIdenticon(item.creatorName, 50, 'user')" ></v-img></v-avatar>
+              {{ item.creatorName }}
+            </v-chip>
+          </template>
+          <template v-slot:[`item.actions`]="{ item }">
+            <v-icon @click="favorPad(item)" v-if="!isInFavor(item)" class="mr-2">mdi-star-outline</v-icon>
+            <v-icon @click="unFavorPad(item)" v-else class="mr-2">mdi-star</v-icon>
+            <v-icon @click="openShowConfirmDelete(item.token)" class="mr-2">mdi-delete-outline</v-icon>
+          </template>
       </v-data-table>
 
       <v-dialog v-model="dialog1" hide-overlay width="1000px">
@@ -122,19 +121,25 @@
         </v-form>
       </v-card-text>
        <v-card-actions style="position:absolute;right:0%;bottom: 0%;">
-       <v-btn
-         text
-         :color="getTopicColor(user.topic)"
-         width="70px"
-         @click="initPeople();checkNameIntro()"
-         >
-        下一步
-      </v-btn>
+         <v-btn
+             text
+             color="primary"
+             width="70px"
+             style="float: right"
+             @click="dialog1 = false;"
+         >取消</v-btn>
+         <v-btn
+             text
+             :color="getTopicColor(user.topic)"
+             width="70px"
+             style="float: right"
+             @click="checkNameIntro()"
+         >确认</v-btn>
     </v-card-actions>
         </v-card>
       </v-dialog>
 
-    <v-dialog v-model="dialog2" hide-overlay width="1000px" style="height: 600px;">
+      <v-dialog v-model="dialog2" hide-overlay width="1000px" style="height: 600px;">
         <v-card
         width="1000px"
         height="600px"
@@ -471,7 +476,24 @@
             </v-card-actions>
         </v-card>
       </v-dialog>
-      </v-card>
+
+      <v-dialog v-model="showConfirmDelete" hide-overlay max-width="300" persistent>
+        <v-card>
+          <v-card-title> 确认删除文档 </v-card-title>
+          <v-card-text> 删除后，无法撤销操作！ </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green" class="white--text" @click="closeShowConfirmDelete()">
+              取消
+            </v-btn>
+            <v-btn color="red" class="white--text" @click="deletePad()">
+              确定
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+    </v-card>
 </template>
 
 <script>
@@ -488,7 +510,9 @@ import axios from "axios";
          },
     data() {
       return {
-      isCollect: false,
+        showCollect:false,
+        showConfirmDelete: false,
+        selectedPad: null,
       doc: '',
       textList: {},
       expanded: [],
@@ -507,14 +531,16 @@ import axios from "axios";
       item: [],
       headers: [
         {
-          text: "名称",
-          align: "start",
+          text: "文档名称",
           sortable: false,
           value: "name",
         },
-        { text: "所有者", value: "creatorName", sortable:false},
-        //{ text: "最近更改时间", value: "updateTime"},
-        { text: "", value: "collect", sortable:false},
+        { text: "", value:"space", sortable: false},
+        { text: "", value:"space", sortable: false},
+        { text: "创建者", value: "creatorName", sortable:false},
+        { text: "", value:"space", sortable: false},
+        { text: "", value:"actions", sortable: false},
+        { text: "", value:"data-table-expand"},
       ],
       html:"",
       blogInfo: {
@@ -523,34 +549,11 @@ import axios from "axios";
       },
       documentData:[
         {
-          'documentId': '1',
-          'documentName': '共享文档1',
-          'format': 'latex',
-          'owner': 'szx',
-          'limit': 'can write',
-          'changeTime': '2023-5-14',
-          'collect': false,
-          'intro': "blalalala",
-        },
-        {
-          'documentId': '2',
-          'documentName': '共享文档2',
-          'format': 'latex',
-          'owner': 'szx',
-          'limit': 'only read',
-          'changeTime': '2023-5-14',
-          'collect': false,
-          'intro': "blalalala"
-        },
-        {
-          'documentId': '3',
-          'documentName': '共享文档3',
-          'format': 'latex',
-          'owner': 'szx',
-          'limit': 'only read',
-          'changeTime': '2023-5-14',
-          'collect': false,
-          'intro': "blalalala"
+          creatorId: 12,
+          creatorName: "test2",
+          info: "test",
+          name: "2",
+          token: "117167294241403835"
         }
       ],
       peopleCanWrite: [
@@ -624,11 +627,12 @@ import axios from "axios";
         subfield: true, // 单双栏模式
         preview: true, // 预览
       },
-      collectDocList: []
+      collectDocList: [],
       }
     },
     created() {
       this.getPad()
+      this.getFavorPads()
       showPersonList({projectId: this.selectedProj.projectId, userId: this.user.id}).then(
         res => {
           console.log(res);
@@ -637,26 +641,17 @@ import axios from "axios";
           console.log(this.allPeople);
         }
       );
-      userCollectDocList({userId: this.user.id, projectId: this.selectedProj.projectId}).then(
-          res => {
-             console.log("userCollectDocList");
-             console.log(res);
-             this.collectDocList = res['data']['data'];
-           }
-      );
     },
     methods:{
       getIdenticon,
       enterPad(token) {
-        axios.post("api/pad/enterPad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/enterPad"}).href
+        axios.post(apiUrl, {
           userId: this.user.id,
           token: token
         }).then((res) => {
           if (res.data.errcode === 0) {
-            let routeUrl = this.$router.resolve({
-              path: res.data.data.padUrl,
-            });
-            window.open(routeUrl.href.substring(1, routeUrl.href.length), '_blank');
+            window.open(res.data.data.padUrl, '_blank');
           }
         })
       },
@@ -677,7 +672,7 @@ import axios from "axios";
             });
         } else {
           if (this.documentData === undefined) {
-            this.dialog1 = false;this.dialog2 = true;
+            this.dialog1 = false;
             return
           }
           for (let i=0;i < this.documentData.length;i++) {
@@ -689,7 +684,8 @@ import axios from "axios";
               return;
             }
         }
-          this.dialog1 = false;this.dialog2 = true;
+          this.dialog1 = false;
+          this.createPad()
         }
       },
       initEditPeople(item) {
@@ -737,43 +733,59 @@ import axios from "axios";
         console.log(this.peopleCanWrite);
       },
       isInFavor(item) {
-        return this.collectDocList.indexOf(item) !== -1
+
+        return this.collectDocList.find((file) => {
+          return file.token === item.token
+        })
       },
       favorPad(item) {
-        axios.post("api/pad/favorPad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/favorPad" }).href
+        axios.post(apiUrl, {
           userId: this.user.id,
           token: item.token
         }).then((res) => {
           if (res.data.errcode === 0) {
             this.$message.success("收藏成功！")
-            this.getPad()
-            this.getFavorPads()
+            this.collectDocList.push(item)
           } else {
             this.$message.error("收藏失败")
           }
         })
       },
       unFavorPad(item) {
-        axios.post("api/pad/unFavorPad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/unFavorPad"}).href
+        axios.post(apiUrl, {
           userId: this.user.id,
           token: item.token
         }).then((res) => {
           if (res.data.errcode === 0) {
             this.$message.success("取消收藏成功！")
-            this.getPad()
-            this.getFavorPads()
+            let i = 0;
+            for (i in this.collectDocList) {
+              console.log(i)
+              if (this.collectDocList[i].name === item.name) {
+                break;
+              }
+            }
+            this.collectDocList.splice(i, 1)
+            if (this.isCollect) {
+              this.getFavorPads()
+            }
           } else {
             this.$message.error("取消收藏失败")
           }
         })
       },
       getFavorPads() {
-        axios.post("api/pad/getFavorPads", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/getFavorPads"}).href
+        axios.post(apiUrl, {
           userId: this.user.id,
           projectId: this.selectedProj.projectId
         }).then((res) => {
+          console.log("collect doct")
           this.collectDocList = res.data.data.pads
-          this.documentData = this.collectDocList
+          console.log(this.collectDocList)
+          // this.documentData = this.collectDocList
         })
       },
       delPerson() {
@@ -791,7 +803,8 @@ import axios from "axios";
       },
 
       createPad() {
-        axios.post("api/pad/createPad", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/createPad"}).href
+        axios.post(apiUrl, {
           userId: this.user.id,
           projectId: this.selectedProj.projectId,
           name: this.newDocumentForm.name,
@@ -820,10 +833,13 @@ import axios from "axios";
         this.peopleCanNotWrite = arr;
       },
       getPad() {
-        axios.post("api/pad/getPads", {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/getPads"}).href
+        axios.post(apiUrl, {
           projectId: this.selectedProj.projectId
         }).then((res) => {
+          console.log("document data")
           this.documentData = res.data.data.pads
+          console.log(this.documentData)
         })
       },
       //修改名称、简介、成员权限等
@@ -835,20 +851,34 @@ import axios from "axios";
         this.editDialog1 = true;
         this.item = item;
       },
-      deletePad(token) {
-        axios.post("api/pad/deletePad", {
-          token: token,
+      openShowConfirmDelete(token) {
+        this.showConfirmDelete = true;
+        this.selectedPad = token
+      },
+
+      closeShowConfirmDelete() {
+        this.showConfirmDelete = false;
+        this.selectedPad = null
+      },
+      deletePad() {
+        const apiUrl = this.$router.resolve({ path: "/api/pad/deletePad" }).href
+        axios.post(apiUrl, {
+          token: this.selectedPad,
           userId: this.user.id
         }).then((res) => {
           if (res.data.errcode === 0) {
+            this.showConfirmDelete = false
             this.$message.success("删除文档成功！")
+            //this.documentData = this.documentData.filter(doc => doc.token !== token);
             this.getPad()
+            this.getFavorPads()
           } else if (res.data.errcode === 1) {
             this.$message.error("删除文档失败，您没有权限")
           } else {
             this.$message.error("删除失败，请联系管理员")
           }
         })
+
       },
       filter(arr, search) {
         if (search === '') {
@@ -892,3 +922,7 @@ import axios from "axios";
     },
   }
 </script>
+
+<style>
+
+</style>
