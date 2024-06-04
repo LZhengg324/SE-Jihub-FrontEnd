@@ -12,7 +12,7 @@
 
 
       <v-icon id="v-step-remind" v-if="!existUnreadNote" style="right: 1%" @click="checkNote">mdi-bell</v-icon>
-      <v-icon v-else style="right: 1%" @click="checkNote">mdi-bell-badge</v-icon>
+      <v-icon id="v-step-remind" v-else style="right: 1%" @click="checkNote">mdi-bell-badge</v-icon>
 
       <v-icon v-if="existUser()" @click="checkClock">mdi-clock-outline</v-icon>
       <v-tooltip bottom>
@@ -417,16 +417,25 @@
         :visible.sync="noteDialog"
         width="80%"
     >
+      <v-btn
+          style="top: 20%; right: 2%; width: 10%; position: absolute;"
+          depressed
+          :color="getTopicColor(user.topic)"
+          @click="handleReadAllNotice()"
+      >一键已读</v-btn>
       <v-simple-table>
         <thead>
 
         <tr>
-          <th class="text-left">
-            状态
-          </th>
+<!--          <th class="text-left">-->
+<!--            状态-->
+<!--          </th>-->
 
           <th class="text-left">
             时间
+          </th>
+          <th >
+
           </th>
           <th class="text-left">
             详情
@@ -434,30 +443,51 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="notice in noticeList2" :key="notice.noticeId" @mouseenter="arr[notice.taskId] = true"
+        <tr    :style="!notice.seen ? 'background-color:#f0f0f0' : 'background-color:white'"  v-for="notice in noticeList2" :key="notice.noticeId" @mouseenter="arr[notice.taskId] = true"
             @mouseleave="arr[notice.taskId] = false">
-          <td>
+<!--          <td>-->
 
-            <v-chip :color="getColor(notice.seen)" dark>
-              {{notice.seen ? "已读":"未读"}}
-            </v-chip>
+<!--            <v-chip :color="getColor(notice.seen)" dark>-->
+<!--              {{notice.seen ? "已读":"未读"}}-->
+<!--            </v-chip>-->
+<!--          </td>-->
+
+          <td>
+            {{ new Date(notice.deadline).toLocaleString() }}
           </td>
-          <td>{{ new Date(notice.deadline).toLocaleString() }}</td>
-          <td>{{notice.content}}</td>
-          <td style="width: 10%">
-            <v-btn :color="getTopicColor(user.topic)"
-                   class="white--text"
-                   @click="handleDeleteNotice(notice.noticeId)">
-              删除
-            </v-btn>
+          <td >
+
           </td>
-          <td style="width: 10%">
-            <v-btn :color="getTopicColor(user.topic)"
-                   class="white--text"
-                   @click="handleReadNotice(notice.noticeId)">
-              已读
-            </v-btn>
+          <td v-if="!notice.seen"
+              class="clickable-row"
+              @click="handleReadNotice(notice.noticeId)"
+          >
+
+            <strong v-if="!notice.seen">{{notice.content}}</strong>
+            <div v-else>{{notice.content}}</div>
+            <v-badge dot class="float-md-end" v-if="!notice.seen" :color="getTopicColor()" inline></v-badge>
           </td>
+          <td v-else
+          >
+
+            <strong v-if="!notice.seen">{{notice.content}}</strong>
+            <div v-else>{{notice.content}}</div>
+            <v-badge dot class="float-md-end" v-if="!notice.seen" :color="getTopicColor()" inline></v-badge>
+          </td>
+<!--          <td style="width: 10%">-->
+<!--            <v-btn :color="getTopicColor(user.topic)"-->
+<!--                   class="white&#45;&#45;text"-->
+<!--                   @click="handleDeleteNotice(notice.noticeId)">-->
+<!--              删除-->
+<!--            </v-btn>-->
+<!--          </td>-->
+<!--          <td style="width: 10%">-->
+<!--            <v-btn :color="getTopicColor(user.topic)"-->
+<!--                   class="white&#45;&#45;text"-->
+<!--                   @click="handleReadNotice(notice.noticeId)">-->
+<!--              已读-->
+<!--            </v-btn>-->
+<!--          </td>-->
 
         </tr>
         </tbody>
@@ -1161,6 +1191,17 @@ export default {
           });
     },
 
+    handleReadAllNotice() {
+      const hasUnreadNotice = this.noticeList2.some(notice => !notice.seen);
+
+      this.noticeList2.forEach(notice => {
+        readNotice({id: notice.noticeId}).then(
+        )
+        notice.seen = true;
+      });
+    },
+
+
     handleReadNotice(noticeId) {
       // this.updateNoticeList()
       readNotice({id: noticeId}).then(
@@ -1372,6 +1413,13 @@ body,
 
 
 }
+
+.clickable-row:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+
 
 
 

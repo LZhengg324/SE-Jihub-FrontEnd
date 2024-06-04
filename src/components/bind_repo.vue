@@ -46,10 +46,10 @@ export default {
         name: this.gh_reponame,
         user_id: this.user.id,
         project_id: this.proj.id,
-        remote_path: 'https://github.com/CBY11/',
+        remote_path: 'https://github.com/LZhengg324/',
       }).then((res) => {
         this.createRepoInProgress = false;
-        this.gh_username = 'CBY11';
+        this.gh_username = 'LZhengg324';
         // this.gh_reponame = this.gh_reponame + '_' + this.proj.id;
         this.$message({
           showClose: true,
