@@ -223,10 +223,11 @@
                   <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
 
-                      <v-chip :color="getTopicColor(user.topic)" > 新添 </v-chip>
-                      <v-chip :color="getTopicColor(user.topic)" > 前端 </v-chip>
-                      <v-chip :color="getTopicColor(user.topic)" > vue </v-chip>
-                      这是软工作业的讨论室板块前端制作任务，使用vue编写前端，从user.js中查找api
+                      <v-chip v-for="label in item.labels" :color="getTopicColor(user.topic)" > {{label}} </v-chip>
+                      <!--<v-chip :color="getTopicColor(user.topic)" > 前端 </v-chip>-->
+                      <!--<v-chip :color="getTopicColor(user.topic)" > vue </v-chip>-->
+                      <!--这是软工作业的讨论室板块前端制作任务，使用vue编写前端，从user.js中查找api-->
+                      {{item.description}}
                     </td>
 
                   </template>
@@ -288,7 +289,7 @@
             <p style="top:5%">创建标签</p>
             <el-input v-model="customLabel">
 
-              <el-button slot="append" icon="el-icon-check" @click="newSonForm.labels.push(customLabel); subTaskLabels.push(customLabel)"></el-button>
+              <el-button style="color: #2A928F" slot="append" icon="el-icon-check" @click="newLabel"></el-button>
             </el-input>
           </v-col>
 
@@ -432,7 +433,7 @@
               <template v-slot:item="{ item }">
                 <div style="position: relative;background-color: aliceblue;">
                   <v-avatar size="25" color="indigo">
-                    <v-img :src="getIdenticon(item, 25, "user')"></v-img>
+                    <v-img :src="getIdenticon(item, 25, 'user')"></v-img>
                   </v-avatar>
                   <span style="position:absolute;left: 120%;">{{ item }}</span>
                 </div>
@@ -745,7 +746,7 @@ export default {
   },
   data: () => ({
     customLabel:'',
-    subTaskLabels:["新添","删除","修改","前端","后端","vue","django"],
+    subTaskLabels:[],
     personNameList: [],
     personIdList: [],
     checkMyFlag: false,
@@ -847,6 +848,9 @@ export default {
       }).then((res)=>{
           console.log("goodcby!"+res.data.data.content);
           let content =  res.data.data.content + "";
+        if(content.trim()===""){
+          return ;
+        }
         this.subTaskLabels = content.split(',');
         console.log(this.subTaskLabels)
       });
@@ -1092,6 +1096,19 @@ export default {
       this.marker[item.taskId] = true;
       console.log(this.marker);
     },
+
+    newLabel(){
+      if (this.customLabel.trim() === "") {
+        this.$message({
+          type: "error",
+          message: '标签名不能为空'
+        })
+        return;
+      }
+      this.newSonForm.labels.push(this.customLabel);
+      this.subTaskLabels.push(this.customLabel);
+      this.customLabel = '';
+    },
     newSon() {
       if (this.newSonForm.name.trim() === "") {
         this.$message({
@@ -1162,6 +1179,7 @@ export default {
         projectId: this.selectedProj.projectId,
         subTaskName: this.newSonForm.name,
         description: this.newSonForm.msg,
+        labels: this.newSonForm.labels,
       }).then(
           res => {
             console.log(res);
@@ -1175,6 +1193,10 @@ export default {
       this.newSonForm.endTime = '';
       this.newSonForm.managerName = '';
       this.newSonForm.name = '';
+      this.newSonForm.msg = '';
+      this.newSonForm.labels = '';
+      this.customLabel = '';
+
     },
     handleSetupTaskClose() {
       this.newFatherForm.name = "";
