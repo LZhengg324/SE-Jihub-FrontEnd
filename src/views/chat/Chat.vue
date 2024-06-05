@@ -1176,5 +1176,6 @@ export default {
 
 .message {
   color:white ;
+  color:
 }
 </style>
