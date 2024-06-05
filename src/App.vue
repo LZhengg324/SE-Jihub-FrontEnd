@@ -418,12 +418,13 @@
         width="80%"
     >
       <v-btn
-          style="top: 20%; right: 2%; width: 10%; position: absolute;"
+          style="top: 35%; right: 2%; width: 10%; position: absolute;"
           depressed
           :color="getTopicColor(user.topic)"
           @click="handleReadAllNotice()"
+          v-if="noticeList2.length!==0"
       >一键已读</v-btn>
-      <v-simple-table>
+      <v-simple-table >
         <thead>
 
         <tr>
