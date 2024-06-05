@@ -268,7 +268,6 @@ export default {
           value: 'peopleName',
         },
         { text: '邮箱', value: 'peopleEmail' },
-        { text: '活跃度', value: 'peopleActive' },
         {
           text: '状态',
           sortable: false,
@@ -551,7 +550,7 @@ export default {
           console.log("error")
           this.$message({
             type: 'warning',
-            message: "请选择至少一名小管理员！"
+            message: "请选择至少一名项目管理员！"
           })
         } else {
           this.selectedAssistant = this.assistantList.filter(i => i.checked)
@@ -574,7 +573,7 @@ export default {
               } else {
                 this.$message({
                   type: "success",
-                  message: "成功设置小管理员"
+                  message: "成功设置项目管理员"
                 })
                 this.showProjectMessages()
               }
