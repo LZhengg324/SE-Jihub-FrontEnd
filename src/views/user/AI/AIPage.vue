@@ -4,13 +4,14 @@ import diagnosis from "@/views/user/AI/Diagnosis.vue";
 import TestData from "@/views/user/AI/TestData.vue";
 import Diagnosis from "@/views/user/AI/Diagnosis.vue";
 import topicSetting from "@/utils/topic-setting";
+import Cookies from "js-cookie";
 
 export default {
   components: {TestData, Diagnosis},
 
   data() {
     return {
-      selected: "one",
+      selected: "diagnosis",
     }
 
   },
@@ -20,7 +21,25 @@ export default {
     proj: {default: null}
   },
 
+  mounted() {
+    this.selectTabFromUrl()
+
+  },
+
   methods: {
+    selectTabFromUrl()
+    {
+      const tabHash = window.location.hash;
+
+      if (tabHash === '#tabdiagnosis') {
+        this.selected = "diagnosis"
+      } else if (tabHash === '#tabtestData') {
+        this.selected = "testData"
+      }
+    },
+    // test() {
+    //   window.open('/user/ai#tabdiagnosis', '_blank')
+    // },
     getTopicColor: topicSetting.getColor,
     getDarkColor: topicSetting.getDarkColor,
     getRadialGradient: topicSetting.getRadialGradient
@@ -31,7 +50,9 @@ export default {
 </script>
 
 <template>
+
   <v-card>
+<!--    <v-btn @click="test()"> this </v-btn>-->
     <div>
         <v-tabs v-model="selected">
           <v-tab href="#diagnosis" class="icon-with-text">
@@ -45,8 +66,6 @@ export default {
           </v-tab>
           </v-tabs>
     </div>
-
-
       <v-tabs-items v-model="selected">
         <v-tab-item value="diagnosis">
           <diagnosis/>
@@ -55,15 +74,6 @@ export default {
           <TestData/>
         </v-tab-item>
       </v-tabs-items>
-
-
-
-
-
-
-
-
-
   </v-card>
 
 

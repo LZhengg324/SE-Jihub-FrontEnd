@@ -341,6 +341,13 @@ export default {
     this.updateChatRooms()
     //this.initWS(1)
   },
+  beforeRouteLeave(to, from, next) {
+    if (window.socket && window.socket.readyState === WebSocket.OPEN) {
+      console.log('Closing WebSocket due to leaving the route');
+      window.socket.close(1000, 'Navigating to a different route');
+    }
+    next();
+  },
 
   data() {
 
@@ -735,6 +742,7 @@ export default {
         console.log('Socket is closed.', e.reason);
         //initagain()
       }
+      window.socket=socket
 
       return socket
     },
@@ -1176,6 +1184,5 @@ export default {
 
 .message {
   color:white ;
-  color:
 }
 </style>

@@ -100,7 +100,7 @@ export default {
             return
           }
           Cookies.set('diag', this.selectedText)
-          window.open('/user/ai/diagnosis', '_blank')
+          window.open('/user/ai#tabdiagnosis', '_blank')
         },
         diagWholeFile() {
           //如果文件长度大于Cookie最长长度，就不诊断了
@@ -112,7 +112,7 @@ export default {
             return
           }
           Cookies.set('diag', this.fileContent)
-          window.open('/user/ai/diagnosis', '_blank')
+          window.open('/user/ai#tabdiagnosis', '_blank')
         },
         unitTestSelected() {
           //如果文件长度大于Cookie最长长度，就不诊断了
@@ -131,7 +131,7 @@ export default {
             return
           }
           Cookies.set('diag', this.selectedText)
-          window.open('/user/ai/testdata', '_blank')
+          window.open('/user/ai#tabtestData', '_blank')
         },
         unitTestWholeFile() {
           //如果文件长度大于Cookie最长长度，就不诊断了
@@ -143,7 +143,7 @@ export default {
             return
           }
           Cookies.set('diag', this.fileContent)
-          window.open('/user/ai/testdata', '_blank')
+          window.open('/user/ai#tabtestData', '_blank')
         },
         getTopicColor: topicSetting.getDarkColor,
         getRadialGradient: topicSetting.getRadialGradient,

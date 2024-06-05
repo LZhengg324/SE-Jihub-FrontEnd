@@ -143,5 +143,16 @@ const router = new VueRouter({
   ]
 })
 
+router.beforeEach((to, from, next) => {
+  if (window.socket && window.socket.readyState === WebSocket.OPEN) {
+    console.log('Closing WebSocket due to route change');
+    window.socket.send(JSON.stringify({
+      type: 1,
+      roomId: 0,
+    }));
+    window.socket.close(1000, 'Navigating to a different route');
+  }
+  next();
+});
 
 export default router
