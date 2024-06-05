@@ -442,52 +442,8 @@ export default {
         this.createPad()
       }
     },
-    initEditPeople(item) {
-      this.deleteGroup = [];
-      this.addGroup = [];
-      this.peopleCanWrite = [];
-      this.peopleCanNotWrite = [];
-      console.log("initEditPeople");
-      console.log(this.allPeople);
-      for (let i = 0; i < this.allPeople.length; i++) {
-        let flag = false;
-        if (this.item.accessuser !== undefined) {
-          for (let j = 0; j < this.item.accessUser.length; j++) {
-            if (this.item.accessUser[j].id === this.allPeople[i].peopleId) {
-              flag = true;
-              break;
-            }
-          }
-        }
-        if (flag) {
-          this.peopleCanWrite.push(this.allPeople[i]);
-        } else {
-          this.peopleCanNotWrite.push(this.allPeople[i]);
-        }
-      }
-      console.log(this.peopleCanNotWrite);
-      console.log(this.peopleCanWrite);
-      this.editDialog2 = true;
-    },
-    initPeople() {
-      this.deleteGroup = [];
-      this.addGroup = [];
-      this.peopleCanWrite = [];
-      this.peopleCanNotWrite = [];
-      console.log("initPeople");
-      console.log(this.allPeople);
-      for (let i = 0; i < this.allPeople.length; i++) {
-        if (this.allPeople[i].peopleId !== this.user.id) {
-          this.peopleCanNotWrite.push(this.allPeople[i]);
-        } else {
-          this.peopleCanWrite.push(this.allPeople[i]);
-        }
-      }
-      console.log(this.peopleCanNotWrite);
-      console.log(this.peopleCanWrite);
-    },
-    isInFavor(item) {
 
+    isInFavor(item) {
       return this.collectDocList.find((file) => {
         return file.token === item.token
       })
@@ -542,19 +498,6 @@ export default {
         // this.documentData = this.collectDocList
       })
     },
-    delPerson() {
-      console.log(this.deleteGroup);
-      for (let i = 0; i < this.deleteGroup.length; i++) {
-        this.peopleCanNotWrite.push(this.peopleCanWrite[this.deleteGroup[i]]);
-      }
-      let arr = [];
-      for (let i = 0; i < this.peopleCanWrite.length; i++) {
-        if (this.deleteGroup.indexOf(i) == -1) {
-          arr.push(this.peopleCanWrite[i]);
-        }
-      }
-      this.peopleCanWrite = arr;
-    },
 
     createPad() {
       const apiUrl = this.$router.resolve({path: "/api/pad/createPad"}).href
@@ -573,19 +516,6 @@ export default {
       })
     },
 
-    addPerson() {
-      console.log(this.addGroup);
-      for (let i = 0; i < this.addGroup.length; i++) {
-        this.peopleCanWrite.push(this.peopleCanNotWrite[this.addGroup[i]]);
-      }
-      let arr = [];
-      for (let i = 0; i < this.peopleCanNotWrite.length; i++) {
-        if (this.addGroup.indexOf(i) == -1) {
-          arr.push(this.peopleCanNotWrite[i]);
-        }
-      }
-      this.peopleCanNotWrite = arr;
-    },
     getPad() {
       const apiUrl = this.$router.resolve({path: "/api/pad/getPads"}).href
       axios.post(apiUrl, {
@@ -596,15 +526,7 @@ export default {
         console.log(this.documentData)
       })
     },
-    //修改名称、简介、成员权限等
-    editStart(item) {
-      this.editDocumentForm.name = item.name;
-      this.editDocumentForm.intro = item.outline;
-      this.editDocumentForm.people = item.accessUser;
-      this.editDocumentForm.id = item.id;
-      this.editDialog1 = true;
-      this.item = item;
-    },
+
     openShowConfirmDelete(token) {
       this.showConfirmDelete = true;
       this.selectedPad = token
