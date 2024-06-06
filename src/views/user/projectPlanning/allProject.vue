@@ -22,7 +22,7 @@
           <img src="../../../assets/search.png" height="150px" width="150px"/>
         </div>
         <div style="font-size:20px;font-weight: bold">
-          没有找到数据
+          项目空空如也？创建一个，开启高效管理！
         </div>
      <!-- <v-img
       max-height="30%"
@@ -55,8 +55,8 @@
               "
               depressed
               :color="getTopicColor(user.topic)"
-              @click="setupDialog = true"
-              >创建项目</v-btn
+              @click="setupDialog = true">
+              创建项目</v-btn
             >
           </div>
         </template>
@@ -78,16 +78,16 @@
         </template>
         <template v-slot:[`item.projectName`]="{ item }">
           <v-icon small>mdi-application-export</v-icon>
-          <a @click="getProj(item)" style="position:relative;left:5%;">{{ item.projectName }}</a>
+          <a @click="getProj(item)" id="v-step-selectProject" style="position:relative;left:5%;">{{ item.projectName }}</a>
         </template>
         <template v-slot:[`item.actions`]="{ item }">
-          <v-icon small class="mr-2" @click="handleEdit(item)">
+          <v-icon id="v-step-editProject" small class="mr-2" @click="handleEdit(item)">
             mdi-pencil
           </v-icon>
-          <v-icon small @click="handleDelete(item)"> mdi-delete </v-icon>
+          <v-icon id="v-step-deleteProject" small @click="handleDelete(item)"> mdi-delete </v-icon>
         </template>
         <template v-slot:[`item.state`]="{ item }">
-          <v-chip :color="getColor(item.state)" dark @click="handleState(item)">
+          <v-chip :color="getColor(item.state)" dark @click="handleState(item)" id="v-step-editStatus" >
             {{ transform(item.state) }}
           </v-chip>
         </template>
@@ -151,7 +151,10 @@
         <el-button type="primary" @click="editProject">确 定</el-button>
       </span>
     </el-dialog>
+<!--    <v-tour v-if="showTour" name="myTour" :options="myOptions" :steps="steps"></v-tour>-->
+
   </div>
+
 </template>
 
 <script>
@@ -170,15 +173,70 @@ export default {
   // inject: ['user', 'selectedProj'],
   name: "AllProject",
   created() {
+    console.log(this.user)
     this.get_project();
+  //  this.showTour = this.user.first_login
   },
   inject: {
-    user: { defualt: null },
-    selectedProj: { defualt: null },
+    user: { default: null },
+    selectedProj: { default: null },
     updateUserProj: { default: null },
   },
+  // mounted: function () {
+  //   if (this.showTour) {
+  //     this.$tours['myTour'].start()
+  //   }
+  // },
   data() {
     return {
+      // myOptions: {
+      //   useKeyboardNavigation: false,
+      //   labels: {
+      //     buttonSkip: '跳过',
+      //     buttonPrevious: '上一步',
+      //     buttonNext: '下一步',
+      //     buttonStop: '完成'
+      //   }
+      // },
+      // steps:[
+      //   {
+      //     target: '#v-step-selectProject',
+      //     header: {
+      //       title:'进入项目'
+      //     },
+      //     content: '点击项目，进入工作空间'
+      //   },
+      //   {
+      //     target: '#v-step-editStatus',
+      //     header: {
+      //       title:'项目状态'
+      //     },
+      //     content: '显示项目完成情况，点击可将项目设为已完成'
+      //   },
+      //   {
+      //     target: '#v-step-editProject',
+      //     header: {
+      //       title:'修改项目信息'
+      //     },
+      //     content: '点击修改项目信息'
+      //   },
+      //   {
+      //     target: '#v-step-deleteProject',
+      //     header: {
+      //       title:'删除项目'
+      //     },
+      //     content: '删除项目'
+      //   },
+      //   // {
+      //   //   target: '#v-step-showDetails',
+      //   //   header: {
+      //   //     title:'项目信息'
+      //   //   },
+      //   //   content: '显示项目信息'
+      //   // },
+      //
+      // ],
+      // showTour: true,
       labelPosition: "left",
       headers: [
         {
@@ -450,6 +508,9 @@ export default {
       } else if (state === "B") {
         return "green";
       }
+    },
+    onTourFinish() {
+      this.showTour = false
     },
     getTopicColor: topicSetting.getColor
   },

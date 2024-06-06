@@ -18,6 +18,7 @@ const router = new VueRouter({
     {
       path: '/allFile',
       component: () => import('../views/user/document/allFile.vue')
+     // component: () => import('../views/user/document/file_view.vue')
     },
     {
       path:'/allPerson',
@@ -115,15 +116,21 @@ const router = new VueRouter({
       component: () => import('../views/chat/Chat.vue')
     },
     {
-      path: '/user/ai/diagnosis',
-      name: 'diagnosis',
-      component: () => import('../views/user/AI/Diagnosis.vue')
+      path: '/user/ai',
+      name: 'ai',
+      component: () => import('../views/user/AI/AIPage.vue')
     },
+    // {
+    //   path: '/user/ai/diagnosis',
+    //   name: 'diagnosis',
+    //   component: () => import('../views/user/AI/Diagnosis.vue')
+    // },
+    // {
+    //   path: '/user/ai/testdata',
+    //   name: 'testdata',
+    //   component: () => import('../views/user/AI/TestData.vue')
+    // },
     {
-      path: '/user/ai/testdata',
-      name: 'testdata',
-      component: () => import('../views/user/AI/TestData.vue')
-    }, {
       path: '/user/database',
       name: 'database',
       component: () => import('../views/dev/Database.vue')
@@ -136,5 +143,16 @@ const router = new VueRouter({
   ]
 })
 
+router.beforeEach((to, from, next) => {
+  if (window.socket && window.socket.readyState === WebSocket.OPEN) {
+    console.log('Closing WebSocket due to route change');
+    window.socket.send(JSON.stringify({
+      type: 1,
+      roomId: 0,
+    }));
+    window.socket.close(1000, 'Navigating to a different route');
+  }
+  next();
+});
 
 export default router

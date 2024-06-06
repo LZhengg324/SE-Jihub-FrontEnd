@@ -122,7 +122,6 @@
         <!--  </template>-->
       </v-data-table>
     </div>
-
     <el-dialog
         title="添加成员"
         :visible.sync="setupDialog"

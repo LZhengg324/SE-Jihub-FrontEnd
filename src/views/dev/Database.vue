@@ -70,32 +70,40 @@ export default {
         })
     },
     removeFile(entry, name) {
-      axios.post("/api/file/deleteFile", {
-        userId: this.user.id,
-        projectId: this.proj.projectId,
-        fileName: this.fileNamePair[name]
-      }).then((res) => {
-        if (res.data.errcode === 2) {
-          // this.entries[entry] = undefined;
-          // this.fileNamePair[entry] = undefined;
-          const index = Object.keys(this.entries).indexOf(entry);
-          if (index !== -1) {
-            // 从对象中移除相应的条目
-            Vue.delete(this.entries, entry);
-          }
-          // 可选：同时移除 fileNamePair 中的对应条目
-          delete this.fileNamePair[entry];
-          this.$message.success('删除成功！')
-        } else if (res.data.errcode === 1) {
-          this.$message.error('您不是项目负责人或项目管理员，删除失败')
-        } else {
-          this.$message.error('删除失败')
-        }
-      }).finally(() => {
-        this.updateDatabase();
-        this.removing = false;
-        window.location.reload()
-      })
+      console.log(entry)
+      console.log(name)
+      this.$confirm('此操作将删除文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then( () =>
+          axios.post("/api/file/deleteFile", {
+            userId: this.user.id,
+            projectId: this.proj.projectId,
+            fileName: this.fileNamePair[name]
+          }).then((res) => {
+            if (res.data.errcode === 2) {
+              // this.entries[entry] = undefined;
+              // this.fileNamePair[entry] = undefined;
+              const index = Object.keys(this.entries).indexOf(entry);
+              if (index !== -1) {
+                // 从对象中移除相应的条目
+                Vue.delete(this.entries, entry);
+              }
+              // 可选：同时移除 fileNamePair 中的对应条目
+              delete this.fileNamePair[entry];
+              this.$message.success('删除成功！')
+            } else if (res.data.errcode === 1) {
+              this.$message.error('您不是项目负责人或项目管理员，删除失败')
+            } else {
+              this.$message.error('删除失败')
+            }
+          }).finally(() => {
+            this.updateDatabase();
+            this.removing = false;
+            window.location.reload()
+          })
+      )
     },
     downloadProgressChanged(progressiveEvent) {
       this.downloadProgressBannerContent = `Downloading... ${Math.round(progressiveEvent.loaded / progressiveEvent.total * 100)}%`
@@ -272,20 +280,10 @@ export default {
                 <div>共有：<span class="float-end">{{entry.files.length}} 次上传</span></div>
               </v-card-text>
               <v-card-actions>
-                <v-btn plain @click="() => initUploadDialog(entry, name)">上传新版本</v-btn>
-                <v-btn plain @click="() => download(entry.files[entry.files.length - 1])">下载最新版本</v-btn>
-                <v-btn plain color="error" @click="() => removing = true">删除文件</v-btn>
-                  <v-dialog v-if="removing" v-model="removing" max-width="400" max-height="500">
-                    <v-card text="您要删除该文件吗？">
-                      <v-card-title>删除文件</v-card-title>
-                      <v-card-text>您要删除{{ name }}吗？</v-card-text>
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn @click="removing = false">取消</v-btn>
-                        <v-btn @click=removeFile(entry,name)>确定</v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
+                <v-btn v-if="entry.expand" plain @click="() => initUploadDialog(entry, name)">上传新版本</v-btn>
+                <v-btn v-if="entry.expand" plain @click="() => download(entry.files[entry.files.length - 1])">下载最新版本</v-btn>
+                <v-btn v-if="entry.expand" plain color="error" @click="() => removeFile(entry, name)">删除文件</v-btn>
+                <v-spacer></v-spacer>
                 <v-btn plain @click="entry.expand = !entry.expand">{{ entry.expand ? '收回' : '展开' }}</v-btn>
               </v-card-actions>
 
